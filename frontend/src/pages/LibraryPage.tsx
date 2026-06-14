@@ -1,0 +1,89 @@
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import {
+  Group, Title, Button, Select, TextInput,
+  SimpleGrid, Card, Image, Text, Badge, Stack, Box, Center,
+} from '@mantine/core'
+import { useRecipes } from '../api/recipes'
+import { FILM_SIMS, filmSimLabel } from '../filmSimLabel'
+import type { FilmSimulation } from '../api/types'
+
+const FILM_SIM_OPTIONS = FILM_SIMS.map((fs) => ({ value: fs, label: filmSimLabel(fs) }))
+
+export default function LibraryPage() {
+  const [filmSim, setFilmSim] = useState<FilmSimulation | null>(null)
+  const [tag, setTag] = useState('')
+  const { data: recipes, isLoading } = useRecipes(filmSim ?? undefined, tag || undefined)
+
+  return (
+    <Stack gap="lg">
+      <Group justify="space-between" align="center">
+        <Title order={2}>Bibliothek</Title>
+        <Button component={Link} to="/recipes/new">+ Neues Recipe</Button>
+      </Group>
+
+      <Group gap="sm">
+        <Select
+          data={FILM_SIM_OPTIONS}
+          value={filmSim}
+          onChange={(v) => setFilmSim(v as FilmSimulation | null)}
+          w={{ base: '100%', sm: 220 }}
+          placeholder="Alle Film Sims"
+          clearable
+        />
+        <TextInput
+          placeholder="Tag filtern…"
+          value={tag}
+          onChange={(e) => setTag(e.target.value)}
+          flex={1}
+          miw={120}
+        />
+      </Group>
+
+      {isLoading && <Text c="dimmed">Laden…</Text>}
+
+      <SimpleGrid cols={{ base: 1, xs: 2, sm: 3, md: 4 }} spacing="md">
+        {recipes?.map((recipe) => (
+          <Card
+            key={recipe.id}
+            component={Link}
+            to={`/recipes/${recipe.id}`}
+            shadow="sm"
+            padding="sm"
+            radius="md"
+            withBorder
+            td="none"
+            c="inherit"
+          >
+            <Card.Section>
+              <Box h={150} bg="gray.1" style={{ overflow: 'hidden' }}>
+                {recipe.previewImageFilename ? (
+                  <Image
+                    src={`/images/${recipe.previewImageFilename}`}
+                    h={150}
+                    fit="cover"
+                    alt={recipe.name}
+                  />
+                ) : (
+                  <Center h={150}>
+                    <Text size="xs" c="dimmed">Kein Bild</Text>
+                  </Center>
+                )}
+              </Box>
+            </Card.Section>
+
+            <Stack gap={6} mt="sm">
+              <Text fw={600} size="sm" lineClamp={1}>{recipe.name}</Text>
+              <Text size="xs" c="dimmed">{filmSimLabel(recipe.filmSimulation)}</Text>
+              {recipe.cameraSlot && (
+                <Badge size="sm" color="dark" variant="filled" w="fit-content">
+                  {recipe.cameraSlot}
+                </Badge>
+              )}
+            </Stack>
+          </Card>
+        ))}
+      </SimpleGrid>
+    </Stack>
+  )
+}
