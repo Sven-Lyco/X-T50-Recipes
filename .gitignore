@@ -24,6 +24,9 @@ frontend/dist/
 .DS_Store
 Thumbs.db
 
+# Local dev overrides
+docker-compose.override.yml
+
 # Claude Code
 .agents/
 

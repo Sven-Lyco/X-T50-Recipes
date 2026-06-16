@@ -32,10 +32,10 @@ public class Recipe {
     private DynamicRange dynamicRange;
 
     @Column(name = "highlight_tone", nullable = false)
-    private Integer highlightTone;
+    private Double highlightTone;
 
     @Column(name = "shadow_tone", nullable = false)
-    private Integer shadowTone;
+    private Double shadowTone;
 
     @Column(nullable = false)
     private Integer color;
@@ -102,6 +102,9 @@ public class Recipe {
     @Enumerated(EnumType.STRING)
     @Column(name = "camera_slot", length = 5)
     private CameraSlot cameraSlot;
+
+    @Column(name = "is_favorite", nullable = false)
+    private boolean favorite = false;
 
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("sortOrder ASC")

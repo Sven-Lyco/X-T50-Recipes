@@ -10,14 +10,15 @@ public record RecipeListItem(
         FilmSimulation filmSimulation,
         CameraSlot cameraSlot,
         List<String> tags,
-        String previewImageFilename
+        String previewImageFilename,
+        boolean favorite
 ) {
     static RecipeListItem from(Recipe r) {
         String preview = r.getImages().isEmpty() ? null : r.getImages().get(0).getFilename();
         return new RecipeListItem(
                 r.getId(), r.getName(), r.getFilmSimulation(), r.getCameraSlot(),
                 r.getTags() != null ? Arrays.asList(r.getTags()) : List.of(),
-                preview
+                preview, r.isFavorite()
         );
     }
 }

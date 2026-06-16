@@ -2,13 +2,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import client from './client'
 import type { Recipe, RecipeListItem, RecipeRequest, CameraSlot } from './types'
 
-export function useRecipes(filmSimulation?: string, tag?: string) {
+export function useRecipes(filmSimulation?: string, tag?: string, onlyFavorites?: boolean) {
   return useQuery({
-    queryKey: ['recipes', filmSimulation, tag],
+    queryKey: ['recipes', filmSimulation, tag, onlyFavorites],
     queryFn: async () => {
       const params = new URLSearchParams()
       if (filmSimulation) params.set('filmSimulation', filmSimulation)
       if (tag) params.set('tag', tag)
+      if (onlyFavorites) params.set('favorite', 'true')
       const { data } = await client.get<RecipeListItem[]>(`/recipes?${params}`)
       return data
     },
@@ -71,6 +72,15 @@ export function useAssignCameraSlot() {
       qc.invalidateQueries({ queryKey: ['recipes'] })
       qc.invalidateQueries({ queryKey: ['camera-status'] })
     },
+  })
+}
+
+export function useToggleFavorite() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, favorite }: { id: string; favorite: boolean }) =>
+      client.put<Recipe>(`/recipes/${id}/favorite`, { favorite }).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['recipes'] }),
   })
 }
 

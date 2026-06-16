@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   Stack, Title, Paper, SimpleGrid, TextInput, Textarea,
-  Select, SegmentedControl, Slider, NumberInput, TagsInput,
+  Select, SegmentedControl, NumberInput, TagsInput,
   Button, Group, Text, FileButton, Image, ActionIcon, Box, AspectRatio, Modal,
 } from '@mantine/core'
 import { useForm } from '@mantine/form'
@@ -15,7 +15,7 @@ import {
   SortableContext, useSortable, rectSortingStrategy, arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { IconGripVertical, IconMaximize, IconX } from '@tabler/icons-react'
+import { IconGripVertical, IconMaximize, IconMinus, IconPlus, IconX } from '@tabler/icons-react'
 import { useRecipe, useCreateRecipe, useUpdateRecipe, useUploadImage, useDeleteImage, useReorderImages } from '../api/recipes'
 import { FILM_SIMS, MONOCHROME_SIMS, filmSimLabel } from '../filmSimLabel'
 import { CAMERA_SLOTS, type CameraSlot, type EffectStrength, type GrainSize, type GrainStrength, type RecipeRequest, type WhiteBalanceMode } from '../api/types'
@@ -44,20 +44,33 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   )
 }
 
-function SliderField({ label, min, max, value, onChange }: {
-  label: string; min: number; max: number; value: number; onChange: (v: number) => void
+function NumberStepperField({ label, min, max, step = 1, value, onChange }: {
+  label: string; min: number; max: number; step?: number; value: number; onChange: (v: number) => void
 }) {
+  const round = (v: number) => Math.round(v / step) * step
+  const clamp = (v: number) => Math.min(max, Math.max(min, round(v)))
   return (
     <Stack gap={4}>
-      <Group justify="space-between">
-        <Text size="sm">{label}</Text>
-        <Text size="sm" fw={600}>{value > 0 ? `+${value}` : value}</Text>
+      <Text size="sm">{label}</Text>
+      <Group gap="xs">
+        <ActionIcon
+          variant="default" size="lg"
+          onClick={() => onChange(clamp(value - step))}
+          disabled={value <= min}
+          aria-label={`${label} verringern`}
+        >
+          <IconMinus size={16} />
+        </ActionIcon>
+        <Text size="sm" fw={600} ta="center" miw={40}>{value > 0 ? `+${value}` : value}</Text>
+        <ActionIcon
+          variant="default" size="lg"
+          onClick={() => onChange(clamp(value + step))}
+          disabled={value >= max}
+          aria-label={`${label} erhöhen`}
+        >
+          <IconPlus size={16} />
+        </ActionIcon>
       </Group>
-      <Slider
-        min={min} max={max} step={1} value={value} onChange={onChange}
-        marks={[{ value: 0 }]}
-        size="sm"
-      />
     </Stack>
   )
 }
@@ -223,12 +236,12 @@ export default function RecipeFormPage() {
         <Paper withBorder p="md" radius="md">
           <SectionTitle>Bildparameter</SectionTitle>
           <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xl">
-            <SliderField label="Highlight Tone" min={-2} max={4} value={form.values.highlightTone} onChange={(v) => form.setFieldValue('highlightTone', v)} />
-            <SliderField label="Shadow Tone" min={-2} max={4} value={form.values.shadowTone} onChange={(v) => form.setFieldValue('shadowTone', v)} />
-            <SliderField label="Color" min={-4} max={4} value={form.values.color} onChange={(v) => form.setFieldValue('color', v)} />
-            <SliderField label="Sharpness" min={-4} max={4} value={form.values.sharpness} onChange={(v) => form.setFieldValue('sharpness', v)} />
-            <SliderField label="Noise Reduction" min={-4} max={4} value={form.values.noiseReduction} onChange={(v) => form.setFieldValue('noiseReduction', v)} />
-            <SliderField label="Clarity" min={-5} max={5} value={form.values.clarity} onChange={(v) => form.setFieldValue('clarity', v)} />
+            <NumberStepperField label="Highlight Tone" min={-2} max={4} step={0.5} value={form.values.highlightTone} onChange={(v) => form.setFieldValue('highlightTone', v)} />
+            <NumberStepperField label="Shadow Tone" min={-2} max={4} step={0.5} value={form.values.shadowTone} onChange={(v) => form.setFieldValue('shadowTone', v)} />
+            <NumberStepperField label="Color" min={-4} max={4} value={form.values.color} onChange={(v) => form.setFieldValue('color', v)} />
+            <NumberStepperField label="Sharpness" min={-4} max={4} value={form.values.sharpness} onChange={(v) => form.setFieldValue('sharpness', v)} />
+            <NumberStepperField label="Noise Reduction" min={-4} max={4} value={form.values.noiseReduction} onChange={(v) => form.setFieldValue('noiseReduction', v)} />
+            <NumberStepperField label="Clarity" min={-5} max={5} value={form.values.clarity} onChange={(v) => form.setFieldValue('clarity', v)} />
           </SimpleGrid>
         </Paper>
 
@@ -284,8 +297,8 @@ export default function RecipeFormPage() {
                 {...form.getInputProps('colorTempKelvin')}
               />
             )}
-            <SliderField label="WB Shift Rot" min={-9} max={9} value={form.values.wbShiftRed} onChange={(v) => form.setFieldValue('wbShiftRed', v)} />
-            <SliderField label="WB Shift Blau" min={-9} max={9} value={form.values.wbShiftBlue} onChange={(v) => form.setFieldValue('wbShiftBlue', v)} />
+            <NumberStepperField label="WB Shift Rot" min={-9} max={9} value={form.values.wbShiftRed} onChange={(v) => form.setFieldValue('wbShiftRed', v)} />
+            <NumberStepperField label="WB Shift Blau" min={-9} max={9} value={form.values.wbShiftBlue} onChange={(v) => form.setFieldValue('wbShiftBlue', v)} />
           </SimpleGrid>
         </Paper>
 
@@ -293,8 +306,8 @@ export default function RecipeFormPage() {
           <Paper withBorder p="md" radius="md">
             <SectionTitle>Monochrome</SectionTitle>
             <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xl">
-              <SliderField label="Warm / Cool" min={-9} max={9} value={form.values.monochromeWarmCool ?? 0} onChange={(v) => form.setFieldValue('monochromeWarmCool', v)} />
-              <SliderField label="Grün / Magenta" min={-9} max={9} value={form.values.monochromeGreenMagenta ?? 0} onChange={(v) => form.setFieldValue('monochromeGreenMagenta', v)} />
+              <NumberStepperField label="Warm / Cool" min={-9} max={9} value={form.values.monochromeWarmCool ?? 0} onChange={(v) => form.setFieldValue('monochromeWarmCool', v)} />
+              <NumberStepperField label="Grün / Magenta" min={-9} max={9} value={form.values.monochromeGreenMagenta ?? 0} onChange={(v) => form.setFieldValue('monochromeGreenMagenta', v)} />
             </SimpleGrid>
           </Paper>
         )}

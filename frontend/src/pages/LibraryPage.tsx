@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Group, Title, Button, Select, TextInput,
-  SimpleGrid, Card, Image, Text, Badge, Stack, Box, Center,
+  SimpleGrid, Card, Image, Text, Badge, Stack, Box, Center, ActionIcon,
 } from '@mantine/core'
-import { useRecipes } from '../api/recipes'
+import { IconStar, IconStarFilled } from '@tabler/icons-react'
+import { useRecipes, useToggleFavorite } from '../api/recipes'
 import { FILM_SIMS, filmSimLabel } from '../filmSimLabel'
 import type { FilmSimulation } from '../api/types'
 
@@ -13,7 +14,9 @@ const FILM_SIM_OPTIONS = FILM_SIMS.map((fs) => ({ value: fs, label: filmSimLabel
 export default function LibraryPage() {
   const [filmSim, setFilmSim] = useState<FilmSimulation | null>(null)
   const [tag, setTag] = useState('')
-  const { data: recipes, isLoading } = useRecipes(filmSim ?? undefined, tag || undefined)
+  const [onlyFavorites, setOnlyFavorites] = useState(false)
+  const { data: recipes, isLoading } = useRecipes(filmSim ?? undefined, tag || undefined, onlyFavorites)
+  const toggleFavorite = useToggleFavorite()
 
   return (
     <Stack gap="lg">
@@ -38,6 +41,15 @@ export default function LibraryPage() {
           flex={1}
           miw={120}
         />
+        <ActionIcon
+          variant={onlyFavorites ? 'filled' : 'default'}
+          color="yellow"
+          size="lg"
+          aria-label="Nur Favoriten"
+          onClick={() => setOnlyFavorites((v) => !v)}
+        >
+          {onlyFavorites ? <IconStarFilled size={18} /> : <IconStar size={18} />}
+        </ActionIcon>
       </Group>
 
       {isLoading && <Text c="dimmed">Laden…</Text>}
@@ -55,7 +67,7 @@ export default function LibraryPage() {
             td="none"
             c="inherit"
           >
-            <Card.Section>
+            <Card.Section pos="relative">
               <Box h={150} bg="gray.1" style={{ overflow: 'hidden' }}>
                 {recipe.previewImageFilename ? (
                   <Image
@@ -70,6 +82,26 @@ export default function LibraryPage() {
                   </Center>
                 )}
               </Box>
+              <ActionIcon
+                variant="filled"
+                color="dark"
+                size="md"
+                pos="absolute"
+                top={6}
+                right={6}
+                aria-label={recipe.favorite ? 'Favorit entfernen' : 'Als Favorit markieren'}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  toggleFavorite.mutate({ id: recipe.id, favorite: !recipe.favorite })
+                }}
+              >
+                {recipe.favorite ? (
+                  <IconStarFilled size={14} color="var(--mantine-color-yellow-5)" />
+                ) : (
+                  <IconStar size={14} />
+                )}
+              </ActionIcon>
             </Card.Section>
 
             <Stack gap={6} mt="sm">

@@ -15,7 +15,7 @@ public class RecipeService {
     private final RecipeRepository recipeRepository;
 
     @Transactional(readOnly = true)
-    public List<RecipeListItem> findAll(FilmSimulation filmSimulation, String tag) {
+    public List<RecipeListItem> findAll(FilmSimulation filmSimulation, String tag, boolean onlyFavorites) {
         boolean hasTag = tag != null && !tag.isBlank();
         List<Recipe> recipes;
         if (filmSimulation != null && hasTag) {
@@ -27,7 +27,10 @@ public class RecipeService {
         } else {
             recipes = recipeRepository.findAllByOrderByCreatedAtDesc();
         }
-        return recipes.stream().map(RecipeListItem::from).toList();
+        return recipes.stream()
+                .filter(r -> !onlyFavorites || r.isFavorite())
+                .map(RecipeListItem::from)
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -72,6 +75,12 @@ public class RecipeService {
             });
         }
         recipe.setCameraSlot(slot);
+        return RecipeResponse.from(recipeRepository.save(recipe));
+    }
+
+    public RecipeResponse setFavorite(UUID id, boolean favorite) {
+        Recipe recipe = getOrThrow(id);
+        recipe.setFavorite(favorite);
         return RecipeResponse.from(recipeRepository.save(recipe));
     }
 

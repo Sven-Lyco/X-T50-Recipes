@@ -11,8 +11,8 @@ public record RecipeResponse(
         String name,
         FilmSimulation filmSimulation,
         DynamicRange dynamicRange,
-        Integer highlightTone,
-        Integer shadowTone,
+        Double highlightTone,
+        Double shadowTone,
         Integer color,
         Integer sharpness,
         Integer noiseReduction,
@@ -33,6 +33,7 @@ public record RecipeResponse(
         String inspirationSource,
         List<String> tags,
         CameraSlot cameraSlot,
+        boolean favorite,
         List<RecipeImageResponse> images,
         Instant createdAt,
         Instant updatedAt
@@ -47,7 +48,7 @@ public record RecipeResponse(
                 r.getMonochromeWarmCool(), r.getMonochromeGreenMagenta(),
                 r.getIsoNote(), r.getExpCompNote(), r.getDescription(), r.getInspirationSource(),
                 r.getTags() != null ? Arrays.asList(r.getTags()) : List.of(),
-                r.getCameraSlot(),
+                r.getCameraSlot(), r.isFavorite(),
                 r.getImages().stream().map(RecipeImageResponse::from).toList(),
                 r.getCreatedAt(), r.getUpdatedAt()
         );

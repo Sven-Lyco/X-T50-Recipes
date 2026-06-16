@@ -18,9 +18,10 @@ public class RecipeController {
     @GetMapping
     public List<RecipeListItem> list(
             @RequestParam(required = false) FilmSimulation filmSimulation,
-            @RequestParam(required = false) String tag
+            @RequestParam(required = false) String tag,
+            @RequestParam(required = false, defaultValue = "false") boolean favorite
     ) {
-        return recipeService.findAll(filmSimulation, tag);
+        return recipeService.findAll(filmSimulation, tag, favorite);
     }
 
     @GetMapping("/{id}")
@@ -58,5 +59,11 @@ public class RecipeController {
         return recipeService.assignCameraSlot(id, request.slot(), request.force());
     }
 
+    @PutMapping("/{id}/favorite")
+    public RecipeResponse setFavorite(@PathVariable UUID id, @RequestBody FavoriteRequest request) {
+        return recipeService.setFavorite(id, request.favorite());
+    }
+
     public record CameraSlotRequest(CameraSlot slot, boolean force) {}
+    public record FavoriteRequest(boolean favorite) {}
 }

@@ -4,10 +4,11 @@ import {
   Stack, Group, Title, Button, Badge, SimpleGrid,
   Paper, Text, Image, Divider, ActionIcon, Box, AspectRatio, Modal, CloseButton,
 } from '@mantine/core'
+import { IconStar, IconStarFilled } from '@tabler/icons-react'
 import { Carousel } from '@mantine/carousel'
 import { notifications } from '@mantine/notifications'
 import '@mantine/carousel/styles.css'
-import { useRecipe, useDeleteRecipe } from '../api/recipes'
+import { useRecipe, useDeleteRecipe, useToggleFavorite } from '../api/recipes'
 import { MONOCHROME_SIMS, filmSimLabel } from '../filmSimLabel'
 
 function ParamRow({ label, value }: { label: string; value: string | number | null | undefined }) {
@@ -28,6 +29,7 @@ export default function RecipeDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { data: recipe, isLoading } = useRecipe(id!)
   const deleteRecipe = useDeleteRecipe()
+  const toggleFavorite = useToggleFavorite()
   const navigate = useNavigate()
 
   const [lightbox, setLightbox] = useState<string | null>(null)
@@ -45,17 +47,31 @@ export default function RecipeDetailPage() {
   return (
     <>
     <Stack gap="lg" maw={800}>
-      <Group gap="sm" align="flex-start">
-        <ActionIcon variant="subtle" color="gray" size="lg" component={Link} to="/" aria-label="Zurück" mt={4}>
-          ←
+      <Group gap="sm" align="flex-start" justify="space-between">
+        <Group gap="sm" align="flex-start">
+          <ActionIcon variant="subtle" color="gray" size="lg" component={Link} to="/" aria-label="Zurück" mt={4}>
+            ←
+          </ActionIcon>
+          <Stack gap={6}>
+            <Title order={2}>{recipe.name}</Title>
+            <Group gap="xs">
+              <Badge color="dark" variant="light">{filmSimLabel(recipe.filmSimulation)}</Badge>
+              {recipe.cameraSlot && <Badge color="dark" variant="filled">{recipe.cameraSlot}</Badge>}
+            </Group>
+          </Stack>
+        </Group>
+        <ActionIcon
+          variant="default"
+          size="lg"
+          aria-label={recipe.favorite ? 'Favorit entfernen' : 'Als Favorit markieren'}
+          onClick={() => toggleFavorite.mutate({ id: recipe.id, favorite: !recipe.favorite })}
+        >
+          {recipe.favorite ? (
+            <IconStarFilled size={18} color="var(--mantine-color-yellow-5)" />
+          ) : (
+            <IconStar size={18} />
+          )}
         </ActionIcon>
-        <Stack gap={6}>
-          <Title order={2}>{recipe.name}</Title>
-          <Group gap="xs">
-            <Badge color="dark" variant="light">{filmSimLabel(recipe.filmSimulation)}</Badge>
-            {recipe.cameraSlot && <Badge color="dark" variant="filled">{recipe.cameraSlot}</Badge>}
-          </Group>
-        </Stack>
       </Group>
 
       {recipe.images.length > 0 && (
