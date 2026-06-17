@@ -6,29 +6,29 @@ interface SimInfo { key: string; desc: string }
 interface ParamInfo { label: string; range?: string; desc: string }
 
 const COLOR_SIMS: SimInfo[] = [
-  { key: 'PROVIA',               desc: 'Ausgewogene, neutrale Farben. Der Allrounder für jeden Anlass.' },
-  { key: 'VELVIA',               desc: 'Kräftige, gesättigte Farben mit hohem Kontrast. Ideal für Landschaften.' },
-  { key: 'ASTIA',                desc: 'Weiche Hauttöne, sanfte Kontraste. Perfekt für Portraits.' },
-  { key: 'CLASSIC_CHROME',       desc: 'Gedämpfte, kühle Farben. Dokumentarischer, zeitloser Look.' },
-  { key: 'CLASSIC_NEGATIVE',     desc: 'Filmnegativ-Ästhetik: weiche Schatten, charaktervolle Farben.' },
-  { key: 'REALA_ACE',            desc: 'Sehr natürliche, leicht entsättigte Farben nach dem Vorbild des Fuji Reala-Films.' },
-  { key: 'PRO_NEG_HI',           desc: 'Professioneller Porträtfilm mit erhöhtem Kontrast und natürlichen Farben.' },
-  { key: 'PRO_NEG_STD',          desc: 'Professioneller Porträtfilm mit Standardkontrast, weich und neutral.' },
-  { key: 'NOSTALGIC_NEG',        desc: 'Analoger Farbfilm aus den 70ern/80ern: warm, leicht verblichen, nostalgisch.' },
-  { key: 'ETERNA',               desc: 'Kinofilm-Look: sanfte Schatten, zurückhaltende Lichter, neutrale Farben.' },
-  { key: 'ETERNA_BLEACH_BYPASS', desc: 'Silber-Bleach-Verfahren: entsättigte Farben, harter Kontrast, industrieller Look.' },
+  { key: 'PROVIA',               desc: 'Ideal für zahlreiche Motive.' },
+  { key: 'VELVIA',               desc: 'Lebendige Darstellung, ideal für Landschaften und Natur.' },
+  { key: 'ASTIA',                desc: 'Weichere Farbe und Kontrast für gedämpfte Darstellung.' },
+  { key: 'CLASSIC_CHROME',       desc: 'Weiche Farbe und mehr Schattenkontrast für ruhige Ausstrahlung.' },
+  { key: 'CLASSIC_NEGATIVE',     desc: 'Farbe mit harter Tonalität zur Erhöhung der Bildtiefe.' },
+  { key: 'REALA_ACE',            desc: 'Originalgetreue Farbwiedergabe mit harter Tonalität, geeignet für verschiedene Szenen.' },
+  { key: 'PRO_NEG_HI',           desc: 'Ideal für Porträts mit leicht verbessertem Kontrast.' },
+  { key: 'PRO_NEG_STD',          desc: 'Neutrale Tonalität für die Nachbearbeitung. Ideal für Porträts. Weiche Abstufungen und Hauttöne.' },
+  { key: 'NOSTALGIC_NEG',        desc: 'Kräftige Schattentöne und Nuancen von Bernstein in den Lichtern für den Look historischer Fotoabzüge.' },
+  { key: 'ETERNA',               desc: 'Für filmähnliche Videos geeignete sanfte Farben und reicher Schattenton.' },
+  { key: 'ETERNA_BLEACH_BYPASS', desc: 'Geringe Farbsättigung und hohe Kontraste für Foto und Video.' },
 ]
 
 const MONO_SIMS: SimInfo[] = [
-  { key: 'ACROS',         desc: 'Legendärer Fujifilm-Schwarzweiß-Look. Tiefer Kontrast, schöne natürliche Körnung.' },
-  { key: 'ACROS_YE',      desc: '+Gelbfilter: hellerer Himmel, dunkleres Laub. Ausgeglichener Look.' },
-  { key: 'ACROS_R',       desc: '+Rotfilter: sehr dunkler Himmel, helles Laub. Dramatischer Effekt.' },
-  { key: 'ACROS_G',       desc: '+Grünfilter: helles Laub, natürliche Hauttöne.' },
-  { key: 'MONOCHROME',    desc: 'Klassisches Schwarzweiß ohne den speziellen ACROS-Charakter. Neutral und clean.' },
-  { key: 'MONOCHROME_YE', desc: '+Gelbfilter: sanfter Himmelskontrast.' },
-  { key: 'MONOCHROME_R',  desc: '+Rotfilter: drastischer Himmelskontrast und helle Hauttöne.' },
-  { key: 'MONOCHROME_G',  desc: '+Grünfilter: lebhaftes Laub, leicht dunklerer Himmel.' },
-  { key: 'SEPIA',         desc: 'Sepia-Tönung für einen warmen Vintage-Look.' },
+  { key: 'ACROS',         desc: 'Aufnahme in Schwarz/Weiß, detailliert mit Schärfe.' },
+  { key: 'ACROS_YE',      desc: 'Mit Gelbfilter: Verstärkt Kontrast leicht und dunkelt Himmel nach.' },
+  { key: 'ACROS_R',       desc: 'Mit Rotfilter: Verstärkt Kontrast und dunkelt Himmel deutlich nach.' },
+  { key: 'ACROS_G',       desc: 'Mit Grünfilter: Erzeugt natürliche Hauttöne bei Portraits.' },
+  { key: 'MONOCHROME',    desc: 'Aufnahmen in Schwarz/Weiß.' },
+  { key: 'MONOCHROME_YE', desc: 'Mit Gelbfilter: Verstärkt Kontrast leicht und dunkelt Himmel nach.' },
+  { key: 'MONOCHROME_R',  desc: 'Mit Rotfilter: Verstärkt Kontrast und dunkelt Himmel deutlich nach.' },
+  { key: 'MONOCHROME_G',  desc: 'Mit Grünfilter: Erzeugt natürliche Hauttöne bei Portraits.' },
+  { key: 'SEPIA',         desc: 'Aufnahmen mit Sepiaton.' },
 ]
 
 const BILDPARAMETER: ParamInfo[] = [
