@@ -42,7 +42,7 @@ export function computeSimilarity(a: Recipe, b: Recipe): number {
 }
 
 export function similarityColor(score: number): string {
-  if (score >= 85) return 'green'
+  if (score >= 85) return 'red'
   if (score >= 65) return 'yellow'
-  return 'red'
+  return 'green'
 }
