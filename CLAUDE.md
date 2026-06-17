@@ -32,10 +32,12 @@ aktuell auf welcher Custom-Bank (C1–C7) der Kamera geladen ist.
 ### Frontend
 
 - React + TypeScript + Vite
-- State Management: bewusst leichtgewichtig halten (z.B. React Query für Server-State,
-  kein Redux nötig für eine CRUD-App dieser Größe) – bei Bedarf später revidieren
-- Responsive/mobilfreundlich, da das "Aktuell auf Kamera"-Dashboard auch unterwegs
-  nützlich ist
+- State Management: bewusst leichtgewichtig halten (React Query für Server-State,
+  kein Redux nötig für eine CRUD-App dieser Größe)
+- `@emotion/styled` für Styling (kein Plain CSS, keine Inline-Styles)
+- `@react-pdf/renderer` für PDF-Export
+- Responsive/mobilfreundlich inkl. PWA-Konfiguration (apple-mobile-web-app-capable,
+  Web App Manifest) für iOS/iPadOS Home-Screen-Installation
 
 ### Deployment
 
@@ -48,36 +50,38 @@ aktuell auf welcher Custom-Bank (C1–C7) der Kamera geladen ist.
 
 ### Recipe
 
-| Feld                   | Typ                | Beschreibung                                                                                                                                                       |
-| ---------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| id                     | UUID               |                                                                                                                                                                    |
-| name                   | String             |                                                                                                                                                                    |
-| filmSimulation         | Enum               | PROVIA, VELVIA, ASTIA, CLASSIC_CHROME, CLASSIC_NEGATIVE, REALA_ACE, PRO_NEG_HI, PRO_NEG_STD, ACROS, MONOCHROME, SEPIA, NOSTALGIC_NEG, ETERNA, ETERNA_BLEACH_BYPASS |
-| dynamicRange           | Enum               | DR100, DR200, DR400                                                                                                                                                |
-| highlightTone          | Decimal            | -2 .. +4, 0,5er-Schritte (13 Stufen)                                                                                                                               |
-| shadowTone             | Decimal            | -2 .. +4, 0,5er-Schritte (13 Stufen)                                                                                                                               |
-| color                  | Integer            | -4 .. +4                                                                                                                                                           |
-| sharpness              | Integer            | -4 .. +4                                                                                                                                                           |
-| noiseReduction         | Integer            | -4 .. +4                                                                                                                                                           |
-| grainStrength          | Enum               | OFF, WEAK, STRONG                                                                                                                                                  |
-| grainSize              | Enum (nullable)    | SMALL, LARGE – nur relevant wenn grainStrength != OFF                                                                                                              |
-| colorChromeEffect      | Enum               | OFF, WEAK, STRONG                                                                                                                                                  |
-| colorChromeFxBlue      | Enum               | OFF, WEAK, STRONG                                                                                                                                                  |
-| whiteBalanceMode       | Enum               | AUTO, DAYLIGHT, SHADE, FLUORESCENT_1/2/3, INCANDESCENT, UNDERWATER, COLOR_TEMP, CUSTOM_1/2/3                                                                       |
-| wbShiftRed             | Integer            | typ. -9 .. +9                                                                                                                                                      |
-| wbShiftBlue            | Integer            | typ. -9 .. +9                                                                                                                                                      |
-| colorTempKelvin        | Integer (nullable) | nur wenn whiteBalanceMode = COLOR_TEMP                                                                                                                             |
-| clarity                | Integer            | -5 .. +5                                                                                                                                                           |
-| monochromeWarmCool     | Integer (nullable) | nur für ACROS/MONOCHROME                                                                                                                                           |
-| monochromeGreenMagenta | Integer (nullable) | nur für ACROS/MONOCHROME                                                                                                                                           |
-| isoNote                | String (nullable)  | z.B. "ab ISO 800 für DR400"                                                                                                                                        |
-| expCompNote            | String (nullable)  | z.B. "0 bis -1/3"                                                                                                                                                  |
-| description            | Text (nullable)    | Begründung / "Warum funktioniert das"                                                                                                                              |
-| inspirationSource      | String (nullable)  | z.B. Beschreibung/Link zur Inspirationsquelle                                                                                                                      |
-| tags                   | String[]           | z.B. Stimmung, Anlass, Filmstock-Inspiration                                                                                                                       |
-| cameraSlot             | Enum (nullable)    | C1..C7, NULL = Bibliothek/Archiv. UNIQUE (partial index, nur wenn nicht NULL)                                                                                      |
-| createdAt              | Timestamp          |                                                                                                                                                                    |
-| updatedAt              | Timestamp          |                                                                                                                                                                    |
+| Feld                   | Typ                | Beschreibung                                                                                                                                                                          |
+| ---------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| id                     | UUID               |                                                                                                                                                                                       |
+| name                   | String             |                                                                                                                                                                                       |
+| filmSimulation         | Enum               | PROVIA, VELVIA, ASTIA, CLASSIC_CHROME, CLASSIC_NEGATIVE, REALA_ACE, PRO_NEG_HI, PRO_NEG_STD, ACROS, ACROS_YE, ACROS_R, ACROS_G, MONOCHROME, MONOCHROME_YE, MONOCHROME_R, MONOCHROME_G, SEPIA, NOSTALGIC_NEG, ETERNA, ETERNA_BLEACH_BYPASS |
+| dynamicRange           | Enum               | DR_AUTO, DR100, DR200, DR400                                                                                                                                                          |
+| highlightTone          | Decimal            | -2 .. +4, 0,5er-Schritte (13 Stufen)                                                                                                                                                  |
+| shadowTone             | Decimal            | -2 .. +4, 0,5er-Schritte (13 Stufen)                                                                                                                                                  |
+| color                  | Integer            | -4 .. +4                                                                                                                                                                              |
+| sharpness              | Integer            | -4 .. +4                                                                                                                                                                              |
+| noiseReduction         | Integer            | -4 .. +4                                                                                                                                                                              |
+| grainStrength          | Enum               | OFF, WEAK, STRONG                                                                                                                                                                     |
+| grainSize              | Enum (nullable)    | SMALL, LARGE – nur relevant wenn grainStrength != OFF; wird automatisch auf SMALL defaulted wenn grainStrength aktiviert wird                                                          |
+| colorChromeEffect      | Enum               | OFF, WEAK, STRONG                                                                                                                                                                     |
+| colorChromeFxBlue      | Enum               | OFF, WEAK, STRONG                                                                                                                                                                     |
+| whiteBalanceMode       | Enum               | AUTO_WHITE, AUTO, AUTO_AMBIENT, DAYLIGHT, SHADE, FLUORESCENT_1/2/3, INCANDESCENT, UNDERWATER, COLOR_TEMP, CUSTOM_1/2/3                                                                |
+| wbShiftRed             | Integer            | -9 .. +9                                                                                                                                                                              |
+| wbShiftBlue            | Integer            | -9 .. +9                                                                                                                                                                              |
+| colorTempKelvin        | Integer (nullable) | nur wenn whiteBalanceMode = COLOR_TEMP; wird automatisch auf 5200 K defaulted beim Umschalten                                                                                         |
+| clarity                | Integer            | -5 .. +5                                                                                                                                                                              |
+| monochromeWarmCool     | Integer (nullable) | nur für ACROS*/MONOCHROME*-Simulationen                                                                                                                                               |
+| monochromeGreenMagenta | Integer (nullable) | nur für ACROS*/MONOCHROME*-Simulationen                                                                                                                                               |
+| isoMode                | String (nullable)  | MANUAL, AUTO_1, AUTO_2, AUTO_3 – ISO-Modus der Kamera                                                                                                                                |
+| isoNote                | String (nullable)  | ISO Details, z.B. "max ISO 6400, 1/125 min."                                                                                                                                          |
+| expCompNote            | String (nullable)  | z.B. "0 bis -1/3"                                                                                                                                                                     |
+| description            | Text (nullable)    | Begründung / "Warum funktioniert das" – wird mit white-space: pre-wrap dargestellt                                                                                                    |
+| inspirationSource      | String (nullable)  | "Referenz" – URL oder Freitext; URLs werden als klickbarer Link dargestellt                                                                                                           |
+| tags                   | String[]           | z.B. Stimmung, Anlass, Filmstock-Inspiration                                                                                                                                          |
+| cameraSlot             | Enum (nullable)    | C1..C7, NULL = Bibliothek/Archiv. UNIQUE (partial index, nur wenn nicht NULL)                                                                                                         |
+| favorite               | Boolean            | Favoriten-Markierung                                                                                                                                                                  |
+| createdAt              | Timestamp          |                                                                                                                                                                                       |
+| updatedAt              | Timestamp          |                                                                                                                                                                                       |
 
 ### RecipeImage
 
@@ -93,11 +97,31 @@ aktuell auf welcher Custom-Bank (C1–C7) der Kamera geladen ist.
 
 1. **Bibliotheksübersicht** – Kartenraster aller Recipes (Vorschaubild, Name,
    Filmsimulation, Status-Badge "C1"–"C7" oder "Bibliothek"), filter- und durchsuchbar
-   nach Tags und Filmsimulation
-2. **Detailansicht** – alle Parameter, Bildergalerie, Beschreibung, Inspirationsquelle, Tags
+   nach Tags, Filmsimulation und Favoriten
+2. **Detailansicht** – alle Parameter in Sektionen (Bildparameter, Körnung & Effekte,
+   Weißabgleich, Monochrome Farbe), Bildergalerie, Beschreibung, Referenz-Link, Tags,
+   "Ähnliche Recipes" (gleiche Filmsimulation), PDF-Export
 3. **Kamera-Dashboard** – Übersicht der sieben C1–C7-Slots mit jeweils zugeordnetem
    Recipe (Name + Vorschaubild); Neuzuordnung direkt aus dem Dashboard möglich
-4. **Anlegen/Bearbeiten-Formular** – alle Recipe-Felder editierbar, Bild-Upload (Multipart)
+4. **Anlegen/Bearbeiten-Formular** – alle Recipe-Felder editierbar, Bild-Upload (Multipart,
+   Drag-and-Drop-Sortierung); Bilder können nur im Bearbeitungsmodus (nicht beim Neuanlegen)
+   hinzugefügt werden
+5. **Recipes vergleichen** – Auswahl von bis zu 4 Recipes, Side-by-Side-Parametertabelle
+   mit Hervorhebung von Unterschieden, client-seitiger Ähnlichkeits-Score (0–100%,
+   hoch = ähnlich = rot, niedrig = verschieden = grün)
+
+## Frontend-Labels (Kamera-Menü-Konformität)
+
+Alle Labels entsprechen den deutschen Kamera-Menü-Bezeichnungen der X-T50:
+- Dynamikbereich (DR_AUTO=Auto, DR100=100%, DR200=200%, DR400=400%)
+- Spitzlichter / Schatten (statt Highlight/Shadow Tone)
+- Hohe ISO-NR (statt Noise Reduction)
+- Körnungseffekt / Körnung Größe (statt Grain Strength/Size)
+- Farbe Chrome-Effekt / Farbe Chrom FX Blau
+- WA Verschieben R/B (statt WB Shift)
+- WA Priorität Weiß / AA Priorität Umgebung (AUTO_WHITE / AUTO_AMBIENT)
+
+Label-Funktionen und Select-Daten in `frontend/src/utils/labels.ts`.
 
 ## Auth
 
@@ -107,17 +131,28 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 ## API-Skizze (REST)
 
 - `POST /api/auth/login`
-- `GET /api/recipes` (mit Filter-Query-Parametern für Tags/Filmsimulation)
+- `GET /api/recipes` (mit Filter-Query-Parametern für Tags/Filmsimulation/favorite)
 - `GET /api/recipes/{id}`
 - `POST /api/recipes`
 - `PUT /api/recipes/{id}`
 - `DELETE /api/recipes/{id}`
 - `POST /api/recipes/{id}/images` (Multipart-Upload)
 - `DELETE /api/recipes/{id}/images/{imageId}`
+- `PUT /api/recipes/{id}/images/reorder`
 - `GET /api/camera-status` (alle Recipes mit cameraSlot != NULL, sortiert C1–C7)
 - `PUT /api/recipes/{id}/camera-slot` (Slot zuweisen/entfernen)
+- `PUT /api/recipes/{id}/favorite`
+
+## DB-Migrationen
+
+- V1: Initiales Schema
+- V2: Timestamp-Typen
+- V3: Favoriten-Feld
+- V4: Highlight/Shadow Tone als Decimal (0,5er-Schritte)
+- V5: iso_mode VARCHAR(20)
 
 ## Offene Punkte für spätere Phasen
 
 - KI-gestützte Recipe-Generierung aus Bildern (Anthropic API) – Entscheidung steht noch aus
-- Export/Teilen einzelner Recipes (z.B. als druckbare Übersicht für unterwegs)
+- Bild-Upload-Limit: Coolify/Traefik blockiert große Uploads (>1 MB?) – Traefik-Middleware
+  für Body-Buffering muss in Coolify konfiguriert werden
