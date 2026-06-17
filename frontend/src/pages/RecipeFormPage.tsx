@@ -18,7 +18,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { IconGripVertical, IconMaximize, IconMinus, IconPlus, IconX } from '@tabler/icons-react'
 import { useRecipe, useCreateRecipe, useUpdateRecipe, useUploadImage, useDeleteImage, useReorderImages } from '../api/recipes'
 import { FILM_SIMS, MONOCHROME_SIMS, filmSimLabel } from '../filmSimLabel'
-import { CAMERA_SLOTS, type CameraSlot, type GrainSize, type RecipeRequest, type WhiteBalanceMode } from '../api/types'
+import { CAMERA_SLOTS, type CameraSlot, type GrainSize, type GrainStrength, type RecipeRequest, type WhiteBalanceMode } from '../api/types'
 import { DR_DATA, GRAIN_SIZE_DATA, ISO_MODE_DATA, STRENGTH_DATA, wbModeLabel } from '../utils/labels'
 
 const WB_MODES: WhiteBalanceMode[] = [
@@ -296,7 +296,13 @@ export default function RecipeFormPage() {
             <Select
               label="Modus"
               data={WB_MODES.map((m) => ({ value: m, label: wbModeLabel(m) }))}
-              {...form.getInputProps('whiteBalanceMode')}
+              value={form.values.whiteBalanceMode}
+              onChange={(v) => {
+                form.setFieldValue('whiteBalanceMode', v as WhiteBalanceMode)
+                if (v === 'COLOR_TEMP' && form.values.colorTempKelvin === null) {
+                  form.setFieldValue('colorTempKelvin', 5200)
+                }
+              }}
             />
             {form.values.whiteBalanceMode === 'COLOR_TEMP' && (
               <NumberInput
