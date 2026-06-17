@@ -54,7 +54,7 @@ export default function Layout() {
           <MantineNavLink
             component={NavLink}
             to="/compare"
-            label="Vergleichen"
+            label="Recipes vergleichen"
             onClick={close}
           />
         </Stack>
