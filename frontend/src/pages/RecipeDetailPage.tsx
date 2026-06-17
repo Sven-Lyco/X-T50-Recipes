@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import {
   Stack, Group, Title, Button, Badge, SimpleGrid,
-  Paper, Text, Image, Divider, ActionIcon, Box, AspectRatio, Modal, CloseButton, Card, Center,
+  Paper, Text, Image, Divider, ActionIcon, Box, AspectRatio, Modal, CloseButton, Card, Center, Anchor,
 } from '@mantine/core'
 import { IconStar, IconStarFilled } from '@tabler/icons-react'
 import { Carousel } from '@mantine/carousel'
@@ -10,6 +10,7 @@ import { notifications } from '@mantine/notifications'
 import '@mantine/carousel/styles.css'
 import { useRecipe, useDeleteRecipe, useToggleFavorite, useRecipes } from '../api/recipes'
 import { MONOCHROME_SIMS, filmSimLabel } from '../filmSimLabel'
+import { dynamicRangeLabel, grainSizeLabel, isoModeLabel, strengthLabel, wbModeLabel } from '../utils/labels'
 
 function ParamRow({ label, value }: { label: string; value: string | number | null | undefined }) {
   if (value == null) return null
@@ -106,41 +107,42 @@ export default function RecipeDetailPage() {
       <Paper withBorder p="md" radius="md">
         <Text size="xs" fw={700} c="dimmed" tt="uppercase" mb="md">Bildparameter</Text>
         <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing="md">
-          <ParamRow label="Dynamic Range" value={recipe.dynamicRange} />
-          <ParamRow label="Highlight Tone" value={signed(recipe.highlightTone)} />
-          <ParamRow label="Shadow Tone" value={signed(recipe.shadowTone)} />
-          <ParamRow label="Color" value={signed(recipe.color)} />
-          <ParamRow label="Sharpness" value={signed(recipe.sharpness)} />
-          <ParamRow label="Noise Reduction" value={signed(recipe.noiseReduction)} />
-          <ParamRow label="Clarity" value={signed(recipe.clarity)} />
+          <ParamRow label="Dynamikbereich" value={dynamicRangeLabel(recipe.dynamicRange)} />
+          {recipe.isoMode && <ParamRow label="ISO-Modus" value={isoModeLabel(recipe.isoMode)} />}
+          <ParamRow label="Spitzlichter" value={signed(recipe.highlightTone)} />
+          <ParamRow label="Schatten" value={signed(recipe.shadowTone)} />
+          <ParamRow label="Farbe" value={signed(recipe.color)} />
+          <ParamRow label="Schärfe" value={signed(recipe.sharpness)} />
+          <ParamRow label="Hohe ISO-NR" value={signed(recipe.noiseReduction)} />
+          <ParamRow label="Klarheit" value={signed(recipe.clarity)} />
         </SimpleGrid>
       </Paper>
 
       <Paper withBorder p="md" radius="md">
-        <Text size="xs" fw={700} c="dimmed" tt="uppercase" mb="md">Effekte</Text>
+        <Text size="xs" fw={700} c="dimmed" tt="uppercase" mb="md">Körnung & Effekte</Text>
         <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing="md">
-          <ParamRow label="Grain Strength" value={recipe.grainStrength} />
-          {recipe.grainSize && <ParamRow label="Grain Size" value={recipe.grainSize} />}
-          <ParamRow label="Color Chrome Effect" value={recipe.colorChromeEffect} />
-          <ParamRow label="Color Chrome FX Blue" value={recipe.colorChromeFxBlue} />
+          <ParamRow label="Körnungseffekt" value={strengthLabel(recipe.grainStrength)} />
+          {recipe.grainSize && <ParamRow label="Körnung Größe" value={grainSizeLabel(recipe.grainSize)} />}
+          <ParamRow label="Farbe Chrome-Effekt" value={strengthLabel(recipe.colorChromeEffect)} />
+          <ParamRow label="Farbe Chrom FX Blau" value={strengthLabel(recipe.colorChromeFxBlue)} />
         </SimpleGrid>
       </Paper>
 
       <Paper withBorder p="md" radius="md">
         <Text size="xs" fw={700} c="dimmed" tt="uppercase" mb="md">Weißabgleich</Text>
         <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing="md">
-          <ParamRow label="Modus" value={recipe.whiteBalanceMode.replace(/_/g, ' ')} />
-          <ParamRow label="Shift R / B" value={`${signed(recipe.wbShiftRed)} / ${signed(recipe.wbShiftBlue)}`} />
-          {recipe.colorTempKelvin && <ParamRow label="Kelvin" value={`${recipe.colorTempKelvin} K`} />}
+          <ParamRow label="Modus" value={wbModeLabel(recipe.whiteBalanceMode)} />
+          <ParamRow label="WA Verschieben R/B" value={`${signed(recipe.wbShiftRed)} / ${signed(recipe.wbShiftBlue)}`} />
+          {recipe.colorTempKelvin && <ParamRow label="Farbtemperatur" value={`${recipe.colorTempKelvin} K`} />}
         </SimpleGrid>
       </Paper>
 
       {MONOCHROME_SIMS.includes(recipe.filmSimulation) && (recipe.monochromeWarmCool != null || recipe.monochromeGreenMagenta != null) && (
         <Paper withBorder p="md" radius="md">
-          <Text size="xs" fw={700} c="dimmed" tt="uppercase" mb="md">Monochrome</Text>
+          <Text size="xs" fw={700} c="dimmed" tt="uppercase" mb="md">Monochrome Farbe</Text>
           <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing="md">
-            <ParamRow label="Warm / Cool" value={signed(recipe.monochromeWarmCool ?? 0)} />
-            <ParamRow label="Grün / Magenta" value={signed(recipe.monochromeGreenMagenta ?? 0)} />
+            <ParamRow label="Warm/Cool" value={signed(recipe.monochromeWarmCool ?? 0)} />
+            <ParamRow label="Grün/Magenta" value={signed(recipe.monochromeGreenMagenta ?? 0)} />
           </SimpleGrid>
         </Paper>
       )}
@@ -149,16 +151,25 @@ export default function RecipeDetailPage() {
         <Paper withBorder p="md" radius="md">
           <Text size="xs" fw={700} c="dimmed" tt="uppercase" mb="md">Notizen</Text>
           <Stack gap="sm">
-            {recipe.isoNote && <ParamRow label="ISO" value={recipe.isoNote} />}
+            {recipe.isoNote && <ParamRow label="ISO Details" value={recipe.isoNote} />}
             {recipe.expCompNote && <ParamRow label="Belichtung" value={recipe.expCompNote} />}
             {recipe.description && (
               <>
                 <Divider />
-                <Text size="sm">{recipe.description}</Text>
+                <Text size="sm" style={{ whiteSpace: 'pre-wrap' }}>{recipe.description}</Text>
               </>
             )}
             {recipe.inspirationSource && (
-              <Text size="sm" c="dimmed">Inspiration: {recipe.inspirationSource}</Text>
+              <Stack gap={2}>
+                <Text size="xs" c="dimmed">Referenz</Text>
+                {recipe.inspirationSource.startsWith('http://') || recipe.inspirationSource.startsWith('https://') ? (
+                  <Anchor href={recipe.inspirationSource} target="_blank" rel="noopener noreferrer" size="sm">
+                    {recipe.inspirationSource}
+                  </Anchor>
+                ) : (
+                  <Text size="sm">{recipe.inspirationSource}</Text>
+                )}
+              </Stack>
             )}
           </Stack>
         </Paper>
@@ -204,6 +215,11 @@ export default function RecipeDetailPage() {
                     )}
                   </Box>
                   <Text size="xs" fw={600} lineClamp={1} mb={4}>{r.name}</Text>
+                  {r.cameraSlot && (
+                    <Badge size="xs" color="dark" variant="filled" mb={4} w="fit-content">
+                      {r.cameraSlot}
+                    </Badge>
+                  )}
                   <Group gap={4}>
                     <Button
                       component={Link}

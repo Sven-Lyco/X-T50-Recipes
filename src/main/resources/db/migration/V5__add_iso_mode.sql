@@ -1,0 +1,1 @@
+ALTER TABLE recipe ADD COLUMN iso_mode VARCHAR(20);

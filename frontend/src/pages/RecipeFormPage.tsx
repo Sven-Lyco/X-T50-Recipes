@@ -18,10 +18,12 @@ import { CSS } from '@dnd-kit/utilities'
 import { IconGripVertical, IconMaximize, IconMinus, IconPlus, IconX } from '@tabler/icons-react'
 import { useRecipe, useCreateRecipe, useUpdateRecipe, useUploadImage, useDeleteImage, useReorderImages } from '../api/recipes'
 import { FILM_SIMS, MONOCHROME_SIMS, filmSimLabel } from '../filmSimLabel'
-import { CAMERA_SLOTS, type CameraSlot, type EffectStrength, type GrainSize, type GrainStrength, type RecipeRequest, type WhiteBalanceMode } from '../api/types'
+import { CAMERA_SLOTS, type CameraSlot, type GrainSize, type RecipeRequest, type WhiteBalanceMode } from '../api/types'
+import { DR_DATA, GRAIN_SIZE_DATA, ISO_MODE_DATA, STRENGTH_DATA, wbModeLabel } from '../utils/labels'
 
 const WB_MODES: WhiteBalanceMode[] = [
-  'AUTO', 'DAYLIGHT', 'SHADE', 'FLUORESCENT_1', 'FLUORESCENT_2', 'FLUORESCENT_3',
+  'AUTO_WHITE', 'AUTO', 'AUTO_AMBIENT',
+  'DAYLIGHT', 'SHADE', 'FLUORESCENT_1', 'FLUORESCENT_2', 'FLUORESCENT_3',
   'INCANDESCENT', 'UNDERWATER', 'COLOR_TEMP', 'CUSTOM_1', 'CUSTOM_2', 'CUSTOM_3',
 ]
 const SLOTS: (CameraSlot | 'BIBLIOTHEK')[] = ['BIBLIOTHEK', ...CAMERA_SLOTS]
@@ -34,7 +36,7 @@ const DEFAULTS: RecipeRequest = {
   colorChromeEffect: 'OFF', colorChromeFxBlue: 'OFF',
   whiteBalanceMode: 'AUTO', wbShiftRed: 0, wbShiftBlue: 0, colorTempKelvin: null,
   monochromeWarmCool: null, monochromeGreenMagenta: null,
-  isoNote: null, expCompNote: null, description: null, inspirationSource: null,
+  isoMode: null, isoNote: null, expCompNote: null, description: null, inspirationSource: null,
   tags: [], cameraSlot: null,
 }
 
@@ -215,18 +217,18 @@ export default function RecipeFormPage() {
         <Title order={2}>{isEdit ? 'Recipe bearbeiten' : 'Neues Recipe'}</Title>
 
         <Paper withBorder p="md" radius="md">
-          <SectionTitle>Basics</SectionTitle>
+          <SectionTitle>Grundeinstellungen</SectionTitle>
           <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
             <TextInput label="Name" required {...form.getInputProps('name')} />
             <Select
-              label="Film Simulation"
+              label="Filmsimulation"
               data={FILM_SIMS.map((fs) => ({ value: fs, label: filmSimLabel(fs) }))}
               {...form.getInputProps('filmSimulation')}
             />
             <Stack gap={4}>
-              <Text size="sm">Dynamic Range</Text>
+              <Text size="sm">Dynamikbereich</Text>
               <SegmentedControl
-                data={['DR100', 'DR200', 'DR400']}
+                data={DR_DATA}
                 {...form.getInputProps('dynamicRange')}
               />
             </Stack>
@@ -234,48 +236,48 @@ export default function RecipeFormPage() {
         </Paper>
 
         <Paper withBorder p="md" radius="md">
-          <SectionTitle>Bildparameter</SectionTitle>
+          <SectionTitle>Tonkurve & Bildparameter</SectionTitle>
           <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xl">
-            <NumberStepperField label="Highlight Tone" min={-2} max={4} step={0.5} value={form.values.highlightTone} onChange={(v) => form.setFieldValue('highlightTone', v)} />
-            <NumberStepperField label="Shadow Tone" min={-2} max={4} step={0.5} value={form.values.shadowTone} onChange={(v) => form.setFieldValue('shadowTone', v)} />
-            <NumberStepperField label="Color" min={-4} max={4} value={form.values.color} onChange={(v) => form.setFieldValue('color', v)} />
-            <NumberStepperField label="Sharpness" min={-4} max={4} value={form.values.sharpness} onChange={(v) => form.setFieldValue('sharpness', v)} />
-            <NumberStepperField label="Noise Reduction" min={-4} max={4} value={form.values.noiseReduction} onChange={(v) => form.setFieldValue('noiseReduction', v)} />
-            <NumberStepperField label="Clarity" min={-5} max={5} value={form.values.clarity} onChange={(v) => form.setFieldValue('clarity', v)} />
+            <NumberStepperField label="Spitzlichter" min={-2} max={4} step={0.5} value={form.values.highlightTone} onChange={(v) => form.setFieldValue('highlightTone', v)} />
+            <NumberStepperField label="Schatten" min={-2} max={4} step={0.5} value={form.values.shadowTone} onChange={(v) => form.setFieldValue('shadowTone', v)} />
+            <NumberStepperField label="Farbe" min={-4} max={4} value={form.values.color} onChange={(v) => form.setFieldValue('color', v)} />
+            <NumberStepperField label="Schärfe" min={-4} max={4} value={form.values.sharpness} onChange={(v) => form.setFieldValue('sharpness', v)} />
+            <NumberStepperField label="Hohe ISO-NR" min={-4} max={4} value={form.values.noiseReduction} onChange={(v) => form.setFieldValue('noiseReduction', v)} />
+            <NumberStepperField label="Klarheit" min={-5} max={5} value={form.values.clarity} onChange={(v) => form.setFieldValue('clarity', v)} />
           </SimpleGrid>
         </Paper>
 
         <Paper withBorder p="md" radius="md">
-          <SectionTitle>Effekte</SectionTitle>
+          <SectionTitle>Körnung & Effekte</SectionTitle>
           <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
             <Stack gap={4}>
-              <Text size="sm">Grain Strength</Text>
+              <Text size="sm">Körnungseffekt</Text>
               <SegmentedControl
-                data={['OFF', 'WEAK', 'STRONG'] as GrainStrength[]}
+                data={STRENGTH_DATA}
                 {...form.getInputProps('grainStrength')}
               />
             </Stack>
             {form.values.grainStrength !== 'OFF' && (
               <Stack gap={4}>
-                <Text size="sm">Grain Size</Text>
+                <Text size="sm">Körnung Größe</Text>
                 <SegmentedControl
-                  data={['SMALL', 'LARGE'] as GrainSize[]}
+                  data={GRAIN_SIZE_DATA}
                   value={form.values.grainSize ?? 'SMALL'}
                   onChange={(v) => form.setFieldValue('grainSize', v as GrainSize)}
                 />
               </Stack>
             )}
             <Stack gap={4}>
-              <Text size="sm">Color Chrome Effect</Text>
+              <Text size="sm">Farbe Chrome-Effekt</Text>
               <SegmentedControl
-                data={['OFF', 'WEAK', 'STRONG'] as EffectStrength[]}
+                data={STRENGTH_DATA}
                 {...form.getInputProps('colorChromeEffect')}
               />
             </Stack>
             <Stack gap={4}>
-              <Text size="sm">Color Chrome FX Blue</Text>
+              <Text size="sm">Farbe Chrom FX Blau</Text>
               <SegmentedControl
-                data={['OFF', 'WEAK', 'STRONG'] as EffectStrength[]}
+                data={STRENGTH_DATA}
                 {...form.getInputProps('colorChromeFxBlue')}
               />
             </Stack>
@@ -287,18 +289,18 @@ export default function RecipeFormPage() {
           <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xl">
             <Select
               label="Modus"
-              data={WB_MODES.map((m) => ({ value: m, label: m.replace(/_/g, ' ') }))}
+              data={WB_MODES.map((m) => ({ value: m, label: wbModeLabel(m) }))}
               {...form.getInputProps('whiteBalanceMode')}
             />
             {form.values.whiteBalanceMode === 'COLOR_TEMP' && (
               <NumberInput
-                label="Kelvin"
+                label="Farbtemperatur (K)"
                 min={2500} max={10000} step={100}
                 {...form.getInputProps('colorTempKelvin')}
               />
             )}
-            <NumberStepperField label="WB Shift Rot" min={-9} max={9} value={form.values.wbShiftRed} onChange={(v) => form.setFieldValue('wbShiftRed', v)} />
-            <NumberStepperField label="WB Shift Blau" min={-9} max={9} value={form.values.wbShiftBlue} onChange={(v) => form.setFieldValue('wbShiftBlue', v)} />
+            <NumberStepperField label="WA Verschieben R" min={-9} max={9} value={form.values.wbShiftRed} onChange={(v) => form.setFieldValue('wbShiftRed', v)} />
+            <NumberStepperField label="WA Verschieben B" min={-9} max={9} value={form.values.wbShiftBlue} onChange={(v) => form.setFieldValue('wbShiftBlue', v)} />
           </SimpleGrid>
         </Paper>
 
@@ -316,11 +318,19 @@ export default function RecipeFormPage() {
           <SectionTitle>Notizen & Tags</SectionTitle>
           <Stack gap="md">
             <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-              <TextInput label="ISO-Hinweis" placeholder="z.B. ab ISO 800 für DR400" value={form.values.isoNote ?? ''} onChange={(e) => form.setFieldValue('isoNote', e.target.value || null)} />
+              <Select
+                label="ISO-Modus"
+                placeholder="Nicht angegeben"
+                clearable
+                data={ISO_MODE_DATA}
+                value={form.values.isoMode}
+                onChange={(v) => form.setFieldValue('isoMode', v)}
+              />
               <TextInput label="Belichtung" placeholder="z.B. 0 bis -1/3" value={form.values.expCompNote ?? ''} onChange={(e) => form.setFieldValue('expCompNote', e.target.value || null)} />
+              <TextInput label="ISO Details" placeholder="z.B. max ISO 6400, 1/125 min." value={form.values.isoNote ?? ''} onChange={(e) => form.setFieldValue('isoNote', e.target.value || null)} />
             </SimpleGrid>
             <Textarea label="Beschreibung" autosize minRows={3} value={form.values.description ?? ''} onChange={(e) => form.setFieldValue('description', e.target.value || null)} />
-            <TextInput label="Inspiration" value={form.values.inspirationSource ?? ''} onChange={(e) => form.setFieldValue('inspirationSource', e.target.value || null)} />
+            <TextInput label="Referenz" placeholder="URL oder Freitext" value={form.values.inspirationSource ?? ''} onChange={(e) => form.setFieldValue('inspirationSource', e.target.value || null)} />
             <TagsInput
               label="Tags"
               placeholder="Tag eingeben und Enter drücken"

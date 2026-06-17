@@ -5,12 +5,13 @@ export type FilmSimulation =
   | 'MONOCHROME' | 'MONOCHROME_YE' | 'MONOCHROME_R' | 'MONOCHROME_G'
   | 'SEPIA' | 'NOSTALGIC_NEG' | 'ETERNA' | 'ETERNA_BLEACH_BYPASS'
 
-export type DynamicRange = 'DR100' | 'DR200' | 'DR400'
+export type DynamicRange = 'DR_AUTO' | 'DR100' | 'DR200' | 'DR400'
 export type GrainStrength = 'OFF' | 'WEAK' | 'STRONG'
 export type GrainSize = 'SMALL' | 'LARGE'
 export type EffectStrength = 'OFF' | 'WEAK' | 'STRONG'
 export type WhiteBalanceMode =
-  | 'AUTO' | 'DAYLIGHT' | 'SHADE' | 'FLUORESCENT_1' | 'FLUORESCENT_2'
+  | 'AUTO_WHITE' | 'AUTO' | 'AUTO_AMBIENT'
+  | 'DAYLIGHT' | 'SHADE' | 'FLUORESCENT_1' | 'FLUORESCENT_2'
   | 'FLUORESCENT_3' | 'INCANDESCENT' | 'UNDERWATER' | 'COLOR_TEMP'
   | 'CUSTOM_1' | 'CUSTOM_2' | 'CUSTOM_3'
 export type CameraSlot = 'C1' | 'C2' | 'C3' | 'C4' | 'C5' | 'C6' | 'C7'
@@ -54,6 +55,7 @@ export interface Recipe {
   clarity: number
   monochromeWarmCool: number | null
   monochromeGreenMagenta: number | null
+  isoMode: string | null
   isoNote: string | null
   expCompNote: string | null
   description: string | null
@@ -86,6 +88,7 @@ export interface RecipeRequest {
   clarity: number
   monochromeWarmCool: number | null
   monochromeGreenMagenta: number | null
+  isoMode: string | null
   isoNote: string | null
   expCompNote: string | null
   description: string | null

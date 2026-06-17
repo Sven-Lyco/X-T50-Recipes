@@ -119,6 +119,7 @@ public class RecipeService {
         recipe.setClarity(req.clarity() != null ? req.clarity() : 0);
         recipe.setMonochromeWarmCool(req.monochromeWarmCool());
         recipe.setMonochromeGreenMagenta(req.monochromeGreenMagenta());
+        recipe.setIsoMode(req.isoMode());
         recipe.setIsoNote(req.isoNote());
         recipe.setExpCompNote(req.expCompNote());
         recipe.setDescription(req.description());

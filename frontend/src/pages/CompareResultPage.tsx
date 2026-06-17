@@ -6,6 +6,7 @@ import {
 import { useRecipesBulk } from '../api/recipes'
 import { computeSimilarity, similarityColor } from '../utils/recipeSimilarity'
 import { filmSimLabel, MONOCHROME_SIMS } from '../filmSimLabel'
+import { dynamicRangeLabel, grainSizeLabel, isoModeLabel, strengthLabel, wbModeLabel } from '../utils/labels'
 import type { Recipe } from '../api/types'
 
 function signed(n: number) {
@@ -20,33 +21,34 @@ interface ParamRow {
 }
 
 const ROWS: ParamRow[] = [
-  { section: 'Grundeinstellungen', label: 'Film Simulation', getValue: (r) => filmSimLabel(r.filmSimulation) },
-  { section: 'Grundeinstellungen', label: 'Dynamic Range', getValue: (r) => r.dynamicRange },
-  { section: 'Bildparameter', label: 'Highlight Tone', getValue: (r) => signed(r.highlightTone) },
-  { section: 'Bildparameter', label: 'Shadow Tone', getValue: (r) => signed(r.shadowTone) },
-  { section: 'Bildparameter', label: 'Color', getValue: (r) => signed(r.color) },
-  { section: 'Bildparameter', label: 'Sharpness', getValue: (r) => signed(r.sharpness) },
-  { section: 'Bildparameter', label: 'Noise Reduction', getValue: (r) => signed(r.noiseReduction) },
-  { section: 'Bildparameter', label: 'Clarity', getValue: (r) => signed(r.clarity) },
-  { section: 'Effekte', label: 'Grain Strength', getValue: (r) => r.grainStrength },
-  { section: 'Effekte', label: 'Grain Size', getValue: (r) => r.grainSize ?? '—' },
-  { section: 'Effekte', label: 'Color Chrome Effect', getValue: (r) => r.colorChromeEffect },
-  { section: 'Effekte', label: 'Color Chrome FX Blue', getValue: (r) => r.colorChromeFxBlue },
-  { section: 'Weißabgleich', label: 'Modus', getValue: (r) => r.whiteBalanceMode.replace(/_/g, ' ') },
-  { section: 'Weißabgleich', label: 'WB Shift R', getValue: (r) => signed(r.wbShiftRed) },
-  { section: 'Weißabgleich', label: 'WB Shift B', getValue: (r) => signed(r.wbShiftBlue) },
+  { section: 'Grundeinstellungen', label: 'Filmsimulation', getValue: (r) => filmSimLabel(r.filmSimulation) },
+  { section: 'Grundeinstellungen', label: 'Dynamikbereich', getValue: (r) => dynamicRangeLabel(r.dynamicRange) },
+  { section: 'Grundeinstellungen', label: 'ISO-Modus', getValue: (r) => r.isoMode ? isoModeLabel(r.isoMode) : '—', show: (rs) => rs.some((r) => r.isoMode != null) },
+  { section: 'Tonkurve & Bildparameter', label: 'Spitzlichter', getValue: (r) => signed(r.highlightTone) },
+  { section: 'Tonkurve & Bildparameter', label: 'Schatten', getValue: (r) => signed(r.shadowTone) },
+  { section: 'Tonkurve & Bildparameter', label: 'Farbe', getValue: (r) => signed(r.color) },
+  { section: 'Tonkurve & Bildparameter', label: 'Schärfe', getValue: (r) => signed(r.sharpness) },
+  { section: 'Tonkurve & Bildparameter', label: 'Hohe ISO-NR', getValue: (r) => signed(r.noiseReduction) },
+  { section: 'Tonkurve & Bildparameter', label: 'Klarheit', getValue: (r) => signed(r.clarity) },
+  { section: 'Körnung & Effekte', label: 'Körnungseffekt', getValue: (r) => strengthLabel(r.grainStrength) },
+  { section: 'Körnung & Effekte', label: 'Körnung Größe', getValue: (r) => r.grainSize ? grainSizeLabel(r.grainSize) : '—' },
+  { section: 'Körnung & Effekte', label: 'Farbe Chrome-Effekt', getValue: (r) => strengthLabel(r.colorChromeEffect) },
+  { section: 'Körnung & Effekte', label: 'Farbe Chrom FX Blau', getValue: (r) => strengthLabel(r.colorChromeFxBlue) },
+  { section: 'Weißabgleich', label: 'Modus', getValue: (r) => wbModeLabel(r.whiteBalanceMode) },
+  { section: 'Weißabgleich', label: 'WA Verschieben R', getValue: (r) => signed(r.wbShiftRed) },
+  { section: 'Weißabgleich', label: 'WA Verschieben B', getValue: (r) => signed(r.wbShiftBlue) },
   {
-    section: 'Weißabgleich', label: 'Kelvin',
+    section: 'Weißabgleich', label: 'Farbtemperatur',
     getValue: (r) => r.colorTempKelvin ? `${r.colorTempKelvin} K` : '—',
     show: (rs) => rs.some((r) => r.whiteBalanceMode === 'COLOR_TEMP'),
   },
   {
-    section: 'Monochrome', label: 'Warm / Cool',
+    section: 'Monochrome Farbe', label: 'Warm/Cool',
     getValue: (r) => r.monochromeWarmCool != null ? signed(r.monochromeWarmCool) : '—',
     show: (rs) => rs.some((r) => MONOCHROME_SIMS.includes(r.filmSimulation)),
   },
   {
-    section: 'Monochrome', label: 'Grün / Magenta',
+    section: 'Monochrome Farbe', label: 'Grün/Magenta',
     getValue: (r) => r.monochromeGreenMagenta != null ? signed(r.monochromeGreenMagenta) : '—',
     show: (rs) => rs.some((r) => MONOCHROME_SIMS.includes(r.filmSimulation)),
   },

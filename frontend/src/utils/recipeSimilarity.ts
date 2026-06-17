@@ -1,6 +1,6 @@
 import type { Recipe } from '../api/types'
 
-const DR_VALS = ['DR100', 'DR200', 'DR400'] as const
+const DR_VALS = ['DR_AUTO', 'DR100', 'DR200', 'DR400'] as const
 const STRENGTH_3 = ['OFF', 'WEAK', 'STRONG'] as const
 
 function ordDiff(a: string, b: string, vals: readonly string[]): number {

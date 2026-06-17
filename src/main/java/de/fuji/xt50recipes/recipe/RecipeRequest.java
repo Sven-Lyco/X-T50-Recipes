@@ -25,6 +25,7 @@ public record RecipeRequest(
         Integer clarity,
         Integer monochromeWarmCool,
         Integer monochromeGreenMagenta,
+        String isoMode,
         String isoNote,
         String expCompNote,
         String description,

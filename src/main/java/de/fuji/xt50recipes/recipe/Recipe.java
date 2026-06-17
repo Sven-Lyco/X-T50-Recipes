@@ -84,6 +84,9 @@ public class Recipe {
     @Column(name = "monochrome_green_magenta")
     private Integer monochromeGreenMagenta;
 
+    @Column(name = "iso_mode", length = 20)
+    private String isoMode;
+
     @Column(name = "iso_note", length = 255)
     private String isoNote;
 
