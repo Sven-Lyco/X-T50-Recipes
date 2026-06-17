@@ -254,7 +254,13 @@ export default function RecipeFormPage() {
               <Text size="sm">Körnungseffekt</Text>
               <SegmentedControl
                 data={STRENGTH_DATA}
-                {...form.getInputProps('grainStrength')}
+                value={form.values.grainStrength}
+                onChange={(v) => {
+                  form.setFieldValue('grainStrength', v as GrainStrength)
+                  if (v !== 'OFF' && form.values.grainSize === null) {
+                    form.setFieldValue('grainSize', 'SMALL')
+                  }
+                }}
               />
             </Stack>
             {form.values.grainStrength !== 'OFF' && (
