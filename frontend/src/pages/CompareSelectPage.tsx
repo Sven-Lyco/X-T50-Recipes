@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import {
-  Stack, Group, Title, Text, Button, Select, TextInput,
+  Stack, Group, Title, Text, Button, Select,
   SimpleGrid, Card, Image, Box, Center, Badge, Checkbox, Loader,
 } from '@mantine/core'
 import { useRecipes } from '../api/recipes'
@@ -18,8 +18,13 @@ export default function CompareSelectPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>(initialIds)
 
   const [filmSim, setFilmSim] = useState<FilmSimulation | null>(null)
-  const [tag, setTag] = useState('')
-  const { data: recipes, isLoading } = useRecipes(filmSim ?? undefined, tag || undefined)
+  const [tag, setTag] = useState<string | null>(null)
+  const { data: recipes, isLoading } = useRecipes(filmSim ?? undefined, tag ?? undefined)
+  const { data: allRecipes } = useRecipes()
+  const tagOptions = useMemo(
+    () => [...new Set((allRecipes ?? []).flatMap((r) => r.tags).map((t) => t.toLowerCase()))].sort(),
+    [allRecipes]
+  )
 
   function toggleSelect(id: string) {
     setSelectedIds((prev) => {
@@ -53,10 +58,13 @@ export default function CompareSelectPage() {
           placeholder="Alle Film Sims"
           clearable
         />
-        <TextInput
-          placeholder="Tag filtern…"
+        <Select
+          data={tagOptions}
           value={tag}
-          onChange={(e) => setTag(e.target.value)}
+          onChange={(v) => setTag(v)}
+          placeholder="Tag filtern…"
+          clearable
+          searchable
           flex={1}
           miw={120}
         />

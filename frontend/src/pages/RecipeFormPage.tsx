@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   Stack, Title, Paper, SimpleGrid, TextInput, Textarea,
@@ -16,7 +16,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { IconGripVertical, IconMaximize, IconMinus, IconPlus, IconX } from '@tabler/icons-react'
-import { useRecipe, useCreateRecipe, useUpdateRecipe, useUploadImage, useDeleteImage, useReorderImages } from '../api/recipes'
+import { useRecipe, useRecipes, useCreateRecipe, useUpdateRecipe, useUploadImage, useDeleteImage, useReorderImages } from '../api/recipes'
 import { FILM_SIMS, MONOCHROME_SIMS, filmSimLabel } from '../filmSimLabel'
 import { CAMERA_SLOTS, type CameraSlot, type GrainSize, type GrainStrength, type RecipeRequest, type WhiteBalanceMode } from '../api/types'
 import { DR_DATA, GRAIN_SIZE_DATA, ISO_MODE_DATA, STRENGTH_DATA, wbModeLabel } from '../utils/labels'
@@ -141,6 +141,11 @@ export default function RecipeFormPage() {
   const { id } = useParams<{ id?: string }>()
   const isEdit = !!id
   const { data: existing } = useRecipe(id)
+  const { data: allRecipes } = useRecipes()
+  const existingTags = useMemo(
+    () => [...new Set((allRecipes ?? []).flatMap((r) => r.tags).map((t) => t.toLowerCase()))].sort(),
+    [allRecipes]
+  )
   const createRecipe = useCreateRecipe()
   const updateRecipe = useUpdateRecipe(id ?? '')
   const uploadImage = useUploadImage(id ?? '')
@@ -347,7 +352,8 @@ export default function RecipeFormPage() {
               label="Tags"
               placeholder="Tag eingeben und Enter drücken"
               value={form.values.tags}
-              onChange={(v) => form.setFieldValue('tags', v)}
+              onChange={(v) => form.setFieldValue('tags', v.map((t) => t.toLowerCase()))}
+              data={existingTags}
             />
           </Stack>
         </Paper>

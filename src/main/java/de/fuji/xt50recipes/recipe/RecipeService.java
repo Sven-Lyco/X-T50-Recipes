@@ -124,7 +124,9 @@ public class RecipeService {
         recipe.setExpCompNote(req.expCompNote());
         recipe.setDescription(req.description());
         recipe.setInspirationSource(req.inspirationSource());
-        recipe.setTags(req.tags() != null ? req.tags().toArray(new String[0]) : new String[0]);
+        recipe.setTags(req.tags() != null
+                ? req.tags().stream().map(String::toLowerCase).toArray(String[]::new)
+                : new String[0]);
         recipe.setCameraSlot(req.cameraSlot());
     }
 }

@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  Group, Title, Button, Select, TextInput,
+  Group, Title, Button, Select,
   SimpleGrid, Card, Image, Text, Badge, Stack, Box, Center, ActionIcon, Loader,
 } from '@mantine/core'
 import { IconStar, IconStarFilled } from '@tabler/icons-react'
@@ -13,9 +13,14 @@ const FILM_SIM_OPTIONS = FILM_SIMS.map((fs) => ({ value: fs, label: filmSimLabel
 
 export default function LibraryPage() {
   const [filmSim, setFilmSim] = useState<FilmSimulation | null>(null)
-  const [tag, setTag] = useState('')
+  const [tag, setTag] = useState<string | null>(null)
   const [onlyFavorites, setOnlyFavorites] = useState(false)
-  const { data: recipes, isLoading } = useRecipes(filmSim ?? undefined, tag || undefined, onlyFavorites)
+  const { data: recipes, isLoading } = useRecipes(filmSim ?? undefined, tag ?? undefined, onlyFavorites)
+  const { data: allRecipes } = useRecipes()
+  const tagOptions = useMemo(
+    () => [...new Set((allRecipes ?? []).flatMap((r) => r.tags).map((t) => t.toLowerCase()))].sort(),
+    [allRecipes]
+  )
   const toggleFavorite = useToggleFavorite()
 
   return (
@@ -34,10 +39,13 @@ export default function LibraryPage() {
           placeholder="Alle Film Sims"
           clearable
         />
-        <TextInput
-          placeholder="Tag filtern…"
+        <Select
+          data={tagOptions}
           value={tag}
-          onChange={(e) => setTag(e.target.value)}
+          onChange={(v) => setTag(v)}
+          placeholder="Tag filtern…"
+          clearable
+          searchable
           flex={1}
           miw={120}
         />
