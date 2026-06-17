@@ -2,13 +2,13 @@ import { useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import {
   Stack, Group, Title, Button, Badge, SimpleGrid,
-  Paper, Text, Image, Divider, ActionIcon, Box, AspectRatio, Modal, CloseButton,
+  Paper, Text, Image, Divider, ActionIcon, Box, AspectRatio, Modal, CloseButton, Card, Center,
 } from '@mantine/core'
 import { IconStar, IconStarFilled } from '@tabler/icons-react'
 import { Carousel } from '@mantine/carousel'
 import { notifications } from '@mantine/notifications'
 import '@mantine/carousel/styles.css'
-import { useRecipe, useDeleteRecipe, useToggleFavorite } from '../api/recipes'
+import { useRecipe, useDeleteRecipe, useToggleFavorite, useRecipes } from '../api/recipes'
 import { MONOCHROME_SIMS, filmSimLabel } from '../filmSimLabel'
 
 function ParamRow({ label, value }: { label: string; value: string | number | null | undefined }) {
@@ -28,6 +28,7 @@ function signed(n: number) {
 export default function RecipeDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { data: recipe, isLoading } = useRecipe(id!)
+  const { data: allRecipes } = useRecipes()
   const deleteRecipe = useDeleteRecipe()
   const toggleFavorite = useToggleFavorite()
   const navigate = useNavigate()
@@ -168,6 +169,68 @@ export default function RecipeDetailPage() {
           {recipe.tags.map((t) => <Badge key={t} variant="light" color="gray">{t}</Badge>)}
         </Group>
       )}
+
+      {(() => {
+        const similar = allRecipes?.filter(
+          (r) => r.id !== recipe.id && r.filmSimulation === recipe.filmSimulation
+        ).slice(0, 3) ?? []
+        if (similar.length === 0) return null
+        return (
+          <Paper withBorder p="md" radius="md">
+            <Group justify="space-between" mb="md">
+              <Text size="xs" fw={700} c="dimmed" tt="uppercase">
+                Ähnliche Recipes – {filmSimLabel(recipe.filmSimulation)}
+              </Text>
+              <Button
+                component={Link}
+                to={`/compare?ids=${recipe.id}`}
+                variant="subtle"
+                size="xs"
+                color="gray"
+              >
+                Alle vergleichen
+              </Button>
+            </Group>
+            <SimpleGrid cols={{ base: 1, xs: 3 }} spacing="sm">
+              {similar.map((r) => (
+                <Card key={r.id} withBorder radius="sm" padding="xs" style={{ textDecoration: 'none' }}>
+                  <Box h={80} bg="gray.1" mb="xs" style={{ borderRadius: 4, overflow: 'hidden' }}>
+                    {r.previewImageFilename ? (
+                      <Image src={`/images/${r.previewImageFilename}`} h={80} fit="cover" alt={r.name} />
+                    ) : (
+                      <Center h={80}>
+                        <Text size="xs" c="dimmed">Kein Bild</Text>
+                      </Center>
+                    )}
+                  </Box>
+                  <Text size="xs" fw={600} lineClamp={1} mb={4}>{r.name}</Text>
+                  <Group gap={4}>
+                    <Button
+                      component={Link}
+                      to={`/recipes/${r.id}`}
+                      variant="subtle"
+                      size="xs"
+                      color="gray"
+                      px={4}
+                    >
+                      Öffnen
+                    </Button>
+                    <Button
+                      component={Link}
+                      to={`/compare/result?ids=${recipe.id},${r.id}`}
+                      variant="subtle"
+                      size="xs"
+                      px={4}
+                    >
+                      Vergleichen
+                    </Button>
+                  </Group>
+                </Card>
+              ))}
+            </SimpleGrid>
+          </Paper>
+        )
+      })()}
 
       <Divider />
 

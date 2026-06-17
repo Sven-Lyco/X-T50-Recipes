@@ -51,6 +51,12 @@ export default function Layout() {
             label="Referenz"
             onClick={close}
           />
+          <MantineNavLink
+            component={NavLink}
+            to="/compare"
+            label="Vergleichen"
+            onClick={close}
+          />
         </Stack>
         <Button variant="subtle" color="gray" onClick={handleLogout} mt="auto">
           Abmelden

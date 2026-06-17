@@ -7,7 +7,8 @@ client.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('loggedIn')
-      window.location.replace('/')
+      window.location.replace('/login')
+      return new Promise(() => {})
     }
     return Promise.reject(error)
   }

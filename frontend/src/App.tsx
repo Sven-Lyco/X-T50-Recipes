@@ -7,6 +7,8 @@ import RecipeDetailPage from './pages/RecipeDetailPage'
 import RecipeFormPage from './pages/RecipeFormPage'
 import CameraDashboardPage from './pages/CameraDashboardPage'
 import ReferencePage from './pages/ReferencePage'
+import CompareSelectPage from './pages/CompareSelectPage'
+import CompareResultPage from './pages/CompareResultPage'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   return isLoggedIn() ? <>{children}</> : <Navigate to="/login" replace />
@@ -30,6 +32,8 @@ export default function App() {
         <Route path="recipes/:id/edit" element={<RecipeFormPage />} />
         <Route path="camera" element={<CameraDashboardPage />} />
         <Route path="reference" element={<ReferencePage />} />
+        <Route path="compare" element={<CompareSelectPage />} />
+        <Route path="compare/result" element={<CompareResultPage />} />
       </Route>
     </Routes>
   )

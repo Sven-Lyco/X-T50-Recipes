@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query'
 import client from './client'
 import type { Recipe, RecipeListItem, RecipeRequest, CameraSlot } from './types'
 
@@ -102,6 +102,21 @@ export function useDeleteImage(recipeId: string) {
     mutationFn: (imageId: string) => client.delete(`/recipes/${recipeId}/images/${imageId}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['recipes', recipeId] }),
   })
+}
+
+export function useRecipesBulk(ids: string[]) {
+  const results = useQueries({
+    queries: ids.map((id) => ({
+      queryKey: ['recipes', id] as const,
+      queryFn: () => client.get<Recipe>(`/recipes/${id}`).then((r) => r.data),
+      enabled: ids.length > 0,
+    })),
+  })
+  const isLoading = results.some((r) => r.isLoading)
+  const data = !isLoading && results.every((r) => r.data)
+    ? results.map((r) => r.data as Recipe)
+    : undefined
+  return { data, isLoading }
 }
 
 export function useReorderImages(recipeId: string) {
