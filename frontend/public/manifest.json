@@ -1,0 +1,18 @@
+{
+  "name": "X-T50 Recipes",
+  "short_name": "X-T50",
+  "description": "Fujifilm X-T50 Film Simulation Recipes",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#1a1a1a",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
