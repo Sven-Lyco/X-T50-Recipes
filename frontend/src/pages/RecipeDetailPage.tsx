@@ -96,6 +96,7 @@ export default function RecipeDetailPage() {
             <Group gap="xs">
               <Badge color="dark" variant="light">{filmSimLabel(recipe.filmSimulation)}</Badge>
               {recipe.cameraSlot && <Badge color="dark" variant="filled">{recipe.cameraSlot}</Badge>}
+              {recipe.aiGenerated && <Badge color="violet" variant="light">KI-Generiert</Badge>}
             </Group>
           </Stack>
         </Group>

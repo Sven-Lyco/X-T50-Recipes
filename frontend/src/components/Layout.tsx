@@ -1,8 +1,9 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   AppShell, Burger, Group, NavLink as MantineNavLink,
-  Text, Button, Stack,
+  Text, Button, Stack, ThemeIcon,
 } from '@mantine/core'
+import { IconWand } from '@tabler/icons-react'
 import { useDisclosure } from '@mantine/hooks'
 import { logout } from '../api/auth'
 
@@ -55,6 +56,13 @@ export default function Layout() {
             component={NavLink}
             to="/compare"
             label="Recipes vergleichen"
+            onClick={close}
+          />
+          <MantineNavLink
+            component={NavLink}
+            to="/generate"
+            label="Recipe generieren"
+            leftSection={<ThemeIcon size="sm" variant="light" color="violet"><IconWand size={14} /></ThemeIcon>}
             onClick={close}
           />
         </Stack>

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import {
   Stack, Title, Paper, SimpleGrid, TextInput, Textarea,
   Select, SegmentedControl, NumberInput, TagsInput,
@@ -37,7 +37,7 @@ const DEFAULTS: RecipeRequest = {
   whiteBalanceMode: 'AUTO', wbShiftRed: 0, wbShiftBlue: 0, colorTempKelvin: null,
   monochromeWarmCool: null, monochromeGreenMagenta: null,
   isoMode: null, isoNote: null, expCompNote: null, description: null, inspirationSource: null,
-  tags: [], cameraSlot: null,
+  tags: [], cameraSlot: null, aiGenerated: false,
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
@@ -140,6 +140,8 @@ function SortableImageTile({ img, onDelete, onFullscreen }: SortableImageTilePro
 export default function RecipeFormPage() {
   const { id } = useParams<{ id?: string }>()
   const isEdit = !!id
+  const location = useLocation()
+  const suggestion = location.state?.suggestion as Partial<RecipeRequest> | undefined
   const { data: existing } = useRecipe(id)
   const { data: allRecipes } = useRecipes()
   const existingTags = useMemo(
@@ -171,6 +173,8 @@ export default function RecipeFormPage() {
       setImageOrder(
         [...existing.images].sort((a, b) => a.sortOrder - b.sortOrder).map((i) => i.id)
       )
+    } else if (!isEdit && suggestion) {
+      form.initialize({ ...DEFAULTS, ...suggestion, aiGenerated: true, slotSelection: 'BIBLIOTHEK' })
     }
   // form.initialize ist eine stabile Referenz (Mantine useForm-Invariante)
   // eslint-disable-next-line react-hooks/exhaustive-deps

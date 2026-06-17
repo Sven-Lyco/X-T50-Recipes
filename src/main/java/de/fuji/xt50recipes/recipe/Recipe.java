@@ -109,6 +109,9 @@ public class Recipe {
     @Column(name = "is_favorite", nullable = false)
     private boolean favorite = false;
 
+    @Column(name = "ai_generated", nullable = false)
+    private boolean aiGenerated = false;
+
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("sortOrder ASC")
     private List<RecipeImage> images = new ArrayList<>();

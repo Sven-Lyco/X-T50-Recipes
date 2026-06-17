@@ -1,12 +1,14 @@
 package de.fuji.xt50recipes.recipe;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -39,12 +41,16 @@ public class RecipeService {
     }
 
     public RecipeResponse create(RecipeRequest request) {
+        log.info("Creating recipe: name={}, filmSimulation={}", request.name(), request.filmSimulation());
         Recipe recipe = new Recipe();
         applyRequest(recipe, request);
-        return RecipeResponse.from(recipeRepository.save(recipe));
+        RecipeResponse response = RecipeResponse.from(recipeRepository.save(recipe));
+        log.info("Recipe created: id={}", response.id());
+        return response;
     }
 
     public RecipeResponse update(UUID id, RecipeRequest request) {
+        log.info("Updating recipe: id={}", id);
         Recipe recipe = getOrThrow(id);
         freeSlotIfOccupiedByOther(request.cameraSlot(), id);
         applyRequest(recipe, request);
@@ -52,6 +58,7 @@ public class RecipeService {
     }
 
     public void delete(UUID id) {
+        log.info("Deleting recipe: id={}", id);
         recipeRepository.delete(getOrThrow(id));
     }
 
@@ -64,11 +71,13 @@ public class RecipeService {
     }
 
     public RecipeResponse assignCameraSlot(UUID id, CameraSlot slot, boolean force) {
+        log.info("Assigning camera slot: id={}, slot={}, force={}", id, slot, force);
         Recipe recipe = getOrThrow(id);
         if (slot != null) {
             recipeRepository.findByCameraSlot(slot).ifPresent(occupant -> {
                 if (!occupant.getId().equals(id)) {
                     if (!force) throw new SlotConflictException(occupant.getId(), occupant.getName());
+                    log.info("Freeing slot {} from recipe id={} (force)", slot, occupant.getId());
                     occupant.setCameraSlot(null);
                     recipeRepository.saveAndFlush(occupant);
                 }
@@ -79,6 +88,7 @@ public class RecipeService {
     }
 
     public RecipeResponse setFavorite(UUID id, boolean favorite) {
+        log.debug("Setting favorite: id={}, favorite={}", id, favorite);
         Recipe recipe = getOrThrow(id);
         recipe.setFavorite(favorite);
         return RecipeResponse.from(recipeRepository.save(recipe));
@@ -128,5 +138,6 @@ public class RecipeService {
                 ? req.tags().stream().map(String::toLowerCase).toArray(String[]::new)
                 : new String[0]);
         recipe.setCameraSlot(req.cameraSlot());
+        recipe.setAiGenerated(Boolean.TRUE.equals(req.aiGenerated()));
     }
 }

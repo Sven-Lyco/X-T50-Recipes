@@ -12,6 +12,9 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   flyway:
     enabled: true
+  web:
+    resources:
+      add-mappings: false
   servlet:
     multipart:
       max-file-size: 20MB
@@ -23,7 +26,12 @@ app:
   image-storage-path: ${IMAGE_STORAGE_PATH:./images}
   admin-username: ${APP_ADMIN_USERNAME:admin}
   admin-password: ${APP_ADMIN_PASSWORD:}
+  anthropic-api-key: ${ANTHROPIC_API_KEY:}
 
 server:
   port: 8080
   forward-headers-strategy: native
+
+logging:
+  level:
+    de.fuji.xt50recipes: DEBUG

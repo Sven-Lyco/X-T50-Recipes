@@ -120,6 +120,9 @@ export default function LibraryPage() {
                   {recipe.cameraSlot}
                 </Badge>
               )}
+              {recipe.aiGenerated && (
+                <Badge size="sm" color="violet" variant="light" w="fit-content">KI</Badge>
+              )}
             </Stack>
           </Card>
         ))}

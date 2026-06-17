@@ -4,6 +4,7 @@ import de.fuji.xt50recipes.config.AppProperties;
 import de.fuji.xt50recipes.recipe.Recipe;
 import de.fuji.xt50recipes.recipe.RecipeRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -34,7 +36,10 @@ public class ImageService {
 
     public RecipeImage upload(UUID recipeId, MultipartFile file) throws IOException {
         String contentType = file.getContentType();
+        log.info("Image upload: recipeId={}, originalFilename={}, contentType={}, size={}",
+                recipeId, file.getOriginalFilename(), contentType, file.getSize());
         if (contentType == null || !ALLOWED_MIME_TYPES.contains(contentType)) {
+            log.warn("Rejected upload: unsupported content type={}", contentType);
             throw new IllegalArgumentException("Nicht unterstützter Dateityp: " + contentType);
         }
 
@@ -46,6 +51,7 @@ public class ImageService {
         Files.createDirectories(storageDir);
         Path target = storageDir.resolve(filename);
         Files.copy(file.getInputStream(), target);
+        log.debug("Image saved to disk: {}", target);
 
         try {
             int nextOrder = recipe.getImages().size();
@@ -53,7 +59,9 @@ public class ImageService {
             image.setRecipe(recipe);
             image.setFilename(filename);
             image.setSortOrder(nextOrder);
-            return imageRepository.save(image);
+            RecipeImage saved = imageRepository.save(image);
+            log.info("Image record saved: imageId={}, filename={}", saved.getId(), filename);
+            return saved;
         } catch (Exception e) {
             Files.deleteIfExists(target);
             throw e;
@@ -69,11 +77,13 @@ public class ImageService {
     }
 
     public void delete(UUID recipeId, UUID imageId) throws IOException {
+        log.info("Deleting image: recipeId={}, imageId={}", recipeId, imageId);
         RecipeImage image = imageRepository.findByIdAndRecipeId(imageId, recipeId)
                 .orElseThrow(() -> new IllegalArgumentException("Image not found"));
 
         Path file = Paths.get(appProperties.imageStoragePath(), image.getFilename());
-        Files.deleteIfExists(file);
+        boolean deleted = Files.deleteIfExists(file);
+        log.debug("Image file deleted from disk: path={}, existed={}", file, deleted);
         imageRepository.delete(image);
     }
 

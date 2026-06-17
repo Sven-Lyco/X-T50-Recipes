@@ -35,6 +35,7 @@ public record RecipeResponse(
         List<String> tags,
         CameraSlot cameraSlot,
         boolean favorite,
+        boolean aiGenerated,
         List<RecipeImageResponse> images,
         Instant createdAt,
         Instant updatedAt
@@ -49,7 +50,7 @@ public record RecipeResponse(
                 r.getMonochromeWarmCool(), r.getMonochromeGreenMagenta(),
                 r.getIsoMode(), r.getIsoNote(), r.getExpCompNote(), r.getDescription(), r.getInspirationSource(),
                 r.getTags() != null ? Arrays.asList(r.getTags()) : List.of(),
-                r.getCameraSlot(), r.isFavorite(),
+                r.getCameraSlot(), r.isFavorite(), r.isAiGenerated(),
                 r.getImages().stream().map(RecipeImageResponse::from).toList(),
                 r.getCreatedAt(), r.getUpdatedAt()
         );

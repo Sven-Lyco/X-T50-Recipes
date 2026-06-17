@@ -119,6 +119,18 @@ export function useRecipesBulk(ids: string[]) {
   return { data, isLoading }
 }
 
+export function useSuggestRecipe() {
+  return useMutation({
+    mutationFn: ({ images, description, model }: { images: File[]; description: string; model: string }) => {
+      const fd = new FormData()
+      images.forEach((img) => fd.append('images', img))
+      fd.append('description', description)
+      fd.append('model', model)
+      return client.post<import('./types').RecipeRequest>('/suggest', fd).then((r) => r.data)
+    },
+  })
+}
+
 export function useReorderImages(recipeId: string) {
   const qc = useQueryClient()
   return useMutation({

@@ -3,6 +3,7 @@ package de.fuji.xt50recipes.auth;
 import de.fuji.xt50recipes.config.AppProperties;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -30,6 +32,7 @@ public class AuthController {
     public ResponseEntity<Void> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
         String ip = clientIp(httpRequest);
         if (rateLimiter.isBlocked(ip)) {
+            log.warn("Login blocked due to rate limit: ip={}", ip);
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
         }
         try {
@@ -37,6 +40,7 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(request.username(), request.password())
             );
             rateLimiter.recordSuccess(ip);
+            log.info("Login successful: user={}, ip={}", auth.getName(), ip);
             String token = jwtUtil.generateToken(auth.getName());
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, jwtCookie(token, httpRequest.isSecure(),
@@ -44,6 +48,7 @@ public class AuthController {
                     .build();
         } catch (AuthenticationException e) {
             rateLimiter.recordFailure(ip);
+            log.warn("Login failed: user={}, ip={}", request.username(), ip);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }

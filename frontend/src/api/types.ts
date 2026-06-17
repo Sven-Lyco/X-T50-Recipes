@@ -32,6 +32,7 @@ export interface RecipeListItem {
   tags: string[]
   previewImageFilename: string | null
   favorite: boolean
+  aiGenerated: boolean
 }
 
 export interface Recipe {
@@ -63,6 +64,7 @@ export interface Recipe {
   tags: string[]
   cameraSlot: CameraSlot | null
   favorite: boolean
+  aiGenerated: boolean
   images: RecipeImage[]
   createdAt: string
   updatedAt: string
@@ -95,6 +97,7 @@ export interface RecipeRequest {
   inspirationSource: string | null
   tags: string[]
   cameraSlot: CameraSlot | null
+  aiGenerated?: boolean
 }
 
 export interface SlotConflict {

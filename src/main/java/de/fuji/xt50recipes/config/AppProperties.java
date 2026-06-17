@@ -8,5 +8,6 @@ public record AppProperties(
         long jwtExpirationMs,
         String imageStoragePath,
         String adminUsername,
-        String adminPassword
+        String adminPassword,
+        String anthropicApiKey
 ) {}

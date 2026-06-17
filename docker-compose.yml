@@ -18,6 +18,7 @@ services:
       APP_ADMIN_USERNAME: ${APP_ADMIN_USERNAME:-admin}
       APP_ADMIN_PASSWORD: ${APP_ADMIN_PASSWORD}
       IMAGE_STORAGE_PATH: /app/images
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
     volumes:
       - images_data:/app/images
     depends_on:

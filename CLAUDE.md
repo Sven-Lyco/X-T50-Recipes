@@ -15,8 +15,7 @@ aktuell auf welcher Custom-Bank (C1–C7) der Kamera geladen ist.
 - Keine Historie der C1–C7-Belegung, nur aktueller Stand
 - Einfache Bildergalerie pro Recipe (keine Kategorisierung Inspiration/eigene Tests)
 - Single-User mit Login (kein Registrierungs-Flow)
-- KI-gestützte Recipe-Generierung aus Bildern: **nicht** in v1, aber Datenmodell soll
-  das nicht blockieren (z.B. spätere Ergänzung eines Felds für KI-generierte Vorschläge)
+- KI-gestützte Recipe-Generierung aus Bildern via Anthropic API (implementiert)
 
 ## Tech-Stack
 
@@ -80,6 +79,7 @@ aktuell auf welcher Custom-Bank (C1–C7) der Kamera geladen ist.
 | tags                   | String[]           | z.B. Stimmung, Anlass, Filmstock-Inspiration                                                                                                                                          |
 | cameraSlot             | Enum (nullable)    | C1..C7, NULL = Bibliothek/Archiv. UNIQUE (partial index, nur wenn nicht NULL)                                                                                                         |
 | favorite               | Boolean            | Favoriten-Markierung                                                                                                                                                                  |
+| aiGenerated            | Boolean            | true wenn per KI-Generierung erstellt                                                                                                                                                 |
 | createdAt              | Timestamp          |                                                                                                                                                                                       |
 | updatedAt              | Timestamp          |                                                                                                                                                                                       |
 
@@ -109,6 +109,10 @@ aktuell auf welcher Custom-Bank (C1–C7) der Kamera geladen ist.
 5. **Recipes vergleichen** – Auswahl von bis zu 4 Recipes, Side-by-Side-Parametertabelle
    mit Hervorhebung von Unterschieden, client-seitiger Ähnlichkeits-Score (0–100%,
    hoch = ähnlich = rot, niedrig = verschieden = grün)
+6. **KI-Generierung** – bis zu 5 Referenzfotos hochladen, optionale Beschreibung des
+   gewünschten Looks, Modellauswahl (Haiku/Sonnet/Opus); Claude Vision analysiert die Bilder
+   und befüllt das Recipe-Formular vor (Name, alle Parameter, Begründung). KI-generierte
+   Recipes erhalten ein „KI-Generiert"-Badge in der UI.
 
 ## Frontend-Labels (Kamera-Menü-Konformität)
 
@@ -142,6 +146,7 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 - `GET /api/camera-status` (alle Recipes mit cameraSlot != NULL, sortiert C1–C7)
 - `PUT /api/recipes/{id}/camera-slot` (Slot zuweisen/entfernen)
 - `PUT /api/recipes/{id}/favorite`
+- `POST /api/suggest` (Multipart: images[], description?, model?) → RecipeRequest JSON
 
 ## DB-Migrationen
 
@@ -150,9 +155,20 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 - V3: Favoriten-Feld
 - V4: Highlight/Shadow Tone als Decimal (0,5er-Schritte)
 - V5: iso_mode VARCHAR(20)
+- V6: Tags auf lowercase normalisiert
+- V7: ai_generated BOOLEAN
 
-## Offene Punkte für spätere Phasen
+## KI-Generierung (Anthropic)
 
-- KI-gestützte Recipe-Generierung aus Bildern (Anthropic API) – Entscheidung steht noch aus
+- Endpoint: `POST /api/suggest` (JWT-geschützt)
+- Bis zu 5 Bilder als Multipart (`images[]`), optionale `description`, optionales `model`
+- MIME-Typ wird aus Magic Bytes erkannt (nicht dem HTTP-Header vertraut)
+- Modelle: `claude-haiku-4-5-20251001` (Default-Fallback), `claude-sonnet-4-6` (UI-Default), `claude-opus-4-8`
+- max_tokens: 2048 (erhöht wegen description-Feld)
+- Prompt-Reihenfolge: technische Felder zuerst, description zuletzt (verhindert Token-Knappheit bei Zahlenwerten)
+- Env-Var: `ANTHROPIC_API_KEY`
+
+## Offene Punkte
+
 - Bild-Upload-Limit: Coolify/Traefik blockiert große Uploads (>1 MB?) – Traefik-Middleware
   für Body-Buffering muss in Coolify konfiguriert werden
