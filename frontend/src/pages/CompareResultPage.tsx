@@ -1,7 +1,7 @@
 import { useSearchParams, Link } from 'react-router-dom'
 import {
   Stack, Group, Title, Text, Button, Badge, Table, ScrollArea,
-  Box, Image, AspectRatio, ActionIcon,
+  Box, Image, AspectRatio, ActionIcon, Center, Loader,
 } from '@mantine/core'
 import { useRecipesBulk } from '../api/recipes'
 import { computeSimilarity, similarityColor } from '../utils/recipeSimilarity'
@@ -68,7 +68,7 @@ export default function CompareResultPage() {
     )
   }
 
-  if (isLoading) return <Text c="dimmed">Laden…</Text>
+  if (isLoading) return <Center py="xl"><Loader /></Center>
   if (!recipes) return <Text c="red">Recipes konnten nicht geladen werden.</Text>
 
   const first = recipes[0]

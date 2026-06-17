@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Stack, Group, Title, Text, Button, Select, TextInput,
-  SimpleGrid, Card, Image, Box, Center, Badge, Checkbox,
+  SimpleGrid, Card, Image, Box, Center, Badge, Checkbox, Loader,
 } from '@mantine/core'
 import { useRecipes } from '../api/recipes'
 import { FILM_SIMS, filmSimLabel } from '../filmSimLabel'
@@ -76,7 +76,7 @@ export default function CompareSelectPage() {
         </Group>
       )}
 
-      {isLoading && <Text c="dimmed">Laden…</Text>}
+      {isLoading && <Center py="xl"><Loader /></Center>}
 
       <SimpleGrid cols={{ base: 1, xs: 2, sm: 3, md: 4 }} spacing="md">
         {recipes?.map((recipe) => {

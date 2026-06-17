@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Group, Title, Button, Select, TextInput,
-  SimpleGrid, Card, Image, Text, Badge, Stack, Box, Center, ActionIcon,
+  SimpleGrid, Card, Image, Text, Badge, Stack, Box, Center, ActionIcon, Loader,
 } from '@mantine/core'
 import { IconStar, IconStarFilled } from '@tabler/icons-react'
 import { useRecipes, useToggleFavorite } from '../api/recipes'
@@ -52,7 +52,7 @@ export default function LibraryPage() {
         </ActionIcon>
       </Group>
 
-      {isLoading && <Text c="dimmed">Laden…</Text>}
+      {isLoading && <Center py="xl"><Loader /></Center>}
 
       <SimpleGrid cols={{ base: 1, xs: 2, sm: 3, md: 4 }} spacing="md">
         {recipes?.map((recipe) => (

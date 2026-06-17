@@ -33,9 +33,9 @@ public class SecurityConfig {
                 .headers(headers -> headers
                         .contentSecurityPolicy(csp -> csp.policyDirectives(
                                 "default-src 'self'; " +
-                                "script-src 'self'; " +
+                                "script-src 'self' 'wasm-unsafe-eval' 'unsafe-inline'; " +
                                 "style-src 'self' 'unsafe-inline'; " +
-                                "img-src 'self' data:; " +
+                                "img-src 'self' data: blob:; " +
                                 "font-src 'self' data:; " +
                                 "connect-src 'self'; " +
                                 "frame-ancestors 'none'"
@@ -44,6 +44,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/", "/index.html", "/assets/**", "/*.js", "/*.css", "/*.ico").permitAll()
+                        .requestMatchers("/images/**").permitAll()
                         .requestMatchers("/login", "/camera", "/recipes/**", "/reference").permitAll()
                         .anyRequest().authenticated()
                 )

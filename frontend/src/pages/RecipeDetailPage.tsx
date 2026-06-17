@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
+import { pdf } from '@react-pdf/renderer'
+import { RecipePdf } from '../components/RecipePdf'
 import {
   Stack, Group, Title, Button, Badge, SimpleGrid,
-  Paper, Text, Image, Divider, ActionIcon, Box, AspectRatio, Modal, CloseButton, Card, Center, Anchor,
+  Paper, Text, Image, Divider, ActionIcon, Box, AspectRatio, Modal, CloseButton, Card, Center, Anchor, Loader,
 } from '@mantine/core'
 import { IconStar, IconStarFilled } from '@tabler/icons-react'
 import { Carousel } from '@mantine/carousel'
@@ -36,8 +38,43 @@ export default function RecipeDetailPage() {
 
   const [lightbox, setLightbox] = useState<string | null>(null)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [pdfLoading, setPdfLoading] = useState(false)
 
-  if (isLoading) return <Text c="dimmed">Laden…</Text>
+  async function handlePdfExport() {
+    setPdfLoading(true)
+    try {
+      let previewImageDataUri: string | null = null
+      const firstImage = recipe!.images[0]
+      if (firstImage) {
+        const res = await fetch(`/images/${firstImage.filename}`)
+        const imgBlob = await res.blob()
+        previewImageDataUri = await new Promise<string>((resolve) => {
+          const img = document.createElement('img')
+          const url = URL.createObjectURL(imgBlob)
+          img.onload = () => {
+            const canvas = document.createElement('canvas')
+            canvas.width = img.naturalWidth
+            canvas.height = img.naturalHeight
+            canvas.getContext('2d')!.drawImage(img, 0, 0)
+            URL.revokeObjectURL(url)
+            resolve(canvas.toDataURL('image/jpeg', 0.9))
+          }
+          img.src = url
+        })
+      }
+      const pdfBlob = await pdf(<RecipePdf recipe={recipe!} previewImageDataUri={previewImageDataUri} />).toBlob()
+      const url = URL.createObjectURL(pdfBlob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${recipe!.name}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } finally {
+      setPdfLoading(false)
+    }
+  }
+
+  if (isLoading) return <Center py="xl"><Loader /></Center>
   if (!recipe) return <Text c="red">Recipe nicht gefunden.</Text>
 
   async function confirmDelete() {
@@ -253,6 +290,9 @@ export default function RecipeDetailPage() {
       <Group gap="xs">
         <Button component={Link} to={`/recipes/${id}/edit`} variant="default">
           Bearbeiten
+        </Button>
+        <Button variant="default" loading={pdfLoading} onClick={handlePdfExport}>
+          Als PDF exportieren
         </Button>
         <Button color="red" variant="light" onClick={() => setDeleteModalOpen(true)} loading={deleteRecipe.isPending}>
           Löschen
