@@ -49,7 +49,7 @@ Die App ist dann unter `http://localhost:5173` erreichbar.
 Alternativ alles per Docker starten (entspricht dem Produktiv-Setup):
 
 ```bash
-docker compose up --build -d
+docker-compose up --build -d
 ```
 
 Die App ist dann unter `http://localhost:8080` erreichbar.
