@@ -49,10 +49,13 @@ Die App ist dann unter `http://localhost:5173` erreichbar.
 Alternativ alles per Docker starten (entspricht dem Produktiv-Setup):
 
 ```bash
-docker-compose up --build -d
+cp docker-compose.override.yml.example docker-compose.override.yml
+docker compose up --build -d
 ```
 
 Die App ist dann unter `http://localhost:8080` erreichbar.
+
+> `docker-compose.override.yml` ist gitignored (nur lokal). Die `.example`-Datei dient als Vorlage und muss einmalig kopiert werden.
 
 ### Erster Login
 
