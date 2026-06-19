@@ -152,6 +152,18 @@ export function useImportRecipe() {
   })
 }
 
+export function useMatchRecipe() {
+  return useMutation({
+    mutationFn: ({ image, model, onlySlots }: { image: File; model?: string; onlySlots?: boolean }) => {
+      const fd = new FormData()
+      fd.append('image', image)
+      if (model) fd.append('model', model)
+      if (onlySlots) fd.append('onlySlots', 'true')
+      return client.post<import('./types').RecipeMatchResult[]>('/match', fd).then((r) => r.data)
+    },
+  })
+}
+
 export function useReorderImages(recipeId: string) {
   const qc = useQueryClient()
   return useMutation({

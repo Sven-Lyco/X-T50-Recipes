@@ -65,7 +65,7 @@ public class AiSuggestionService {
         }
 
         String prompt = buildPrompt(userDescription, images.size(), exifContext);
-        log.debug("Prompt length={} chars, userDescription present={}", prompt.length(), userDescription != null && !userDescription.isBlank());
+        log.info("AI suggest: prompt ({} chars):\n{}", prompt.length(), prompt);
 
         List<Map<String, Object>> content = new java.util.ArrayList<>();
         for (int i = 0; i < images.size(); i++) {

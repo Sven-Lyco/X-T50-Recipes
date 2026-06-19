@@ -112,3 +112,12 @@ export interface SlotConflict {
   message: string
   occupiedBy: { id: string; name: string }
 }
+
+export interface RecipeMatchResult {
+  id: string
+  name: string
+  filmSimulation: FilmSimulation
+  previewImageFilename: string | null
+  cameraSlot: CameraSlot | null
+  reason: string
+}

@@ -3,9 +3,20 @@ import {
   AppShell, Burger, Group, NavLink as MantineNavLink,
   Text, Button, Stack, ThemeIcon,
 } from '@mantine/core'
-import { IconWand } from '@tabler/icons-react'
+import {
+  IconLayoutGrid, IconCamera, IconWand, IconSearch,
+  IconScale, IconChartDots, IconBook,
+} from '@tabler/icons-react'
 import { useDisclosure } from '@mantine/hooks'
 import { logout } from '../api/auth'
+
+function NavIcon({ icon: Icon, color }: { icon: React.ElementType; color: string }) {
+  return (
+    <ThemeIcon size="sm" variant="light" color={color}>
+      <Icon size={14} />
+    </ThemeIcon>
+  )
+}
 
 export default function Layout() {
   const [opened, { toggle, close }] = useDisclosure()
@@ -38,37 +49,49 @@ export default function Layout() {
             to="/"
             end
             label="Bibliothek"
+            leftSection={<NavIcon icon={IconLayoutGrid} color="gray" />}
             onClick={close}
           />
           <MantineNavLink
             component={NavLink}
             to="/camera"
             label="Kamera-Dashboard"
-            onClick={close}
-          />
-          <MantineNavLink
-            component={NavLink}
-            to="/reference"
-            label="Referenz"
-            onClick={close}
-          />
-          <MantineNavLink
-            component={NavLink}
-            to="/compare"
-            label="Recipes vergleichen"
+            leftSection={<NavIcon icon={IconCamera} color="gray" />}
             onClick={close}
           />
           <MantineNavLink
             component={NavLink}
             to="/generate"
             label="Recipe generieren"
-            leftSection={<ThemeIcon size="sm" variant="light" color="violet"><IconWand size={14} /></ThemeIcon>}
+            leftSection={<NavIcon icon={IconWand} color="violet" />}
+            onClick={close}
+          />
+          <MantineNavLink
+            component={NavLink}
+            to="/match"
+            label="Recipe Match"
+            leftSection={<NavIcon icon={IconSearch} color="teal" />}
+            onClick={close}
+          />
+          <MantineNavLink
+            component={NavLink}
+            to="/compare"
+            label="Recipes vergleichen"
+            leftSection={<NavIcon icon={IconScale} color="gray" />}
             onClick={close}
           />
           <MantineNavLink
             component={NavLink}
             to="/map"
             label="Ähnlichkeits-Map"
+            leftSection={<NavIcon icon={IconChartDots} color="gray" />}
+            onClick={close}
+          />
+          <MantineNavLink
+            component={NavLink}
+            to="/reference"
+            label="Referenz"
+            leftSection={<NavIcon icon={IconBook} color="gray" />}
             onClick={close}
           />
         </Stack>

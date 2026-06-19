@@ -11,6 +11,7 @@ import CompareSelectPage from './pages/CompareSelectPage'
 import CompareResultPage from './pages/CompareResultPage'
 import GenerateRecipePage from './pages/GenerateRecipePage'
 import SimilarityMapPage from './pages/SimilarityMapPage'
+import RecipeMatchPage from './pages/RecipeMatchPage'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   return isLoggedIn() ? <>{children}</> : <Navigate to="/login" replace />
@@ -38,6 +39,7 @@ export default function App() {
         <Route path="compare/result" element={<CompareResultPage />} />
         <Route path="generate" element={<GenerateRecipePage />} />
         <Route path="map" element={<SimilarityMapPage />} />
+        <Route path="match" element={<RecipeMatchPage />} />
       </Route>
     </Routes>
   )
