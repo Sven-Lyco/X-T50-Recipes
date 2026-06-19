@@ -4,11 +4,13 @@ Persönliche Web-App zur Verwaltung von Fujifilm X-T50 Film-Simulation-Recipes. 
 
 ## Features
 
-- **Bibliothek** – Kartenraster aller Recipes, filterbar nach Filmsimulation, Tags und Favoriten
-- **Detailansicht** – alle Parameter in Sektionen, Bildergalerie, PDF-Export
+- **Bibliothek** – Kartenraster aller Recipes, filterbar nach Filmsimulation, Tags, Shooting-Szenario und Favoriten
+- **Detailansicht** – alle Parameter in Sektionen, Bildergalerie, PDF-Export, A6-Karten-Export, ZIP-Export, Duplizieren
 - **Kamera-Dashboard** – C1–C7-Slots mit Direktzuweisung
 - **Vergleichen** – bis zu 4 Recipes Side-by-Side mit Unterschieds-Highlighting und Ähnlichkeits-Score
-- **KI-Generierung** – Referenzfoto(s) hochladen → Claude Vision schlägt passende Einstellungen vor
+- **Ähnlichkeits-Map** – alle Recipes als interaktive 2D-Karte (MDS), ähnliche Recipes clustern zusammen; optional nur C1–C7
+- **KI-Generierung** – Referenzfoto(s) hochladen → Claude Vision schlägt passende Einstellungen vor (inkl. EXIF-Kontext)
+- **Recipe Match** – Foto hochladen → KI findet die 3 am besten passenden Recipes aus der Bibliothek
 - **PWA** – installierbar auf iOS/iPadOS über den Home-Screen
 
 ## Tech-Stack
@@ -18,7 +20,7 @@ Persönliche Web-App zur Verwaltung von Fujifilm X-T50 Film-Simulation-Recipes. 
 | Backend | Java 21, Spring Boot 3, Spring Data JPA, Spring Security + JWT |
 | Datenbank | PostgreSQL, Flyway-Migrationen |
 | Frontend | React, TypeScript, Vite, Mantine UI, React Query |
-| KI | Anthropic Claude Vision API |
+| KI | Anthropic Claude Vision API (Haiku / Sonnet / Opus) |
 | Deployment | Docker (Multi-Stage), Coolify, Hetzner |
 
 ## Lokale Entwicklung
@@ -72,7 +74,7 @@ Der initiale Admin-User wird per Flyway-Migration angelegt. Zugangsdaten über d
 | `APP_ADMIN_USERNAME` | Nein | Login-Username (Default: `admin`) |
 | `APP_ADMIN_PASSWORD` | Ja | Login-Passwort (bcrypt wird intern erzeugt) |
 | `IMAGE_STORAGE_PATH` | Nein | Pfad für Bild-Uploads (Default: `./images`) |
-| `ANTHROPIC_API_KEY` | Nein | Für KI-Recipe-Generierung (ohne Key ist der Feature deaktiviert) |
+| `ANTHROPIC_API_KEY` | Nein | Für KI-Features (ohne Key sind Recipe-Generierung und Recipe Match deaktiviert) |
 | `JWT_EXPIRATION_MS` | Nein | Token-Gültigkeit in ms (Default: 86400000 = 24h) |
 
 ## Deployment (Coolify)
@@ -84,15 +86,22 @@ In Coolify:
 2. **PostgreSQL-Service** hinzufügen, Credentials via Env-Vars verbinden
 3. **Volume** für Bild-Uploads mounten auf `/app/images`
 4. Alle Pflicht-Env-Vars als Secrets eintragen
-5. `ANTHROPIC_API_KEY` optional für KI-Feature
+5. `ANTHROPIC_API_KEY` optional für KI-Features
 
-## KI-Generierung
+## KI-Features
 
-Unter „Recipe generieren" können bis zu 5 Referenzfotos (JPEG, PNG, WebP, GIF) hochgeladen werden. Claude Vision analysiert den Look und befüllt das Recipe-Formular vor – inklusive Name und Begründung auf Deutsch. Das Ergebnis kann vor dem Speichern frei angepasst werden.
+### Recipe generieren
 
-Modellauswahl im UI:
+Unter „Recipe generieren" können bis zu 5 Referenzfotos (JPEG, PNG, WebP) hochgeladen werden. Claude Vision analysiert den Look und befüllt das Recipe-Formular vor – inklusive Name und Begründung auf Deutsch. EXIF-Metadaten (ISO, Belichtungszeit, Blende) werden automatisch extrahiert und als zusätzlicher Kontext mitgeschickt. Das Ergebnis kann vor dem Speichern frei angepasst werden.
+
+KI-generierte Recipes erhalten ein violettes „KI-Generiert"-Badge.
+
+### Recipe Match
+
+Unter „Recipe Match" ein einzelnes Foto hochladen. Die KI analysiert den visuellen Charakter (Tonkurve, Farbpalette, Körnung, Stimmung) und gibt die 3 am besten passenden Recipes aus der Bibliothek zurück – mit Begründung, warum jedes Recipe zu dem Foto passt. Optional kann die Suche auf die aktuell belegten C1–C7-Slots eingeschränkt werden.
+
+Modellauswahl für beide KI-Features:
+
 - **Haiku 4.5** – schnell und günstig
 - **Sonnet 4.6** – bessere Bildanalyse (empfohlen)
 - **Opus 4.8** – stärkstes Modell
-
-KI-generierte Recipes erhalten in der Bibliothek und Detailansicht ein violettes „KI-Generiert"-Badge.

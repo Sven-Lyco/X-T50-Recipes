@@ -80,6 +80,7 @@ aktuell auf welcher Custom-Bank (C1–C7) der Kamera geladen ist.
 | cameraSlot             | Enum (nullable)    | C1..C7, NULL = Bibliothek/Archiv. UNIQUE (partial index, nur wenn nicht NULL)                                                                                                         |
 | favorite               | Boolean            | Favoriten-Markierung                                                                                                                                                                  |
 | aiGenerated            | Boolean            | true wenn per KI-Generierung erstellt                                                                                                                                                 |
+| shootingScenario       | Enum (nullable)    | PORTRAIT, LANDSCAPE, STREET, LOW_LIGHT, GOLDEN_HOUR, BLUE_HOUR, NIGHT, NATURE, WILDLIFE, TRAVEL, ARCHITECTURE, INTERIOR, FOOD, MACRO, SPORT, EVENT, WEDDING, BEACH, FOG               |
 | createdAt              | Timestamp          |                                                                                                                                                                                       |
 | updatedAt              | Timestamp          |                                                                                                                                                                                       |
 
@@ -97,26 +98,35 @@ aktuell auf welcher Custom-Bank (C1–C7) der Kamera geladen ist.
 
 1. **Bibliotheksübersicht** – Kartenraster aller Recipes (Vorschaubild, Name,
    Filmsimulation, Status-Badge "C1"–"C7" oder "Bibliothek"), filter- und durchsuchbar
-   nach Tags, Filmsimulation und Favoriten
+   nach Tags, Filmsimulation, Shooting-Szenario und Favoriten
 2. **Detailansicht** – alle Parameter in Sektionen (Bildparameter, Körnung & Effekte,
    Weißabgleich, Monochrome Farbe), Bildergalerie, Beschreibung, Referenz-Link, Tags,
-   "Ähnliche Recipes" (gleiche Filmsimulation), PDF-Export
+   "Ähnliche Recipes" (gleiche Filmsimulation), PDF-Export, A6-Karten-Export, ZIP-Export,
+   Duplizieren
 3. **Kamera-Dashboard** – Übersicht der sieben C1–C7-Slots mit jeweils zugeordnetem
    Recipe (Name + Vorschaubild); Neuzuordnung direkt aus dem Dashboard möglich
-4. **Anlegen/Bearbeiten-Formular** – alle Recipe-Felder editierbar, Bild-Upload (Multipart,
-   Drag-and-Drop-Sortierung); Bilder können nur im Bearbeitungsmodus (nicht beim Neuanlegen)
-   hinzugefügt werden
+4. **Anlegen/Bearbeiten-Formular** – alle Recipe-Felder editierbar inkl. Shooting-Szenario,
+   Bild-Upload (Multipart, Drag-and-Drop-Sortierung); Bilder können nur im Bearbeitungsmodus
+   (nicht beim Neuanlegen) hinzugefügt werden
 5. **Recipes vergleichen** – Auswahl von bis zu 4 Recipes, Side-by-Side-Parametertabelle
    mit Hervorhebung von Unterschieden, client-seitiger Ähnlichkeits-Score (0–100%,
    hoch = ähnlich = rot, niedrig = verschieden = grün)
 6. **KI-Generierung** – bis zu 5 Referenzfotos hochladen, optionale Beschreibung des
    gewünschten Looks, Modellauswahl (Haiku/Sonnet/Opus); Claude Vision analysiert die Bilder
-   und befüllt das Recipe-Formular vor (Name, alle Parameter, Begründung). KI-generierte
-   Recipes erhalten ein „KI-Generiert"-Badge in der UI.
+   und befüllt das Recipe-Formular vor (Name, alle Parameter, Begründung). EXIF-Metadaten
+   (ISO, Belichtungszeit, Blende) werden automatisch extrahiert und als Kontext mitgeschickt.
+   KI-generierte Recipes erhalten ein „KI-Generiert"-Badge in der UI.
+7. **Ähnlichkeits-Map** – alle Recipes als interaktive 2D-Punktwolke (MDS-Projektion auf
+   Basis von `computeSimilarity()`), ähnliche Recipes clustern zusammen, Farbe = Filmsimulation,
+   Klick → Detailansicht; optional nur C1–C7-Slots anzeigen; komplett client-seitig
+8. **Recipe Match** – einzelnes Foto hochladen; Claude Vision analysiert visuellen Charakter
+   (Tonkurve, Farbpalette, Körnung, Stimmung) und gibt die 3 am besten passenden Recipes
+   aus der Bibliothek zurück; optional auf C1–C7-Slots einschränken
 
 ## Frontend-Labels (Kamera-Menü-Konformität)
 
 Alle Labels entsprechen den deutschen Kamera-Menü-Bezeichnungen der X-T50:
+
 - Dynamikbereich (DR_AUTO=Auto, DR100=100%, DR200=200%, DR400=400%)
 - Spitzlichter / Schatten (statt Highlight/Shadow Tone)
 - Hohe ISO-NR (statt Noise Reduction)
@@ -135,11 +145,14 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 ## API-Skizze (REST)
 
 - `POST /api/auth/login`
-- `GET /api/recipes` (mit Filter-Query-Parametern für Tags/Filmsimulation/favorite)
+- `GET /api/recipes` (Filter: filmSimulation, tag, favorite, scenario)
 - `GET /api/recipes/{id}`
 - `POST /api/recipes`
 - `PUT /api/recipes/{id}`
 - `DELETE /api/recipes/{id}`
+- `POST /api/recipes/{id}/duplicate` → neues Recipe (Name = "Kopie von …", kein Slot)
+- `GET /api/recipes/{id}/export` → ZIP (JSON + alle Bilder)
+- `POST /api/recipes/import` (Multipart: ZIP) → Recipe
 - `POST /api/recipes/{id}/images` (Multipart-Upload)
 - `DELETE /api/recipes/{id}/images/{imageId}`
 - `PUT /api/recipes/{id}/images/reorder`
@@ -147,6 +160,7 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 - `PUT /api/recipes/{id}/camera-slot` (Slot zuweisen/entfernen)
 - `PUT /api/recipes/{id}/favorite`
 - `POST /api/suggest` (Multipart: images[], description?, model?) → RecipeRequest JSON
+- `POST /api/match` (Multipart: image, model?, onlySlots?) → RecipeMatchResponse[]
 
 ## DB-Migrationen
 
@@ -157,16 +171,29 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 - V5: iso_mode VARCHAR(20)
 - V6: Tags auf lowercase normalisiert
 - V7: ai_generated BOOLEAN
+- V8: shooting_scenario VARCHAR(20)
 
-## KI-Generierung (Anthropic)
+## KI-Features (Anthropic)
 
-- Endpoint: `POST /api/suggest` (JWT-geschützt)
+### Recipe generieren (`POST /api/suggest`)
+
 - Bis zu 5 Bilder als Multipart (`images[]`), optionale `description`, optionales `model`
 - MIME-Typ wird aus Magic Bytes erkannt (nicht dem HTTP-Header vertraut)
+- EXIF-Metadaten (ISO, Belichtungszeit, Blende, Kameramodell) werden automatisch extrahiert
+  und als Kontext im Prompt mitgeschickt (`metadata-extractor` Library)
 - Modelle: `claude-sonnet-4-6` (Default), `claude-haiku-4-5-20251001`, `claude-opus-4-8`
 - max_tokens: 2048 (erhöht wegen description-Feld)
-- Prompt-Reihenfolge: technische Felder zuerst, description zuletzt (verhindert Token-Knappheit bei Zahlenwerten)
+- Prompt-Reihenfolge: technische Felder zuerst, description zuletzt (verhindert Token-Knappheit)
 - Env-Var: `ANTHROPIC_API_KEY`
+
+### Recipe Match (`POST /api/match`)
+
+- Ein Bild als Multipart (`image`), optionales `model`, optionaler `onlySlots`-Flag
+- Lädt alle Recipes aus der DB (oder nur C1–C7 wenn `onlySlots=true`)
+- Formatiert alle Recipes kompakt als Textliste (ID, Name, alle Kameraparameter)
+- Schickt Bild + Rezeptliste + EXIF an Claude; Antwort: Top-3-Matches als JSON mit UUID + Begründung
+- `@Transactional(readOnly=true)` wegen Lazy-Loading der Images-Collection
+- Antwortformat: `[{id, name, filmSimulation, previewImageFilename, cameraSlot, reason}]`
 
 ## Offene Punkte
 
@@ -175,17 +202,7 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 
 ## Geplante Features
 
-### Kurzfristig
-
 - **Sortierung in der Bibliothek** – nach Name, Datum, Filmsimulation (aktuell nur Datum desc)
-- **ZIP Export/Import** – einzelnes Recipe als `.zip` herunterladen (JSON + alle Bilder) und wieder importieren
-- **EXIF aus Referenzfotos lesen** – beim KI-Upload EXIF-Daten (Belichtung, ISO, Weißabgleich)
-  extrahieren und als zusätzlichen Kontext an die KI mitschicken
-- **Shooting-Szenarien / Kategorien** – strukturierte Zuordnung neben Tags
-  (Portrait, Landschaft, Street, Low Light etc.), Filteroption in der Bibliothek
-
-### Ideen für später
-
-- **Visuelle Ähnlichkeits-Map** – alle Recipes als Punkte in 2D (PCA-Dimensionsreduktion
-  der numerischen Kameraparameter), ähnliche Recipes clustern zusammen,
-  Farbe = Filmsimulation, Klick → Detailansicht; komplett client-seitig, kein Backend nötig
+- **C1–C7 Spickzettel als PDF** – alle sieben aktiven Slots auf einer Seite zum Ausdrucken
+- **Ähnliche Recipes per Score** – Detailansicht zeigt aktuell Recipes gleicher Filmsimulation;
+  sollte stattdessen `computeSimilarity()` nutzen
