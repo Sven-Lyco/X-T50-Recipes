@@ -11,6 +11,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.exif.ExifSubIFDDirectory;
+import com.drew.metadata.exif.ExifIFD0Directory;
+
+import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -37,17 +44,35 @@ public class AiSuggestionService {
     public record ImageInput(byte[] bytes, String mimeType) {}
 
     public RecipeRequest suggest(List<ImageInput> images, String userDescription, String model) {
-        String resolvedModel = (model != null && ALLOWED_MODELS.contains(model)) ? model : DEFAULT_MODEL;
+        boolean modelValid = model != null && ALLOWED_MODELS.contains(model);
+        String resolvedModel = modelValid ? model : DEFAULT_MODEL;
+        if (!modelValid && model != null && !model.isBlank()) {
+            log.warn("Requested model '{}' not in allowed list, falling back to default '{}'", model, DEFAULT_MODEL);
+        }
         log.info("AI suggest called: imageCount={}, model={}, apiKeySet={}",
                 images.size(), resolvedModel, apiKey != null && !apiKey.isBlank());
 
-        String prompt = buildPrompt(userDescription, images.size());
+        for (int i = 0; i < images.size(); i++) {
+            log.info("Image[{}]: sizeBytes={}, declaredMime={}", i, images.get(i).bytes().length, images.get(i).mimeType());
+        }
+
+        String exifContext = extractExifContext(images);
+        if (exifContext != null) {
+            log.info("EXIF context found for {} image(s)", images.size());
+            log.debug("EXIF context: {}", exifContext);
+        } else {
+            log.info("No EXIF data found in uploaded images");
+        }
+
+        String prompt = buildPrompt(userDescription, images.size(), exifContext);
+        log.debug("Prompt length={} chars, userDescription present={}", prompt.length(), userDescription != null && !userDescription.isBlank());
 
         List<Map<String, Object>> content = new java.util.ArrayList<>();
-        for (ImageInput img : images) {
+        for (int i = 0; i < images.size(); i++) {
+            ImageInput img = images.get(i);
             String base64 = Base64.getEncoder().encodeToString(img.bytes());
             String detectedMime = detectMimeType(img.bytes(), img.mimeType());
-            log.debug("Image mimeType declared={}, detected={}", img.mimeType(), detectedMime);
+            log.info("Image[{}] mimeType declared={}, detected={}", i, img.mimeType(), detectedMime);
             content.add(Map.of("type", "image", "source", Map.of(
                     "type", "base64",
                     "media_type", detectedMime,
@@ -70,8 +95,10 @@ public class AiSuggestionService {
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
         try {
             log.info("Sending request to Anthropic API, model={}", resolvedModel);
+            long startMs = System.currentTimeMillis();
             ResponseEntity<String> response = restTemplate.postForEntity(ANTHROPIC_URL, request, String.class);
-            log.info("Anthropic API responded with status={}", response.getStatusCode());
+            long durationMs = System.currentTimeMillis() - startMs;
+            log.info("Anthropic API responded: status={}, durationMs={}", response.getStatusCode(), durationMs);
             log.debug("Anthropic API response body: {}", response.getBody());
             return parseResponse(response.getBody());
         } catch (HttpStatusCodeException e) {
@@ -92,10 +119,17 @@ public class AiSuggestionService {
 
             JsonNode json = objectMapper.readTree(text);
 
+            String parsedName = json.path("name").asText("");
+            String parsedFilmSim = json.path("filmSimulation").asText("PROVIA");
+            String parsedDynRange = json.path("dynamicRange").asText("DR100");
+            boolean hasDescription = !json.path("description").isMissingNode() && !json.path("description").isNull();
+            log.info("AI response parsed successfully: name='{}', filmSimulation={}, dynamicRange={}, hasDescription={}",
+                    parsedName, parsedFilmSim, parsedDynRange, hasDescription);
+
             return new RecipeRequest(
-                    json.path("name").asText(""),
-                    FilmSimulation.valueOf(json.path("filmSimulation").asText("PROVIA")),
-                    DynamicRange.valueOf(json.path("dynamicRange").asText("DR100")),
+                    parsedName,
+                    FilmSimulation.valueOf(parsedFilmSim),
+                    DynamicRange.valueOf(parsedDynRange),
                     json.path("highlightTone").asDouble(0),
                     json.path("shadowTone").asDouble(0),
                     json.path("color").asInt(0),
@@ -117,8 +151,7 @@ public class AiSuggestionService {
                     null,
                     null,
                     null,
-                    json.path("description").isMissingNode() || json.path("description").isNull() ? null
-                            : json.path("description").asText(),
+                    hasDescription ? json.path("description").asText() : null,
                     null,
                     List.of(),
                     null,
@@ -128,6 +161,42 @@ public class AiSuggestionService {
             log.error("Failed to parse AI response: {}", e.getMessage(), e);
             throw new AiSuggestionException("KI-Antwort konnte nicht verarbeitet werden: " + e.getMessage());
         }
+    }
+
+    private static String extractExifContext(List<ImageInput> images) {
+        List<String> parts = new ArrayList<>();
+        for (ImageInput img : images) {
+            try {
+                Metadata metadata = ImageMetadataReader.readMetadata(new ByteArrayInputStream(img.bytes()));
+                List<String> fields = new ArrayList<>();
+
+                ExifSubIFDDirectory sub = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
+                if (sub != null) {
+                    if (sub.containsTag(ExifSubIFDDirectory.TAG_ISO_EQUIVALENT))
+                        fields.add("ISO " + sub.getInt(ExifSubIFDDirectory.TAG_ISO_EQUIVALENT));
+                    if (sub.containsTag(ExifSubIFDDirectory.TAG_EXPOSURE_TIME))
+                        fields.add("Belichtung " + sub.getDescription(ExifSubIFDDirectory.TAG_EXPOSURE_TIME));
+                    if (sub.containsTag(ExifSubIFDDirectory.TAG_FNUMBER))
+                        fields.add("Blende " + sub.getDescription(ExifSubIFDDirectory.TAG_FNUMBER));
+                    if (sub.containsTag(ExifSubIFDDirectory.TAG_FOCAL_LENGTH))
+                        fields.add("Brennweite " + sub.getDescription(ExifSubIFDDirectory.TAG_FOCAL_LENGTH));
+                    if (sub.containsTag(ExifSubIFDDirectory.TAG_WHITE_BALANCE_MODE))
+                        fields.add("WB " + sub.getDescription(ExifSubIFDDirectory.TAG_WHITE_BALANCE_MODE));
+                    if (sub.containsTag(ExifSubIFDDirectory.TAG_EXPOSURE_BIAS))
+                        fields.add("Belichtungskorrektur " + sub.getDescription(ExifSubIFDDirectory.TAG_EXPOSURE_BIAS));
+                }
+
+                ExifIFD0Directory ifd0 = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+                if (ifd0 != null && ifd0.containsTag(ExifIFD0Directory.TAG_MODEL)) {
+                    fields.add(0, "Kamera: " + ifd0.getString(ExifIFD0Directory.TAG_MODEL));
+                }
+
+                if (!fields.isEmpty()) parts.add(String.join(", ", fields));
+            } catch (Exception e) {
+                log.debug("EXIF extraction failed for image: {}", e.getMessage());
+            }
+        }
+        return parts.isEmpty() ? null : String.join(" | ", parts);
     }
 
     private static String detectMimeType(byte[] bytes, String fallback) {
@@ -154,9 +223,12 @@ public class AiSuggestionService {
         return fallback;
     }
 
-    private String buildPrompt(String userDescription, int imageCount) {
+    private String buildPrompt(String userDescription, int imageCount, String exifContext) {
         String extra = (userDescription != null && !userDescription.isBlank())
-                ? "\nZusätzlicher Hinweis: " + userDescription
+                ? "\nZusätzlicher Hinweis des Nutzers: " + userDescription
+                : "";
+        String exif = (exifContext != null)
+                ? "\nEXIF-Metadaten der Aufnahme: " + exifContext
                 : "";
         String imageNote = imageCount > 1
                 ? "Analysiere alle " + imageCount + " Bilder gemeinsam und leite daraus ein einheitliches Recipe ab, das den gemeinsamen Look am besten einfängt."
@@ -164,7 +236,7 @@ public class AiSuggestionService {
 
         return """
                 Du bist ein Experte für Fujifilm X-T50 Film-Simulation-Recipes.
-                """ + imageNote + extra + """
+                """ + imageNote + exif + extra + """
 
                 Antworte AUSSCHLIESSLICH mit einem JSON-Objekt ohne Erklärungen. Gültige Werte:
 
