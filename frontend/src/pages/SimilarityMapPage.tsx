@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Stack, Title, Text, Center, Loader, Paper, Group, Box } from '@mantine/core'
 import { useRecipes, useRecipesBulk } from '../api/recipes'
 import { filmSimLabel } from '../filmSimLabel'
-import { buildFeatureVector, computePca } from '../utils/recipePca'
+import { computeMds } from '../utils/recipePca'
 
 const SIM_COLORS: Record<string, string> = {
   PROVIA: '#74c0fc',
@@ -42,8 +42,7 @@ export default function SimilarityMapPage() {
 
   const points = useMemo(() => {
     if (!recipes || recipes.length < 3) return null
-    const features = recipes.map(buildFeatureVector)
-    const coords = computePca(features)
+    const coords = computeMds(recipes)
     return recipes.map((r, i) => ({ recipe: r, x: coords[i][0], y: coords[i][1] }))
   }, [recipes])
 

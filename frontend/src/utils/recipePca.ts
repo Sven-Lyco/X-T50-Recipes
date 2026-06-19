@@ -1,4 +1,5 @@
 import type { Recipe } from '../api/types'
+import { computeSimilarity } from './recipeSimilarity'
 
 const DR_ORDER = ['DR_AUTO', 'DR100', 'DR200', 'DR400']
 const STR_ORDER = ['OFF', 'WEAK', 'STRONG']
@@ -41,6 +42,41 @@ function rayleigh(A: number[][], v: number[]): number {
 
 function deflate(A: number[][], v: number[], lam: number): number[][] {
   return A.map((row, i) => row.map((val, j) => val - lam * v[i] * v[j]))
+}
+
+export function computeMds(recipes: Recipe[]): [number, number][] {
+  const n = recipes.length
+
+  // Distanzmatrix: 0 = identisch, 1 = völlig verschieden
+  const D2: number[][] = Array.from({ length: n }, (_, i) =>
+    Array.from({ length: n }, (_, j) => {
+      if (i === j) return 0
+      const sim = computeSimilarity(recipes[i], recipes[j]) / 100
+      return (1 - sim) ** 2
+    })
+  )
+
+  // Double centering: B[i][j] = -0.5 * (D²[i][j] - rowMean[i] - colMean[j] + grandMean)
+  const rowMeans = D2.map(row => row.reduce((s, v) => s + v, 0) / n)
+  const colMeans = Array.from({ length: n }, (_, j) => D2.reduce((s, row) => s + row[j], 0) / n)
+  const grandMean = rowMeans.reduce((s, v) => s + v, 0) / n
+  const B: number[][] = Array.from({ length: n }, (_, i) =>
+    Array.from({ length: n }, (_, j) =>
+      -0.5 * (D2[i][j] - rowMeans[i] - colMeans[j] + grandMean)
+    )
+  )
+
+  // Top 2 Eigenvektoren + Eigenwerte
+  const ev1 = powerIter(B)
+  const lam1 = rayleigh(B, ev1)
+  const B2 = deflate(B, ev1, lam1)
+  const ev2 = powerIter(B2)
+  const lam2 = rayleigh(B2, ev2)
+
+  const s1 = Math.sqrt(Math.max(lam1, 0))
+  const s2 = Math.sqrt(Math.max(lam2, 0))
+
+  return ev1.map((_, i) => [ev1[i] * s1, ev2[i] * s2])
 }
 
 export function computePca(data: number[][]): [number, number][] {
