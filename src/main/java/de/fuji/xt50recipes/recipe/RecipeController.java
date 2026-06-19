@@ -45,6 +45,12 @@ public class RecipeController {
         return recipeService.update(id, request);
     }
 
+    @PostMapping("/{id}/duplicate")
+    @ResponseStatus(HttpStatus.CREATED)
+    public RecipeResponse duplicate(@PathVariable UUID id) {
+        return recipeService.duplicate(id);
+    }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable UUID id) {

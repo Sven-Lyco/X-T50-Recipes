@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import { pdf } from '@react-pdf/renderer'
 import { RecipePdf } from '../components/RecipePdf'
+import { RecipeCardPdf } from '../components/RecipeCardPdf'
 import {
   Stack, Group, Title, Button, Badge, SimpleGrid,
   Paper, Text, Image, Divider, ActionIcon, Box, AspectRatio, Modal, CloseButton, Card, Center, Anchor, Loader,
@@ -10,7 +11,7 @@ import { IconStar, IconStarFilled } from '@tabler/icons-react'
 import { Carousel } from '@mantine/carousel'
 import { notifications } from '@mantine/notifications'
 import '@mantine/carousel/styles.css'
-import { useRecipe, useDeleteRecipe, useToggleFavorite, useRecipes } from '../api/recipes'
+import { useRecipe, useDeleteRecipe, useToggleFavorite, useRecipes, useDuplicateRecipe } from '../api/recipes'
 import { MONOCHROME_SIMS, filmSimLabel } from '../filmSimLabel'
 import { dynamicRangeLabel, grainSizeLabel, isoModeLabel, scenarioLabel, strengthLabel, wbModeLabel } from '../utils/labels'
 
@@ -36,9 +37,12 @@ export default function RecipeDetailPage() {
   const toggleFavorite = useToggleFavorite()
   const navigate = useNavigate()
 
+  const duplicateRecipe = useDuplicateRecipe()
+
   const [lightbox, setLightbox] = useState<string | null>(null)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [pdfLoading, setPdfLoading] = useState(false)
+  const [cardPdfLoading, setCardPdfLoading] = useState(false)
   const [zipLoading, setZipLoading] = useState(false)
 
   async function handleZipExport() {
@@ -54,6 +58,46 @@ export default function RecipeDetailPage() {
       URL.revokeObjectURL(url)
     } finally {
       setZipLoading(false)
+    }
+  }
+
+  async function handleDuplicate() {
+    const copy = await duplicateRecipe.mutateAsync(id!)
+    notifications.show({ message: `„${copy.name}" erstellt`, color: 'green' })
+    navigate(`/recipes/${copy.id}/edit`)
+  }
+
+  async function handleCardPdfExport() {
+    setCardPdfLoading(true)
+    try {
+      let previewImageDataUri: string | null = null
+      const firstImage = recipe!.images[0]
+      if (firstImage) {
+        const res = await fetch(`/images/${firstImage.filename}`)
+        const imgBlob = await res.blob()
+        previewImageDataUri = await new Promise<string>((resolve) => {
+          const img = document.createElement('img')
+          const url = URL.createObjectURL(imgBlob)
+          img.onload = () => {
+            const canvas = document.createElement('canvas')
+            canvas.width = img.naturalWidth
+            canvas.height = img.naturalHeight
+            canvas.getContext('2d')!.drawImage(img, 0, 0)
+            URL.revokeObjectURL(url)
+            resolve(canvas.toDataURL('image/jpeg', 0.9))
+          }
+          img.src = url
+        })
+      }
+      const pdfBlob = await pdf(<RecipeCardPdf recipe={recipe!} previewImageDataUri={previewImageDataUri} />).toBlob()
+      const url = URL.createObjectURL(pdfBlob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${recipe!.name}_A6.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } finally {
+      setCardPdfLoading(false)
     }
   }
 
@@ -310,11 +354,17 @@ export default function RecipeDetailPage() {
         <Button component={Link} to={`/recipes/${id}/edit`} variant="default">
           Bearbeiten
         </Button>
+        <Button variant="default" loading={duplicateRecipe.isPending} onClick={handleDuplicate}>
+          Duplizieren
+        </Button>
         <Button variant="default" loading={zipLoading} onClick={handleZipExport}>
           Als ZIP exportieren
         </Button>
         <Button variant="default" loading={pdfLoading} onClick={handlePdfExport}>
           Als PDF exportieren
+        </Button>
+        <Button variant="default" loading={cardPdfLoading} onClick={handleCardPdfExport}>
+          A6-Karte
         </Button>
         <Button color="red" variant="light" onClick={() => setDeleteModalOpen(true)} loading={deleteRecipe.isPending}>
           Löschen

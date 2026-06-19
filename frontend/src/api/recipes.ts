@@ -132,6 +132,14 @@ export function useSuggestRecipe() {
   })
 }
 
+export function useDuplicateRecipe() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => client.post<Recipe>(`/recipes/${id}/duplicate`).then((r) => r.data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['recipes'] }),
+  })
+}
+
 export function useImportRecipe() {
   const qc = useQueryClient()
   return useMutation({

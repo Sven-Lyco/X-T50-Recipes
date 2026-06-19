@@ -58,6 +58,32 @@ public class RecipeService {
         return RecipeResponse.from(recipeRepository.save(recipe));
     }
 
+    public RecipeResponse duplicate(UUID id) {
+        log.info("Duplicating recipe: id={}", id);
+        Recipe original = getOrThrow(id);
+        Recipe copy = new Recipe();
+        applyRequest(copy, new RecipeRequest(
+                "Kopie von " + original.getName(),
+                original.getFilmSimulation(), original.getDynamicRange(),
+                original.getHighlightTone(), original.getShadowTone(),
+                original.getColor(), original.getSharpness(), original.getNoiseReduction(),
+                original.getGrainStrength(), original.getGrainSize(),
+                original.getColorChromeEffect(), original.getColorChromeFxBlue(),
+                original.getWhiteBalanceMode(), original.getWbShiftRed(), original.getWbShiftBlue(),
+                original.getColorTempKelvin(), original.getClarity(),
+                original.getMonochromeWarmCool(), original.getMonochromeGreenMagenta(),
+                original.getIsoMode(), original.getIsoNote(), original.getExpCompNote(),
+                original.getDescription(), original.getInspirationSource(),
+                original.getTags() != null ? java.util.Arrays.asList(original.getTags()) : java.util.List.of(),
+                null, // cameraSlot nicht übernehmen
+                original.isAiGenerated(),
+                original.getShootingScenario()
+        ));
+        RecipeResponse response = RecipeResponse.from(recipeRepository.save(copy));
+        log.info("Recipe duplicated: originalId={}, newId={}", id, response.id());
+        return response;
+    }
+
     public void delete(UUID id) {
         log.info("Deleting recipe: id={}", id);
         recipeRepository.delete(getOrThrow(id));
