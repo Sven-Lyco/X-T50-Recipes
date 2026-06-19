@@ -178,7 +178,7 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 ### Kurzfristig
 
 - **Sortierung in der Bibliothek** – nach Name, Datum, Filmsimulation (aktuell nur Datum desc)
-- **JSON Export/Import** – einzelnes Recipe als `.json` herunterladen und wieder importieren
+- **ZIP Export/Import** – einzelnes Recipe als `.zip` herunterladen (JSON + alle Bilder) und wieder importieren
 - **EXIF aus Referenzfotos lesen** – beim KI-Upload EXIF-Daten (Belichtung, ISO, Weißabgleich)
   extrahieren und als zusätzlichen Kontext an die KI mitschicken
 - **Shooting-Szenarien / Kategorien** – strukturierte Zuordnung neben Tags

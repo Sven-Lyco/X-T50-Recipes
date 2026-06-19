@@ -7,20 +7,41 @@ import {
 import { IconStar, IconStarFilled } from '@tabler/icons-react'
 import { useRecipes, useToggleFavorite } from '../api/recipes'
 import { FILM_SIMS, filmSimLabel } from '../filmSimLabel'
-import type { FilmSimulation } from '../api/types'
+import type { FilmSimulation, RecipeListItem } from '../api/types'
 
 const FILM_SIM_OPTIONS = FILM_SIMS.map((fs) => ({ value: fs, label: filmSimLabel(fs) }))
+
+const SORT_OPTIONS = [
+  { value: 'date_desc', label: 'Neueste zuerst' },
+  { value: 'date_asc', label: 'Älteste zuerst' },
+  { value: 'name_asc', label: 'Name A–Z' },
+  { value: 'name_desc', label: 'Name Z–A' },
+  { value: 'filmsim', label: 'Filmsimulation' },
+]
+
+function sortRecipes(recipes: RecipeListItem[], sort: string): RecipeListItem[] {
+  const copy = [...recipes]
+  switch (sort) {
+    case 'date_asc': return copy.reverse()
+    case 'name_asc': return copy.sort((a, b) => a.name.localeCompare(b.name))
+    case 'name_desc': return copy.sort((a, b) => b.name.localeCompare(a.name))
+    case 'filmsim': return copy.sort((a, b) => filmSimLabel(a.filmSimulation).localeCompare(filmSimLabel(b.filmSimulation)))
+    default: return copy // date_desc – Backend-Reihenfolge beibehalten
+  }
+}
 
 export default function LibraryPage() {
   const [filmSim, setFilmSim] = useState<FilmSimulation | null>(null)
   const [tag, setTag] = useState<string | null>(null)
   const [onlyFavorites, setOnlyFavorites] = useState(false)
+  const [sort, setSort] = useState('date_desc')
   const { data: recipes, isLoading } = useRecipes(filmSim ?? undefined, tag ?? undefined, onlyFavorites)
   const { data: allRecipes } = useRecipes()
   const tagOptions = useMemo(
     () => [...new Set((allRecipes ?? []).flatMap((r) => r.tags).map((t) => t.toLowerCase()))].sort(),
     [allRecipes]
   )
+  const sortedRecipes = useMemo(() => sortRecipes(recipes ?? [], sort), [recipes, sort])
   const toggleFavorite = useToggleFavorite()
 
   return (
@@ -35,7 +56,7 @@ export default function LibraryPage() {
           data={FILM_SIM_OPTIONS}
           value={filmSim}
           onChange={(v) => setFilmSim(v as FilmSimulation | null)}
-          w={{ base: '100%', sm: 220 }}
+          w={{ base: '100%', sm: 200 }}
           placeholder="Alle Film Sims"
           clearable
         />
@@ -48,6 +69,13 @@ export default function LibraryPage() {
           searchable
           flex={1}
           miw={120}
+        />
+        <Select
+          data={SORT_OPTIONS}
+          value={sort}
+          onChange={(v) => setSort(v ?? 'date_desc')}
+          w={{ base: '100%', sm: 180 }}
+          allowDeselect={false}
         />
         <ActionIcon
           variant={onlyFavorites ? 'filled' : 'default'}
@@ -63,7 +91,7 @@ export default function LibraryPage() {
       {isLoading && <Center py="xl"><Loader /></Center>}
 
       <SimpleGrid cols={{ base: 1, xs: 2, sm: 3, md: 4 }} spacing="md">
-        {recipes?.map((recipe) => (
+        {sortedRecipes.map((recipe) => (
           <Card
             key={recipe.id}
             component={Link}
