@@ -32,5 +32,6 @@ public record RecipeRequest(
         String inspirationSource,
         @NotNull List<String> tags,
         CameraSlot cameraSlot,
-        Boolean aiGenerated
+        Boolean aiGenerated,
+        ShootingScenario shootingScenario
 ) {}

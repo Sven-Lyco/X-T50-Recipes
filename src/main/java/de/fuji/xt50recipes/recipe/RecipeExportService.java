@@ -106,6 +106,7 @@ public class RecipeExportService {
         recipe.setTags(exported.tags() != null ? exported.tags().toArray(String[]::new) : new String[0]);
         recipe.setCameraSlot(null); // Slot-Zuweisung wird beim Import nicht übernommen
         recipe.setAiGenerated(exported.aiGenerated());
+        recipe.setShootingScenario(exported.shootingScenario());
         recipe = recipeRepository.save(recipe);
 
         // Import images with new filenames

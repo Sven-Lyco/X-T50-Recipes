@@ -12,7 +12,7 @@ import { notifications } from '@mantine/notifications'
 import '@mantine/carousel/styles.css'
 import { useRecipe, useDeleteRecipe, useToggleFavorite, useRecipes } from '../api/recipes'
 import { MONOCHROME_SIMS, filmSimLabel } from '../filmSimLabel'
-import { dynamicRangeLabel, grainSizeLabel, isoModeLabel, strengthLabel, wbModeLabel } from '../utils/labels'
+import { dynamicRangeLabel, grainSizeLabel, isoModeLabel, scenarioLabel, strengthLabel, wbModeLabel } from '../utils/labels'
 
 function ParamRow({ label, value }: { label: string; value: string | number | null | undefined }) {
   if (value == null) return null
@@ -113,6 +113,7 @@ export default function RecipeDetailPage() {
             <Group gap="xs">
               <Badge color="dark" variant="light">{filmSimLabel(recipe.filmSimulation)}</Badge>
               {recipe.cameraSlot && <Badge color="dark" variant="filled">{recipe.cameraSlot}</Badge>}
+              {recipe.shootingScenario && <Badge color="teal" variant="light">{scenarioLabel(recipe.shootingScenario)}</Badge>}
               {recipe.aiGenerated && <Badge color="violet" variant="light">KI-Generiert</Badge>}
             </Group>
           </Stack>

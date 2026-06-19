@@ -23,9 +23,10 @@ public class RecipeController {
     public List<RecipeListItem> list(
             @RequestParam(required = false) FilmSimulation filmSimulation,
             @RequestParam(required = false) String tag,
-            @RequestParam(required = false, defaultValue = "false") boolean favorite
+            @RequestParam(required = false, defaultValue = "false") boolean favorite,
+            @RequestParam(required = false) ShootingScenario scenario
     ) {
-        return recipeService.findAll(filmSimulation, tag, favorite);
+        return recipeService.findAll(filmSimulation, tag, favorite, scenario);
     }
 
     @GetMapping("/{id}")

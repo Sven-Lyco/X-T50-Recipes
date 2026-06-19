@@ -17,7 +17,7 @@ public class RecipeService {
     private final RecipeRepository recipeRepository;
 
     @Transactional(readOnly = true)
-    public List<RecipeListItem> findAll(FilmSimulation filmSimulation, String tag, boolean onlyFavorites) {
+    public List<RecipeListItem> findAll(FilmSimulation filmSimulation, String tag, boolean onlyFavorites, ShootingScenario scenario) {
         boolean hasTag = tag != null && !tag.isBlank();
         List<Recipe> recipes;
         if (filmSimulation != null && hasTag) {
@@ -31,6 +31,7 @@ public class RecipeService {
         }
         return recipes.stream()
                 .filter(r -> !onlyFavorites || r.isFavorite())
+                .filter(r -> scenario == null || scenario.equals(r.getShootingScenario()))
                 .map(RecipeListItem::from)
                 .toList();
     }
@@ -139,5 +140,6 @@ public class RecipeService {
                 : new String[0]);
         recipe.setCameraSlot(req.cameraSlot());
         recipe.setAiGenerated(Boolean.TRUE.equals(req.aiGenerated()));
+        recipe.setShootingScenario(req.shootingScenario());
     }
 }

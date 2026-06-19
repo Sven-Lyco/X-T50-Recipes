@@ -12,14 +12,15 @@ public record RecipeListItem(
         List<String> tags,
         String previewImageFilename,
         boolean favorite,
-        boolean aiGenerated
+        boolean aiGenerated,
+        ShootingScenario shootingScenario
 ) {
     static RecipeListItem from(Recipe r) {
         String preview = r.getImages().isEmpty() ? null : r.getImages().get(0).getFilename();
         return new RecipeListItem(
                 r.getId(), r.getName(), r.getFilmSimulation(), r.getCameraSlot(),
                 r.getTags() != null ? Arrays.asList(r.getTags()) : List.of(),
-                preview, r.isFavorite(), r.isAiGenerated()
+                preview, r.isFavorite(), r.isAiGenerated(), r.getShootingScenario()
         );
     }
 }

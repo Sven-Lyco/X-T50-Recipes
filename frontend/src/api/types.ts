@@ -17,6 +17,11 @@ export type WhiteBalanceMode =
 export type CameraSlot = 'C1' | 'C2' | 'C3' | 'C4' | 'C5' | 'C6' | 'C7'
 export const CAMERA_SLOTS: CameraSlot[] = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7']
 
+export type ShootingScenario =
+  | 'PORTRAIT' | 'LANDSCAPE' | 'STREET' | 'LOW_LIGHT' | 'GOLDEN_HOUR' | 'BLUE_HOUR' | 'NIGHT'
+  | 'NATURE' | 'WILDLIFE' | 'TRAVEL' | 'ARCHITECTURE' | 'INTERIOR'
+  | 'FOOD' | 'MACRO' | 'SPORT' | 'EVENT' | 'WEDDING' | 'BEACH' | 'FOG'
+
 export interface RecipeImage {
   id: string
   filename: string
@@ -33,6 +38,7 @@ export interface RecipeListItem {
   previewImageFilename: string | null
   favorite: boolean
   aiGenerated: boolean
+  shootingScenario: ShootingScenario | null
 }
 
 export interface Recipe {
@@ -65,6 +71,7 @@ export interface Recipe {
   cameraSlot: CameraSlot | null
   favorite: boolean
   aiGenerated: boolean
+  shootingScenario: ShootingScenario | null
   images: RecipeImage[]
   createdAt: string
   updatedAt: string
@@ -98,6 +105,7 @@ export interface RecipeRequest {
   tags: string[]
   cameraSlot: CameraSlot | null
   aiGenerated?: boolean
+  shootingScenario: ShootingScenario | null
 }
 
 export interface SlotConflict {

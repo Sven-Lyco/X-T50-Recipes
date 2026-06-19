@@ -6,7 +6,7 @@ import {
 import { useRecipesBulk } from '../api/recipes'
 import { computeSimilarity, similarityColor } from '../utils/recipeSimilarity'
 import { filmSimLabel, MONOCHROME_SIMS } from '../filmSimLabel'
-import { dynamicRangeLabel, grainSizeLabel, isoModeLabel, strengthLabel, wbModeLabel } from '../utils/labels'
+import { dynamicRangeLabel, grainSizeLabel, isoModeLabel, scenarioLabel, strengthLabel, wbModeLabel } from '../utils/labels'
 import type { Recipe } from '../api/types'
 
 function signed(n: number) {
@@ -24,6 +24,7 @@ const ROWS: ParamRow[] = [
   { section: 'Grundeinstellungen', label: 'Filmsimulation', getValue: (r) => filmSimLabel(r.filmSimulation) },
   { section: 'Grundeinstellungen', label: 'Dynamikbereich', getValue: (r) => dynamicRangeLabel(r.dynamicRange) },
   { section: 'Grundeinstellungen', label: 'ISO-Modus', getValue: (r) => r.isoMode ? isoModeLabel(r.isoMode) : '—', show: (rs) => rs.some((r) => r.isoMode != null) },
+  { section: 'Grundeinstellungen', label: 'Szenario', getValue: (r) => r.shootingScenario ? scenarioLabel(r.shootingScenario) : '—', show: (rs) => rs.some((r) => r.shootingScenario != null) },
   { section: 'Tonkurve & Bildparameter', label: 'Spitzlichter', getValue: (r) => signed(r.highlightTone) },
   { section: 'Tonkurve & Bildparameter', label: 'Schatten', getValue: (r) => signed(r.shadowTone) },
   { section: 'Tonkurve & Bildparameter', label: 'Farbe', getValue: (r) => signed(r.color) },

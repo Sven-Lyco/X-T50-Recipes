@@ -8,7 +8,8 @@ import { IconStar, IconStarFilled } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
 import { useRecipes, useToggleFavorite, useImportRecipe } from '../api/recipes'
 import { FILM_SIMS, filmSimLabel } from '../filmSimLabel'
-import type { FilmSimulation, RecipeListItem } from '../api/types'
+import type { FilmSimulation, RecipeListItem, ShootingScenario } from '../api/types'
+import { SCENARIO_DATA, scenarioLabel } from '../utils/labels'
 
 const FILM_SIM_OPTIONS = FILM_SIMS.map((fs) => ({ value: fs, label: filmSimLabel(fs) }))
 
@@ -35,8 +36,9 @@ export default function LibraryPage() {
   const [filmSim, setFilmSim] = useState<FilmSimulation | null>(null)
   const [tag, setTag] = useState<string | null>(null)
   const [onlyFavorites, setOnlyFavorites] = useState(false)
+  const [scenario, setScenario] = useState<ShootingScenario | null>(null)
   const [sort, setSort] = useState('date_desc')
-  const { data: recipes, isLoading } = useRecipes(filmSim ?? undefined, tag ?? undefined, onlyFavorites)
+  const { data: recipes, isLoading } = useRecipes(filmSim ?? undefined, tag ?? undefined, onlyFavorites, scenario ?? undefined)
   const { data: allRecipes } = useRecipes()
   const tagOptions = useMemo(
     () => [...new Set((allRecipes ?? []).flatMap((r) => r.tags).map((t) => t.toLowerCase()))].sort(),
@@ -92,6 +94,14 @@ export default function LibraryPage() {
           searchable
           flex={1}
           miw={120}
+        />
+        <Select
+          data={SCENARIO_DATA}
+          value={scenario}
+          onChange={(v) => setScenario(v as ShootingScenario | null)}
+          w={{ base: '100%', sm: 160 }}
+          placeholder="Szenario"
+          clearable
         />
         <Select
           data={SORT_OPTIONS}
@@ -170,6 +180,9 @@ export default function LibraryPage() {
                 <Badge size="sm" color="dark" variant="filled" w="fit-content">
                   {recipe.cameraSlot}
                 </Badge>
+              )}
+              {recipe.shootingScenario && (
+                <Badge size="sm" color="teal" variant="light" w="fit-content">{scenarioLabel(recipe.shootingScenario)}</Badge>
               )}
               {recipe.aiGenerated && (
                 <Badge size="sm" color="violet" variant="light" w="fit-content">KI</Badge>

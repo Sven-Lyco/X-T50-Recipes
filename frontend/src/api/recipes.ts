@@ -1,15 +1,16 @@
 import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query'
 import client from './client'
-import type { Recipe, RecipeListItem, RecipeRequest, CameraSlot } from './types'
+import type { Recipe, RecipeListItem, RecipeRequest, CameraSlot, ShootingScenario } from './types'
 
-export function useRecipes(filmSimulation?: string, tag?: string, onlyFavorites?: boolean) {
+export function useRecipes(filmSimulation?: string, tag?: string, onlyFavorites?: boolean, scenario?: ShootingScenario) {
   return useQuery({
-    queryKey: ['recipes', filmSimulation, tag, onlyFavorites],
+    queryKey: ['recipes', filmSimulation, tag, onlyFavorites, scenario],
     queryFn: async () => {
       const params = new URLSearchParams()
       if (filmSimulation) params.set('filmSimulation', filmSimulation)
       if (tag) params.set('tag', tag)
       if (onlyFavorites) params.set('favorite', 'true')
+      if (scenario) params.set('scenario', scenario)
       const { data } = await client.get<RecipeListItem[]>(`/recipes?${params}`)
       return data
     },

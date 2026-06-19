@@ -112,6 +112,10 @@ public class Recipe {
     @Column(name = "ai_generated", nullable = false)
     private boolean aiGenerated = false;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "shooting_scenario", length = 20)
+    private ShootingScenario shootingScenario;
+
     @OneToMany(mappedBy = "recipe", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("sortOrder ASC")
     private List<RecipeImage> images = new ArrayList<>();

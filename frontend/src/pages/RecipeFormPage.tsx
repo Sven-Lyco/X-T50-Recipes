@@ -18,8 +18,8 @@ import { CSS } from '@dnd-kit/utilities'
 import { IconGripVertical, IconMaximize, IconMinus, IconPlus, IconX } from '@tabler/icons-react'
 import { useRecipe, useRecipes, useCreateRecipe, useUpdateRecipe, useUploadImage, useDeleteImage, useReorderImages } from '../api/recipes'
 import { FILM_SIMS, MONOCHROME_SIMS, filmSimLabel } from '../filmSimLabel'
-import { CAMERA_SLOTS, type CameraSlot, type GrainSize, type GrainStrength, type RecipeRequest, type WhiteBalanceMode } from '../api/types'
-import { DR_DATA, GRAIN_SIZE_DATA, ISO_MODE_DATA, STRENGTH_DATA, wbModeLabel } from '../utils/labels'
+import { CAMERA_SLOTS, type CameraSlot, type GrainSize, type GrainStrength, type RecipeRequest, type ShootingScenario, type WhiteBalanceMode } from '../api/types'
+import { DR_DATA, GRAIN_SIZE_DATA, ISO_MODE_DATA, SCENARIO_DATA, STRENGTH_DATA, wbModeLabel } from '../utils/labels'
 
 const WB_MODES: WhiteBalanceMode[] = [
   'AUTO_WHITE', 'AUTO', 'AUTO_AMBIENT',
@@ -37,7 +37,7 @@ const DEFAULTS: RecipeRequest = {
   whiteBalanceMode: 'AUTO', wbShiftRed: 0, wbShiftBlue: 0, colorTempKelvin: null,
   monochromeWarmCool: null, monochromeGreenMagenta: null,
   isoMode: null, isoNote: null, expCompNote: null, description: null, inspirationSource: null,
-  tags: [], cameraSlot: null, aiGenerated: false,
+  tags: [], cameraSlot: null, aiGenerated: false, shootingScenario: null,
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
@@ -358,6 +358,14 @@ export default function RecipeFormPage() {
               value={form.values.tags}
               onChange={(v) => form.setFieldValue('tags', v.map((t) => t.toLowerCase()))}
               data={existingTags}
+            />
+            <Select
+              label="Shooting-Szenario"
+              placeholder="Kein Szenario"
+              clearable
+              data={SCENARIO_DATA}
+              value={form.values.shootingScenario}
+              onChange={(v) => form.setFieldValue('shootingScenario', v as ShootingScenario | null)}
             />
           </Stack>
         </Paper>

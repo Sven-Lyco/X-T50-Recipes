@@ -75,3 +75,31 @@ export const ISO_MODE_DATA = [
   { label: 'Auto 2', value: 'AUTO_2' },
   { label: 'Auto 3', value: 'AUTO_3' },
 ]
+
+const SCENARIO_LABELS: Record<string, string> = {
+  PORTRAIT: 'Portrait',
+  LANDSCAPE: 'Landschaft',
+  STREET: 'Street',
+  LOW_LIGHT: 'Schwachlicht',
+  GOLDEN_HOUR: 'Golden Hour',
+  BLUE_HOUR: 'Blaue Stunde',
+  NIGHT: 'Nacht',
+  NATURE: 'Natur',
+  WILDLIFE: 'Wildlife',
+  TRAVEL: 'Reise',
+  ARCHITECTURE: 'Architektur',
+  INTERIOR: 'Interior',
+  FOOD: 'Food',
+  MACRO: 'Makro',
+  SPORT: 'Sport',
+  EVENT: 'Event / Party',
+  WEDDING: 'Hochzeit',
+  BEACH: 'Strand',
+  FOG: 'Nebel / Mist',
+}
+
+export function scenarioLabel(v: string): string {
+  return SCENARIO_LABELS[v] ?? v
+}
+
+export const SCENARIO_DATA = Object.entries(SCENARIO_LABELS).map(([value, label]) => ({ value, label }))

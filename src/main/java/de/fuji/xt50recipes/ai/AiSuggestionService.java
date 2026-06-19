@@ -155,7 +155,8 @@ public class AiSuggestionService {
                     null,
                     List.of(),
                     null,
-                    true
+                    true,
+                    null
             );
         } catch (Exception e) {
             log.error("Failed to parse AI response: {}", e.getMessage(), e);
