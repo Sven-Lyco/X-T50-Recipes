@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Stack, Title, Text, Center, Loader, Paper, Group, Box } from '@mantine/core'
+import { Stack, Title, Text, Center, Loader, Paper, Group, Box, Switch } from '@mantine/core'
 import { useRecipes, useRecipesBulk } from '../api/recipes'
 import { filmSimLabel } from '../filmSimLabel'
 import { computeMds } from '../utils/recipePca'
@@ -35,13 +35,19 @@ const PAD = 48
 export default function SimilarityMapPage() {
   const navigate = useNavigate()
   const [hovered, setHovered] = useState<string | null>(null)
+  const [onlySlots, setOnlySlots] = useState(false)
 
   const { data: list, isLoading: listLoading } = useRecipes()
   const ids = useMemo(() => list?.map((r) => r.id) ?? [], [list])
-  const { data: recipes, isLoading: recipesLoading } = useRecipesBulk(ids)
+  const { data: allRecipes, isLoading: recipesLoading } = useRecipesBulk(ids)
+
+  const recipes = useMemo(
+    () => onlySlots ? allRecipes?.filter((r) => r.cameraSlot != null) : allRecipes,
+    [allRecipes, onlySlots]
+  )
 
   const points = useMemo(() => {
-    if (!recipes || recipes.length < 3) return null
+    if (!recipes || recipes.length < 2) return null
     const coords = computeMds(recipes)
     return recipes.map((r, i) => ({ recipe: r, x: coords[i][0], y: coords[i][1] }))
   }, [recipes])
@@ -53,7 +59,11 @@ export default function SimilarityMapPage() {
     return (
       <Stack gap="lg">
         <Title order={2}>Ähnlichkeits-Map</Title>
-        <Text c="dimmed">Mindestens 3 Recipes werden für die Ähnlichkeits-Map benötigt.</Text>
+        <Text c="dimmed">
+          {onlySlots
+            ? 'Mindestens 2 Recipes müssen einem Kamera-Slot (C1–C7) zugewiesen sein.'
+            : 'Mindestens 2 Recipes werden für die Ähnlichkeits-Map benötigt.'}
+        </Text>
       </Stack>
     )
   }
@@ -75,12 +85,20 @@ export default function SimilarityMapPage() {
 
   return (
     <Stack gap="lg">
-      <Stack gap={4}>
-        <Title order={2}>Ähnlichkeits-Map</Title>
-        <Text size="sm" c="dimmed">
-          Recipes mit ähnlichen Kameraparametern clustern zusammen. Farbe = Filmsimulation. Klick öffnet das Recipe.
-        </Text>
-      </Stack>
+      <Group justify="space-between" align="flex-start">
+        <Stack gap={4}>
+          <Title order={2}>Ähnlichkeits-Map</Title>
+          <Text size="sm" c="dimmed">
+            Recipes mit ähnlichen Kameraparametern clustern zusammen. Farbe = Filmsimulation. Klick öffnet das Recipe.
+          </Text>
+        </Stack>
+        <Switch
+          label="Nur C1–C7"
+          checked={onlySlots}
+          onChange={(e) => setOnlySlots(e.currentTarget.checked)}
+          mt={4}
+        />
+      </Group>
 
       <Paper withBorder radius="md" style={{ overflowX: 'auto' }}>
         <svg
