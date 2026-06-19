@@ -39,6 +39,23 @@ export default function RecipeDetailPage() {
   const [lightbox, setLightbox] = useState<string | null>(null)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [pdfLoading, setPdfLoading] = useState(false)
+  const [zipLoading, setZipLoading] = useState(false)
+
+  async function handleZipExport() {
+    setZipLoading(true)
+    try {
+      const res = await fetch(`/api/recipes/${id}/export`)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${recipe!.name}.zip`
+      a.click()
+      URL.revokeObjectURL(url)
+    } finally {
+      setZipLoading(false)
+    }
+  }
 
   async function handlePdfExport() {
     setPdfLoading(true)
@@ -291,6 +308,9 @@ export default function RecipeDetailPage() {
       <Group gap="xs">
         <Button component={Link} to={`/recipes/${id}/edit`} variant="default">
           Bearbeiten
+        </Button>
+        <Button variant="default" loading={zipLoading} onClick={handleZipExport}>
+          Als ZIP exportieren
         </Button>
         <Button variant="default" loading={pdfLoading} onClick={handlePdfExport}>
           Als PDF exportieren

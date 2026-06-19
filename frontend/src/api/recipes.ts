@@ -131,6 +131,18 @@ export function useSuggestRecipe() {
   })
 }
 
+export function useImportRecipe() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (file: File) => {
+      const fd = new FormData()
+      fd.append('file', file)
+      return client.post<Recipe>('/recipes/import', fd).then((r) => r.data)
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['recipes'] }),
+  })
+}
+
 export function useReorderImages(recipeId: string) {
   const qc = useQueryClient()
   return useMutation({

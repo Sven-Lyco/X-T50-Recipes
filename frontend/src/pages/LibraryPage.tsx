@@ -1,11 +1,12 @@
-import { useState, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useMemo, useRef } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   Group, Title, Button, Select,
   SimpleGrid, Card, Image, Text, Badge, Stack, Box, Center, ActionIcon, Loader,
 } from '@mantine/core'
 import { IconStar, IconStarFilled } from '@tabler/icons-react'
-import { useRecipes, useToggleFavorite } from '../api/recipes'
+import { notifications } from '@mantine/notifications'
+import { useRecipes, useToggleFavorite, useImportRecipe } from '../api/recipes'
 import { FILM_SIMS, filmSimLabel } from '../filmSimLabel'
 import type { FilmSimulation, RecipeListItem } from '../api/types'
 
@@ -43,12 +44,34 @@ export default function LibraryPage() {
   )
   const sortedRecipes = useMemo(() => sortRecipes(recipes ?? [], sort), [recipes, sort])
   const toggleFavorite = useToggleFavorite()
+  const importRecipe = useImportRecipe()
+  const importRef = useRef<HTMLInputElement>(null)
+  const navigate = useNavigate()
+
+  async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ''
+    try {
+      const recipe = await importRecipe.mutateAsync(file)
+      notifications.show({ color: 'green', message: `„${recipe.name}" importiert` })
+      navigate(`/recipes/${recipe.id}`)
+    } catch {
+      notifications.show({ color: 'red', title: 'Import fehlgeschlagen', message: 'Ungültige ZIP-Datei.' })
+    }
+  }
 
   return (
     <Stack gap="lg">
       <Group justify="space-between" align="center">
         <Title order={2}>Bibliothek</Title>
-        <Button component={Link} to="/recipes/new">+ Neues Recipe</Button>
+        <Group gap="xs">
+          <input ref={importRef} type="file" accept=".zip" style={{ display: 'none' }} onChange={handleImport} />
+          <Button variant="default" loading={importRecipe.isPending} onClick={() => importRef.current?.click()}>
+            ZIP importieren
+          </Button>
+          <Button component={Link} to="/recipes/new">+ Neues Recipe</Button>
+        </Group>
       </Group>
 
       <Group gap="sm">

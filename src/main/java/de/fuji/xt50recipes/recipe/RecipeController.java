@@ -1,10 +1,13 @@
 package de.fuji.xt50recipes.recipe;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,6 +17,7 @@ import java.util.UUID;
 public class RecipeController {
 
     private final RecipeService recipeService;
+    private final RecipeExportService recipeExportService;
 
     @GetMapping
     public List<RecipeListItem> list(
@@ -62,6 +66,17 @@ public class RecipeController {
     @PutMapping("/{id}/favorite")
     public RecipeResponse setFavorite(@PathVariable UUID id, @RequestBody FavoriteRequest request) {
         return recipeService.setFavorite(id, request.favorite());
+    }
+
+    @GetMapping("/{id}/export")
+    public void export(@PathVariable UUID id, HttpServletResponse response) throws IOException {
+        recipeExportService.exportZip(id, response);
+    }
+
+    @PostMapping("/import")
+    @ResponseStatus(HttpStatus.CREATED)
+    public RecipeResponse importRecipe(@RequestParam("file") MultipartFile file) throws IOException {
+        return recipeExportService.importZip(file);
     }
 
     public record CameraSlotRequest(CameraSlot slot, boolean force) {}

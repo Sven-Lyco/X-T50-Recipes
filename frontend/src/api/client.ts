@@ -5,7 +5,7 @@ const client = axios.create({ baseURL: '/api', withCredentials: true })
 client.interceptors.response.use(
   (res) => res,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 || error.response?.status === 403) {
       localStorage.removeItem('loggedIn')
       window.location.replace('/login')
       return new Promise(() => {})
