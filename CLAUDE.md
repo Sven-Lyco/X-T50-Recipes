@@ -172,3 +172,20 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 
 - Bild-Upload-Limit: Coolify/Traefik blockiert große Uploads (>1 MB?) – Traefik-Middleware
   für Body-Buffering muss in Coolify konfiguriert werden
+
+## Geplante Features
+
+### Kurzfristig
+
+- **Sortierung in der Bibliothek** – nach Name, Datum, Filmsimulation (aktuell nur Datum desc)
+- **JSON Export/Import** – einzelnes Recipe als `.json` herunterladen und wieder importieren
+- **EXIF aus Referenzfotos lesen** – beim KI-Upload EXIF-Daten (Belichtung, ISO, Weißabgleich)
+  extrahieren und als zusätzlichen Kontext an die KI mitschicken
+- **Shooting-Szenarien / Kategorien** – strukturierte Zuordnung neben Tags
+  (Portrait, Landschaft, Street, Low Light etc.), Filteroption in der Bibliothek
+
+### Ideen für später
+
+- **Visuelle Ähnlichkeits-Map** – alle Recipes als Punkte in 2D (PCA-Dimensionsreduktion
+  der numerischen Kameraparameter), ähnliche Recipes clustern zusammen,
+  Farbe = Filmsimulation, Klick → Detailansicht; komplett client-seitig, kein Backend nötig
