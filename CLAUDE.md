@@ -206,3 +206,10 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 - **C1–C7 Spickzettel als PDF** – alle sieben aktiven Slots auf einer Seite zum Ausdrucken
 - **Ähnliche Recipes per Score** – Detailansicht zeigt aktuell Recipes gleicher Filmsimulation;
   sollte stattdessen `computeSimilarity()` nutzen
+- **Recipe-Protokoll** – jede Änderung der C1–C7-Belegung wird automatisch geloggt
+  (Slot, altes Recipe, neues Recipe, Zeitstempel); einfache Protokoll-Ansicht zeigt welche
+  Slots du häufig tauschst (aktives Experimentieren) vs. welche seit Monaten gleich sind
+  (festes Repertoire); eigene DB-Tabelle `slot_change_log`
+- **Recipe-Variation** – bestehendes Recipe als Ausgangspunkt: KI kennt alle aktuellen
+  Werte und schlägt eine gezielte Abwandlung vor („wärmer", „mehr analog", „weniger Körnung");
+  Ergebnis landet wie bei der KI-Generierung im Bearbeiten-Formular zur Kontrolle
