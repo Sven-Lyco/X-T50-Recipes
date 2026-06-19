@@ -65,6 +65,12 @@ export default function Layout() {
             leftSection={<ThemeIcon size="sm" variant="light" color="violet"><IconWand size={14} /></ThemeIcon>}
             onClick={close}
           />
+          <MantineNavLink
+            component={NavLink}
+            to="/map"
+            label="Ähnlichkeits-Map"
+            onClick={close}
+          />
         </Stack>
         <Button variant="subtle" color="gray" onClick={handleLogout} mt="auto">
           Abmelden
