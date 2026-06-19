@@ -21,7 +21,7 @@ import java.util.Map;
 public class AiSuggestionService {
 
     private static final String ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
-    private static final String DEFAULT_MODEL = "claude-haiku-4-5-20251001";
+    private static final String DEFAULT_MODEL = "claude-sonnet-4-6";
     private static final java.util.Set<String> ALLOWED_MODELS = java.util.Set.of(
             "claude-haiku-4-5-20251001",
             "claude-sonnet-4-6",

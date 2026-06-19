@@ -33,7 +33,7 @@ aktuell auf welcher Custom-Bank (C1–C7) der Kamera geladen ist.
 - React + TypeScript + Vite
 - State Management: bewusst leichtgewichtig halten (React Query für Server-State,
   kein Redux nötig für eine CRUD-App dieser Größe)
-- `@emotion/styled` für Styling (kein Plain CSS, keine Inline-Styles)
+- Mantine UI (`@mantine/core`) für Komponenten, `@emotion/styled` für Custom-Styling (kein Plain CSS, keine Inline-Styles)
 - `@react-pdf/renderer` für PDF-Export
 - Responsive/mobilfreundlich inkl. PWA-Konfiguration (apple-mobile-web-app-capable,
   Web App Manifest) für iOS/iPadOS Home-Screen-Installation
@@ -163,7 +163,7 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 - Endpoint: `POST /api/suggest` (JWT-geschützt)
 - Bis zu 5 Bilder als Multipart (`images[]`), optionale `description`, optionales `model`
 - MIME-Typ wird aus Magic Bytes erkannt (nicht dem HTTP-Header vertraut)
-- Modelle: `claude-haiku-4-5-20251001` (Default-Fallback), `claude-sonnet-4-6` (UI-Default), `claude-opus-4-8`
+- Modelle: `claude-sonnet-4-6` (Default), `claude-haiku-4-5-20251001`, `claude-opus-4-8`
 - max_tokens: 2048 (erhöht wegen description-Feld)
 - Prompt-Reihenfolge: technische Felder zuerst, description zuletzt (verhindert Token-Knappheit bei Zahlenwerten)
 - Env-Var: `ANTHROPIC_API_KEY`
