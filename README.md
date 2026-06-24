@@ -23,6 +23,50 @@ Persönliche Web-App zur Verwaltung von Fujifilm X-T50 Film-Simulation-Recipes. 
 | KI | Anthropic Claude Vision API (Haiku / Sonnet / Opus) |
 | Deployment | Docker (Multi-Stage), Coolify, Hetzner |
 
+## Projektstruktur
+
+```text
+X-T50-Recipes/
+├── src/main/java/de/fuji/xt50recipes/
+│   ├── auth/          JWT, Security, Rate Limiting
+│   ├── recipe/        CRUD, Camera Slots, Export/Import
+│   ├── image/         Upload, Storage, Reorder
+│   ├── ai/            KI-Generierung, Recipe Match, ImageUtils
+│   ├── user/          AppUser Entity
+│   └── config/        Security, SPA-Fallback, Image-Serving
+├── src/main/resources/
+│   ├── db/migration/  Flyway-Migrationen (V1–V8)
+│   └── application.yml
+├── frontend/          React + TypeScript + Vite
+│   └── src/
+│       ├── pages/     Screens (Library, Detail, Form, Camera, Compare, Map, Match, Generate)
+│       ├── api/       React Query Hooks + Axios Client
+│       ├── utils/     Similarity-Score, MDS-Algorithmus, Labels
+│       └── components/ PDF-Renderer
+├── docs/architecture/ arc42-Architekturdokumentation
+├── Dockerfile         Multi-Stage Build (Node → Gradle → JRE)
+└── docker-compose.yml Lokale Entwicklung + Produktiv-Setup
+```
+
+## Architekturdokumentation
+
+Die vollständige arc42-Dokumentation liegt unter [`docs/architecture/`](docs/architecture/):
+
+| Dokument | Inhalt |
+|---|---|
+| [01 — Einführung & Ziele](docs/architecture/01-introduction-goals.md) | Motivation, Ziele, Qualitätsanforderungen |
+| [02 — Randbedingungen](docs/architecture/02-constraints.md) | Technische und organisatorische Constraints |
+| [03 — Systemkontext](docs/architecture/03-context-scope.md) | Systemgrenzen, externe Schnittstellen |
+| [04 — Lösungsstrategie](docs/architecture/04-solution-strategy.md) | Zentrale Architekturentscheidungen im Überblick |
+| [05 — Bausteinsicht](docs/architecture/05-building-block-view.md) | Backend-Packages, Frontend-Struktur, alle Klassen |
+| [06 — Laufzeitsicht](docs/architecture/06-runtime-view.md) | Login, KI-Generierung, Recipe Match, Slot-Zuweisung, MDS-Map |
+| [07 — Verteilungssicht](docs/architecture/07-deployment-view.md) | Docker-Build, Coolify, Volumes, Env-Vars |
+| [08 — Querschnittliche Konzepte](docs/architecture/08-crosscutting-concepts.md) | Auth, Bild-Handling, Migrationen, KI-Integration, Ähnlichkeits-Algo |
+| [09 — Architekturentscheidungen](docs/architecture/09-decisions/) | 7 ADRs (Spring Boot, Mantine, JWT, Storage, MDS, Claude, Deployment) |
+| [10 — Qualitätsanforderungen](docs/architecture/10-quality-requirements.md) | Qualitätsszenarien und Zielwerte |
+| [11 — Risiken & Tech-Debt](docs/architecture/11-risks-technical-debt.md) | Bekannte Risiken und offene Schulden |
+| [12 — Glossar](docs/architecture/12-glossary.md) | Domänen- und Technikbegriffe |
+
 ## Lokale Entwicklung
 
 ### Voraussetzungen

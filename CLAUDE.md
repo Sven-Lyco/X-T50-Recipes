@@ -195,11 +195,6 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 - `@Transactional(readOnly=true)` wegen Lazy-Loading der Images-Collection
 - Antwortformat: `[{id, name, filmSimulation, previewImageFilename, cameraSlot, reason}]`
 
-## Offene Punkte
-
-- Bild-Upload-Limit: Coolify/Traefik blockiert große Uploads (>1 MB?) – Traefik-Middleware
-  für Body-Buffering muss in Coolify konfiguriert werden
-
 ## Geplante Features
 
 - **Sortierung in der Bibliothek** – nach Name, Datum, Filmsimulation (aktuell nur Datum desc)
