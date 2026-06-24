@@ -37,7 +37,7 @@ export default function LoginPage() {
             <TextInput
               label="Benutzername"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => setUsername(e.target.value.toLowerCase())}
               required
               autoFocus
             />
