@@ -21,13 +21,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AiSuggestionService {
 
-    private static final String ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
-    private static final String DEFAULT_MODEL = "claude-sonnet-4-6";
-    private static final java.util.Set<String> ALLOWED_MODELS = java.util.Set.of(
-            "claude-haiku-4-5-20251001",
-            "claude-sonnet-4-6",
-            "claude-opus-4-8"
-    );
 
     @Value("${app.anthropic-api-key}")
     private String apiKey;
@@ -38,10 +31,10 @@ public class AiSuggestionService {
     public record ImageInput(byte[] bytes, String mimeType) {}
 
     public RecipeRequest suggest(List<ImageInput> images, String userDescription, String model) {
-        boolean modelValid = model != null && ALLOWED_MODELS.contains(model);
-        String resolvedModel = modelValid ? model : DEFAULT_MODEL;
+        boolean modelValid = model != null && AiConstants.ALLOWED_MODELS.contains(model);
+        String resolvedModel = modelValid ? model : AiConstants.DEFAULT_MODEL;
         if (!modelValid && model != null && !model.isBlank()) {
-            log.warn("Requested model '{}' not in allowed list, falling back to default '{}'", model, DEFAULT_MODEL);
+            log.warn("Requested model '{}' not in allowed list, falling back to default '{}'", model, AiConstants.DEFAULT_MODEL);
         }
         log.info("AI suggest called: imageCount={}, model={}, apiKeySet={}",
                 images.size(), resolvedModel, apiKey != null && !apiKey.isBlank());
@@ -64,9 +57,13 @@ public class AiSuggestionService {
         List<Map<String, Object>> content = new java.util.ArrayList<>();
         for (int i = 0; i < images.size(); i++) {
             ImageInput img = images.get(i);
-            String base64 = Base64.getEncoder().encodeToString(img.bytes());
             String detectedMime = ImageUtils.detectMimeType(img.bytes(), img.mimeType());
             log.info("Image[{}] mimeType declared={}, detected={}", i, img.mimeType(), detectedMime);
+            if (!AiConstants.SUPPORTED_IMAGE_TYPES.contains(detectedMime)) {
+                throw new AiSuggestionException(
+                        "Bild " + (i + 1) + ": Format nicht unterstützt (" + detectedMime + "). Bitte JPEG, PNG, GIF oder WebP verwenden.");
+            }
+            String base64 = Base64.getEncoder().encodeToString(img.bytes());
             content.add(Map.of("type", "image", "source", Map.of(
                     "type", "base64",
                     "media_type", detectedMime,
@@ -90,7 +87,7 @@ public class AiSuggestionService {
         try {
             log.info("Sending request to Anthropic API, model={}", resolvedModel);
             long startMs = System.currentTimeMillis();
-            ResponseEntity<String> response = restTemplate.postForEntity(ANTHROPIC_URL, request, String.class);
+            ResponseEntity<String> response = restTemplate.postForEntity(AiConstants.ANTHROPIC_URL, request, String.class);
             long durationMs = System.currentTimeMillis() - startMs;
             log.info("Anthropic API responded: status={}, durationMs={}", response.getStatusCode(), durationMs);
             log.debug("Anthropic API response body: {}", response.getBody());

@@ -20,14 +20,6 @@ import java.util.*;
 @RequiredArgsConstructor
 public class RecipeMatchService {
 
-    private static final String ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
-    private static final String DEFAULT_MODEL = "claude-sonnet-4-6";
-    private static final Set<String> ALLOWED_MODELS = Set.of(
-            "claude-haiku-4-5-20251001",
-            "claude-sonnet-4-6",
-            "claude-opus-4-8"
-    );
-
     @Value("${app.anthropic-api-key}")
     private String apiKey;
 
@@ -37,8 +29,8 @@ public class RecipeMatchService {
 
     @Transactional(readOnly = true)
     public List<RecipeMatchResponse> match(byte[] imageBytes, String mimeType, String model, boolean onlySlots) {
-        boolean modelValid = model != null && ALLOWED_MODELS.contains(model);
-        String resolvedModel = modelValid ? model : DEFAULT_MODEL;
+        boolean modelValid = model != null && AiConstants.ALLOWED_MODELS.contains(model);
+        String resolvedModel = modelValid ? model : AiConstants.DEFAULT_MODEL;
 
         List<Recipe> allRecipes = onlySlots
                 ? recipeRepository.findByCameraSlotIsNotNullOrderByCameraSlot()
@@ -51,6 +43,10 @@ public class RecipeMatchService {
         String recipeList = formatRecipes(allRecipes);
         String exifContext = ImageUtils.extractExifContext(imageBytes);
         String detectedMime = ImageUtils.detectMimeType(imageBytes, mimeType);
+        if (!AiConstants.SUPPORTED_IMAGE_TYPES.contains(detectedMime)) {
+            throw new AiSuggestionException(
+                    "Format nicht unterstützt (" + detectedMime + "). Bitte JPEG, PNG, GIF oder WebP verwenden.");
+        }
 
         log.info("Recipe match: imageSize={}bytes, mimeType={}, onlySlots={}, exif={}",
                 imageBytes.length, detectedMime, onlySlots, exifContext != null ? exifContext : "none");
@@ -84,7 +80,7 @@ public class RecipeMatchService {
         try {
             long start = System.currentTimeMillis();
             ResponseEntity<String> response = restTemplate.postForEntity(
-                    ANTHROPIC_URL, new HttpEntity<>(body, headers), String.class
+                    AiConstants.ANTHROPIC_URL, new HttpEntity<>(body, headers), String.class
             );
             log.info("Recipe match: Anthropic responded in {}ms, status={}", System.currentTimeMillis() - start, response.getStatusCode());
             return parseResponse(response.getBody(), allRecipes);
