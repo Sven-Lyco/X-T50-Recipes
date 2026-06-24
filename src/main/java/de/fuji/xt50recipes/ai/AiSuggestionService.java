@@ -188,12 +188,17 @@ public class AiSuggestionService {
             int openQuoteIdx = text.indexOf('"', colonIdx + 1);
             int closingBrace = text.lastIndexOf('}');
             if (openQuoteIdx >= 0 && closingBrace > openQuoteIdx) {
-                // last " before } is the structural closing quote, regardless of what's inside
-                int closingQuote = text.lastIndexOf('"', closingBrace - 1);
-                if (closingQuote > openQuoteIdx) {
-                    extractedDescription = text.substring(openQuoteIdx + 1, closingQuote);
+                // Skip whitespace backward from } — the first non-whitespace char must be "
+                // for description to be the last field (as the prompt enforces).
+                // If it's not ", description isn't last and we can't extract reliably.
+                int ptr = closingBrace - 1;
+                while (ptr > openQuoteIdx && Character.isWhitespace(text.charAt(ptr))) ptr--;
+                if (ptr > openQuoteIdx && text.charAt(ptr) == '"') {
+                    extractedDescription = text.substring(openQuoteIdx + 1, ptr);
                     cleanedText = text.substring(0, descKeyIdx).replaceAll(",?\\s*$", "") + "\n}";
                     log.info("Description extracted positionally ({} chars), retrying JSON parse", extractedDescription.length());
+                } else {
+                    log.warn("Description is not the last JSON field; description will be null in parsed result");
                 }
             }
         }

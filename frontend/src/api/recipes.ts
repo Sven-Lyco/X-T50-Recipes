@@ -19,7 +19,7 @@ export function useRecipes(filmSimulation?: string, tag?: string, onlyFavorites?
 
 export function useRecipe(id: string | undefined) {
   return useQuery({
-    queryKey: ['recipes', id],
+    queryKey: ['recipe', id],
     queryFn: async () => {
       const { data } = await client.get<Recipe>(`/recipes/${id}`)
       return data
@@ -52,6 +52,7 @@ export function useUpdateRecipe(id: string) {
     mutationFn: (req: RecipeRequest) => client.put<Recipe>(`/recipes/${id}`, req).then((r) => r.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['recipes'] })
+      qc.invalidateQueries({ queryKey: ['recipe', id] })
     },
   })
 }
@@ -69,9 +70,10 @@ export function useAssignCameraSlot() {
   return useMutation({
     mutationFn: ({ id, slot, force }: { id: string; slot: CameraSlot | null; force: boolean }) =>
       client.put(`/recipes/${id}/camera-slot`, { slot, force }),
-    onSuccess: () => {
+    onSuccess: (_data, { id }) => {
       qc.invalidateQueries({ queryKey: ['recipes'] })
       qc.invalidateQueries({ queryKey: ['camera-status'] })
+      qc.invalidateQueries({ queryKey: ['recipe', id] })
     },
   })
 }
@@ -81,7 +83,10 @@ export function useToggleFavorite() {
   return useMutation({
     mutationFn: ({ id, favorite }: { id: string; favorite: boolean }) =>
       client.put<Recipe>(`/recipes/${id}/favorite`, { favorite }).then((r) => r.data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['recipes'] }),
+    onSuccess: (_data, { id }) => {
+      qc.invalidateQueries({ queryKey: ['recipes'] })
+      qc.invalidateQueries({ queryKey: ['recipe', id] })
+    },
   })
 }
 
@@ -93,7 +98,7 @@ export function useUploadImage(recipeId: string) {
       form.append('file', file)
       return client.post(`/recipes/${recipeId}/images`, form)
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['recipes', recipeId] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['recipe', recipeId] }),
   })
 }
 
@@ -101,21 +106,21 @@ export function useDeleteImage(recipeId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (imageId: string) => client.delete(`/recipes/${recipeId}/images/${imageId}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['recipes', recipeId] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['recipe', recipeId] }),
   })
 }
 
 export function useRecipesBulk(ids: string[]) {
   const results = useQueries({
     queries: ids.map((id) => ({
-      queryKey: ['recipes', id] as const,
+      queryKey: ['recipe', id] as const,
       queryFn: () => client.get<Recipe>(`/recipes/${id}`).then((r) => r.data),
       enabled: ids.length > 0,
     })),
   })
   const isLoading = results.some((r) => r.isLoading)
-  const data = !isLoading && results.every((r) => r.data)
-    ? results.map((r) => r.data as Recipe)
+  const data = !isLoading
+    ? results.filter((r) => r.data !== undefined).map((r) => r.data as Recipe)
     : undefined
   return { data, isLoading }
 }
@@ -169,6 +174,6 @@ export function useReorderImages(recipeId: string) {
   return useMutation({
     mutationFn: (items: { id: string; sortOrder: number }[]) =>
       client.put(`/recipes/${recipeId}/images/order`, items),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['recipes', recipeId] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['recipe', recipeId] }),
   })
 }
