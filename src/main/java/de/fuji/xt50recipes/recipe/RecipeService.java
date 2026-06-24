@@ -18,20 +18,12 @@ public class RecipeService {
 
     @Transactional(readOnly = true)
     public List<RecipeListItem> findAll(FilmSimulation filmSimulation, String tag, boolean onlyFavorites, ShootingScenario scenario) {
-        boolean hasTag = tag != null && !tag.isBlank();
-        List<Recipe> recipes;
-        if (filmSimulation != null && hasTag) {
-            recipes = recipeRepository.findByFilmSimulationAndTagOrderByCreatedAtDesc(filmSimulation.name(), tag);
-        } else if (filmSimulation != null) {
-            recipes = recipeRepository.findByFilmSimulationOrderByCreatedAtDesc(filmSimulation);
-        } else if (hasTag) {
-            recipes = recipeRepository.findByTagOrderByCreatedAtDesc(tag);
-        } else {
-            recipes = recipeRepository.findAllByOrderByCreatedAtDesc();
-        }
-        return recipes.stream()
-                .filter(r -> !onlyFavorites || r.isFavorite())
-                .filter(r -> scenario == null || scenario.equals(r.getShootingScenario()))
+        return recipeRepository.findByFilters(
+                filmSimulation != null ? filmSimulation.name() : null,
+                tag != null && !tag.isBlank() ? tag : null,
+                onlyFavorites,
+                scenario != null ? scenario.name() : null
+        ).stream()
                 .map(RecipeListItem::from)
                 .toList();
     }
@@ -62,23 +54,7 @@ public class RecipeService {
         log.info("Duplicating recipe: id={}", id);
         Recipe original = getOrThrow(id);
         Recipe copy = new Recipe();
-        applyRequest(copy, new RecipeRequest(
-                "Kopie von " + original.getName(),
-                original.getFilmSimulation(), original.getDynamicRange(),
-                original.getHighlightTone(), original.getShadowTone(),
-                original.getColor(), original.getSharpness(), original.getNoiseReduction(),
-                original.getGrainStrength(), original.getGrainSize(),
-                original.getColorChromeEffect(), original.getColorChromeFxBlue(),
-                original.getWhiteBalanceMode(), original.getWbShiftRed(), original.getWbShiftBlue(),
-                original.getColorTempKelvin(), original.getClarity(),
-                original.getMonochromeWarmCool(), original.getMonochromeGreenMagenta(),
-                original.getIsoMode(), original.getIsoNote(), original.getExpCompNote(),
-                original.getDescription(), original.getInspirationSource(),
-                original.getTags() != null ? java.util.Arrays.asList(original.getTags()) : java.util.List.of(),
-                null, // cameraSlot nicht übernehmen
-                original.isAiGenerated(),
-                original.getShootingScenario()
-        ));
+        applyRequest(copy, RecipeRequest.copyFrom(original));
         RecipeResponse response = RecipeResponse.from(recipeRepository.save(copy));
         log.info("Recipe duplicated: originalId={}, newId={}", id, response.id());
         return response;

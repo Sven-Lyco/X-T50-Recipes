@@ -3,6 +3,7 @@ package de.fuji.xt50recipes.recipe;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.util.Arrays;
 import java.util.List;
 
 public record RecipeRequest(
@@ -34,4 +35,37 @@ public record RecipeRequest(
         CameraSlot cameraSlot,
         Boolean aiGenerated,
         ShootingScenario shootingScenario
-) {}
+) {
+    public static RecipeRequest copyFrom(Recipe r) {
+        return new RecipeRequest(
+                "Kopie von " + r.getName(),
+                r.getFilmSimulation(),
+                r.getDynamicRange(),
+                r.getHighlightTone(),
+                r.getShadowTone(),
+                r.getColor(),
+                r.getSharpness(),
+                r.getNoiseReduction(),
+                r.getGrainStrength(),
+                r.getGrainSize(),
+                r.getColorChromeEffect(),
+                r.getColorChromeFxBlue(),
+                r.getWhiteBalanceMode(),
+                r.getWbShiftRed(),
+                r.getWbShiftBlue(),
+                r.getColorTempKelvin(),
+                r.getClarity(),
+                r.getMonochromeWarmCool(),
+                r.getMonochromeGreenMagenta(),
+                r.getIsoMode(),
+                r.getIsoNote(),
+                r.getExpCompNote(),
+                r.getDescription(),
+                r.getInspirationSource(),
+                r.getTags() != null ? Arrays.asList(r.getTags()) : List.of(),
+                null,
+                r.isAiGenerated(),
+                r.getShootingScenario()
+        );
+    }
+}

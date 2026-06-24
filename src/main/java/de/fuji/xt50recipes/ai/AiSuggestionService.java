@@ -1,5 +1,6 @@
 package de.fuji.xt50recipes.ai;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fuji.xt50recipes.recipe.*;
@@ -11,13 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
-import com.drew.imaging.ImageMetadataReader;
-import com.drew.metadata.Metadata;
-import com.drew.metadata.exif.ExifSubIFDDirectory;
-import com.drew.metadata.exif.ExifIFD0Directory;
-
-import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +50,7 @@ public class AiSuggestionService {
             log.info("Image[{}]: sizeBytes={}, declaredMime={}", i, images.get(i).bytes().length, images.get(i).mimeType());
         }
 
-        String exifContext = extractExifContext(images);
+        String exifContext = ImageUtils.extractExifContext(images.stream().map(ImageInput::bytes).toList());
         if (exifContext != null) {
             log.info("EXIF context found for {} image(s)", images.size());
             log.debug("EXIF context: {}", exifContext);
@@ -71,7 +65,7 @@ public class AiSuggestionService {
         for (int i = 0; i < images.size(); i++) {
             ImageInput img = images.get(i);
             String base64 = Base64.getEncoder().encodeToString(img.bytes());
-            String detectedMime = detectMimeType(img.bytes(), img.mimeType());
+            String detectedMime = ImageUtils.detectMimeType(img.bytes(), img.mimeType());
             log.info("Image[{}] mimeType declared={}, detected={}", i, img.mimeType(), detectedMime);
             content.add(Map.of("type", "image", "source", Map.of(
                     "type", "base64",
@@ -107,6 +101,28 @@ public class AiSuggestionService {
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private record AiRecipeResponse(
+            String name,
+            String filmSimulation,
+            String dynamicRange,
+            Double highlightTone,
+            Double shadowTone,
+            Integer color,
+            Integer sharpness,
+            Integer noiseReduction,
+            String grainStrength,
+            String grainSize,
+            String colorChromeEffect,
+            String colorChromeFxBlue,
+            String whiteBalanceMode,
+            Integer wbShiftRed,
+            Integer wbShiftBlue,
+            Integer colorTempKelvin,
+            Integer clarity,
+            String description
+    ) {}
+
     private RecipeRequest parseResponse(String responseBody) {
         try {
             JsonNode root = objectMapper.readTree(responseBody);
@@ -114,44 +130,32 @@ public class AiSuggestionService {
             log.info("Parsing AI response, raw text length={}", text.length());
             log.debug("AI response text: {}", text);
 
-            // Strip possible markdown code fences
             text = text.replaceAll("(?s)```json\\s*", "").replaceAll("(?s)```\\s*", "").trim();
 
-            JsonNode json = objectMapper.readTree(text);
-
-            String parsedName = json.path("name").asText("");
-            String parsedFilmSim = json.path("filmSimulation").asText("PROVIA");
-            String parsedDynRange = json.path("dynamicRange").asText("DR100");
-            boolean hasDescription = !json.path("description").isMissingNode() && !json.path("description").isNull();
-            log.info("AI response parsed successfully: name='{}', filmSimulation={}, dynamicRange={}, hasDescription={}",
-                    parsedName, parsedFilmSim, parsedDynRange, hasDescription);
+            AiRecipeResponse ai = parseAiResponse(text);
+            log.info("AI response parsed: name='{}', filmSimulation={}, dynamicRange={}, hasDescription={}",
+                    ai.name(), ai.filmSimulation(), ai.dynamicRange(), ai.description() != null);
 
             return new RecipeRequest(
-                    parsedName,
-                    FilmSimulation.valueOf(parsedFilmSim),
-                    DynamicRange.valueOf(parsedDynRange),
-                    json.path("highlightTone").asDouble(0),
-                    json.path("shadowTone").asDouble(0),
-                    json.path("color").asInt(0),
-                    json.path("sharpness").asInt(0),
-                    json.path("noiseReduction").asInt(0),
-                    GrainStrength.valueOf(json.path("grainStrength").asText("OFF")),
-                    json.path("grainSize").isNull() || json.path("grainSize").isMissingNode() ? null
-                            : GrainSize.valueOf(json.path("grainSize").asText("SMALL")),
-                    EffectStrength.valueOf(json.path("colorChromeEffect").asText("OFF")),
-                    EffectStrength.valueOf(json.path("colorChromeFxBlue").asText("OFF")),
-                    WhiteBalanceMode.valueOf(json.path("whiteBalanceMode").asText("AUTO")),
-                    json.path("wbShiftRed").asInt(0),
-                    json.path("wbShiftBlue").asInt(0),
-                    json.path("colorTempKelvin").isNull() || json.path("colorTempKelvin").isMissingNode() ? null
-                            : json.path("colorTempKelvin").asInt(5200),
-                    json.path("clarity").asInt(0),
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    hasDescription ? json.path("description").asText() : null,
+                    ai.name() != null && !ai.name().isBlank() ? ai.name() : "KI-Recipe",
+                    safeEnum(ai.filmSimulation(), FilmSimulation.class, FilmSimulation.PROVIA),
+                    safeEnum(ai.dynamicRange(), DynamicRange.class, DynamicRange.DR100),
+                    ai.highlightTone() != null ? ai.highlightTone() : 0.0,
+                    ai.shadowTone() != null ? ai.shadowTone() : 0.0,
+                    ai.color() != null ? ai.color() : 0,
+                    ai.sharpness() != null ? ai.sharpness() : 0,
+                    ai.noiseReduction() != null ? ai.noiseReduction() : 0,
+                    safeEnum(ai.grainStrength(), GrainStrength.class, GrainStrength.OFF),
+                    ai.grainSize() != null ? safeEnum(ai.grainSize(), GrainSize.class, GrainSize.SMALL) : null,
+                    safeEnum(ai.colorChromeEffect(), EffectStrength.class, EffectStrength.OFF),
+                    safeEnum(ai.colorChromeFxBlue(), EffectStrength.class, EffectStrength.OFF),
+                    safeEnum(ai.whiteBalanceMode(), WhiteBalanceMode.class, WhiteBalanceMode.AUTO),
+                    ai.wbShiftRed(),
+                    ai.wbShiftBlue(),
+                    ai.colorTempKelvin(),
+                    ai.clarity(),
+                    null, null, null, null, null,
+                    ai.description(),
                     null,
                     List.of(),
                     null,
@@ -164,64 +168,55 @@ public class AiSuggestionService {
         }
     }
 
-    private static String extractExifContext(List<ImageInput> images) {
-        List<String> parts = new ArrayList<>();
-        for (ImageInput img : images) {
-            try {
-                Metadata metadata = ImageMetadataReader.readMetadata(new ByteArrayInputStream(img.bytes()));
-                List<String> fields = new ArrayList<>();
-
-                ExifSubIFDDirectory sub = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
-                if (sub != null) {
-                    if (sub.containsTag(ExifSubIFDDirectory.TAG_ISO_EQUIVALENT))
-                        fields.add("ISO " + sub.getInt(ExifSubIFDDirectory.TAG_ISO_EQUIVALENT));
-                    if (sub.containsTag(ExifSubIFDDirectory.TAG_EXPOSURE_TIME))
-                        fields.add("Belichtung " + sub.getDescription(ExifSubIFDDirectory.TAG_EXPOSURE_TIME));
-                    if (sub.containsTag(ExifSubIFDDirectory.TAG_FNUMBER))
-                        fields.add("Blende " + sub.getDescription(ExifSubIFDDirectory.TAG_FNUMBER));
-                    if (sub.containsTag(ExifSubIFDDirectory.TAG_FOCAL_LENGTH))
-                        fields.add("Brennweite " + sub.getDescription(ExifSubIFDDirectory.TAG_FOCAL_LENGTH));
-                    if (sub.containsTag(ExifSubIFDDirectory.TAG_WHITE_BALANCE_MODE))
-                        fields.add("WB " + sub.getDescription(ExifSubIFDDirectory.TAG_WHITE_BALANCE_MODE));
-                    if (sub.containsTag(ExifSubIFDDirectory.TAG_EXPOSURE_BIAS))
-                        fields.add("Belichtungskorrektur " + sub.getDescription(ExifSubIFDDirectory.TAG_EXPOSURE_BIAS));
-                }
-
-                ExifIFD0Directory ifd0 = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
-                if (ifd0 != null && ifd0.containsTag(ExifIFD0Directory.TAG_MODEL)) {
-                    fields.add(0, "Kamera: " + ifd0.getString(ExifIFD0Directory.TAG_MODEL));
-                }
-
-                if (!fields.isEmpty()) parts.add(String.join(", ", fields));
-            } catch (Exception e) {
-                log.debug("EXIF extraction failed for image: {}", e.getMessage());
-            }
+    private AiRecipeResponse parseAiResponse(String text) throws Exception {
+        try {
+            return objectMapper.treeToValue(objectMapper.readTree(text), AiRecipeResponse.class);
+        } catch (Exception e) {
+            log.warn("Initial JSON parse failed (likely unescaped quotes in description), trying fallback: {}", e.getMessage());
+            return parseWithDescriptionFallback(text);
         }
-        return parts.isEmpty() ? null : String.join(" | ", parts);
     }
 
-    private static String detectMimeType(byte[] bytes, String fallback) {
-        if (bytes.length >= 4) {
-            // JPEG: FF D8 FF
-            if ((bytes[0] & 0xFF) == 0xFF && (bytes[1] & 0xFF) == 0xD8 && (bytes[2] & 0xFF) == 0xFF) {
-                return "image/jpeg";
-            }
-            // PNG: 89 50 4E 47
-            if ((bytes[0] & 0xFF) == 0x89 && bytes[1] == 'P' && bytes[2] == 'N' && bytes[3] == 'G') {
-                return "image/png";
-            }
-            // GIF: 47 49 46 38
-            if (bytes[0] == 'G' && bytes[1] == 'I' && bytes[2] == 'F' && bytes[3] == '8') {
-                return "image/gif";
-            }
-            // WebP: RIFF????WEBP
-            if (bytes[0] == 'R' && bytes[1] == 'I' && bytes[2] == 'F' && bytes[3] == 'F'
-                    && bytes.length >= 12
-                    && bytes[8] == 'W' && bytes[9] == 'E' && bytes[10] == 'B' && bytes[11] == 'P') {
-                return "image/webp";
+    private AiRecipeResponse parseWithDescriptionFallback(String text) throws Exception {
+        // description is always the last JSON field — extract it positionally to survive unescaped quotes
+        String extractedDescription = null;
+        String cleanedText = text;
+
+        int descKeyIdx = text.lastIndexOf("\"description\"");
+        if (descKeyIdx >= 0) {
+            int colonIdx = text.indexOf(':', descKeyIdx);
+            int openQuoteIdx = text.indexOf('"', colonIdx + 1);
+            int closingBrace = text.lastIndexOf('}');
+            if (openQuoteIdx >= 0 && closingBrace > openQuoteIdx) {
+                // last " before } is the structural closing quote, regardless of what's inside
+                int closingQuote = text.lastIndexOf('"', closingBrace - 1);
+                if (closingQuote > openQuoteIdx) {
+                    extractedDescription = text.substring(openQuoteIdx + 1, closingQuote);
+                    cleanedText = text.substring(0, descKeyIdx).replaceAll(",?\\s*$", "") + "\n}";
+                    log.info("Description extracted positionally ({} chars), retrying JSON parse", extractedDescription.length());
+                }
             }
         }
-        return fallback;
+
+        AiRecipeResponse base = objectMapper.treeToValue(objectMapper.readTree(cleanedText), AiRecipeResponse.class);
+        return new AiRecipeResponse(
+                base.name(), base.filmSimulation(), base.dynamicRange(),
+                base.highlightTone(), base.shadowTone(), base.color(),
+                base.sharpness(), base.noiseReduction(), base.grainStrength(),
+                base.grainSize(), base.colorChromeEffect(), base.colorChromeFxBlue(),
+                base.whiteBalanceMode(), base.wbShiftRed(), base.wbShiftBlue(),
+                base.colorTempKelvin(), base.clarity(), extractedDescription
+        );
+    }
+
+    private static <E extends Enum<E>> E safeEnum(String value, Class<E> cls, E fallback) {
+        if (value == null || value.isBlank()) return fallback;
+        try {
+            return Enum.valueOf(cls, value);
+        } catch (IllegalArgumentException e) {
+            log.warn("Unknown {} value '{}', falling back to {}", cls.getSimpleName(), value, fallback);
+            return fallback;
+        }
     }
 
     private String buildPrompt(String userDescription, int imageCount, String exifContext) {
