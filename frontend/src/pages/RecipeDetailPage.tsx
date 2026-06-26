@@ -7,7 +7,7 @@ import {
   Stack, Group, Title, Button, Badge, SimpleGrid,
   Paper, Text, Image, Divider, ActionIcon, Box, AspectRatio, Modal, CloseButton, Card, Center, Anchor, Loader,
 } from '@mantine/core'
-import { IconStar, IconStarFilled } from '@tabler/icons-react'
+import { IconStar, IconStarFilled, IconPhoto } from '@tabler/icons-react'
 import { Carousel } from '@mantine/carousel'
 import { notifications } from '@mantine/notifications'
 import '@mantine/carousel/styles.css'
@@ -15,6 +15,7 @@ import { useRecipe, useDeleteRecipe, useToggleFavorite, useRecipes, useDuplicate
 import { MONOCHROME_SIMS, filmSimLabel } from '../filmSimLabel'
 import { dynamicRangeLabel, grainSizeLabel, isoModeLabel, scenarioLabel, strengthLabel, wbModeLabel } from '../utils/labels'
 import { computeSimilarity, similarityColor } from '../utils/recipeSimilarity'
+import { exportRecipeAsPng } from '../utils/recipeImageExport'
 
 function ParamRow({ label, value }: { label: string; value: string | number | null | undefined }) {
   if (value == null) return null
@@ -55,6 +56,7 @@ export default function RecipeDetailPage() {
   const [pdfLoading, setPdfLoading] = useState(false)
   const [cardPdfLoading, setCardPdfLoading] = useState(false)
   const [zipLoading, setZipLoading] = useState(false)
+  const [imageExportLoading, setImageExportLoading] = useState(false)
 
   async function handleZipExport() {
     setZipLoading(true)
@@ -69,6 +71,15 @@ export default function RecipeDetailPage() {
       URL.revokeObjectURL(url)
     } finally {
       setZipLoading(false)
+    }
+  }
+
+  async function handleImageExport() {
+    setImageExportLoading(true)
+    try {
+      exportRecipeAsPng(recipe!)
+    } finally {
+      setImageExportLoading(false)
     }
   }
 
@@ -367,6 +378,9 @@ export default function RecipeDetailPage() {
         </Button>
         <Button variant="default" loading={cardPdfLoading} onClick={handleCardPdfExport}>
           A6-Karte
+        </Button>
+        <Button variant="default" loading={imageExportLoading} onClick={handleImageExport} leftSection={<IconPhoto size={16} />}>
+          Als Bild
         </Button>
         <Button color="red" variant="light" onClick={() => setDeleteModalOpen(true)} loading={deleteRecipe.isPending}>
           Löschen
