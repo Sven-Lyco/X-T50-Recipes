@@ -5,10 +5,12 @@ import {
 } from '@mantine/core'
 import {
   IconLayoutGrid, IconCamera, IconWand, IconSearch,
-  IconScale, IconChartDots, IconBook,
+  IconScale, IconChartDots, IconBook, IconSettings,
 } from '@tabler/icons-react'
 import { useDisclosure } from '@mantine/hooks'
 import { logout } from '../api/auth'
+import { useSettings } from '../contexts/SettingsContext'
+import { useAiStatus } from '../api/recipes'
 
 function NavIcon({ icon: Icon, color }: { icon: React.ElementType; color: string }) {
   return (
@@ -21,6 +23,9 @@ function NavIcon({ icon: Icon, color }: { icon: React.ElementType; color: string
 export default function Layout() {
   const [opened, { toggle, close }] = useDisclosure()
   const navigate = useNavigate()
+  const { settings } = useSettings()
+  const { data: aiStatus } = useAiStatus()
+  const aiEnabled = settings.aiEnabled && (aiStatus?.available !== false)
 
   async function handleLogout() {
     await logout()
@@ -59,20 +64,24 @@ export default function Layout() {
             leftSection={<NavIcon icon={IconCamera} color="gray" />}
             onClick={close}
           />
-          <MantineNavLink
-            component={NavLink}
-            to="/generate"
-            label="Recipe generieren"
-            leftSection={<NavIcon icon={IconWand} color="violet" />}
-            onClick={close}
-          />
-          <MantineNavLink
-            component={NavLink}
-            to="/match"
-            label="Recipe Match"
-            leftSection={<NavIcon icon={IconSearch} color="teal" />}
-            onClick={close}
-          />
+          {aiEnabled && (
+            <MantineNavLink
+              component={NavLink}
+              to="/generate"
+              label="Recipe generieren"
+              leftSection={<NavIcon icon={IconWand} color="violet" />}
+              onClick={close}
+            />
+          )}
+          {aiEnabled && (
+            <MantineNavLink
+              component={NavLink}
+              to="/match"
+              label="Recipe Match"
+              leftSection={<NavIcon icon={IconSearch} color="teal" />}
+              onClick={close}
+            />
+          )}
           <MantineNavLink
             component={NavLink}
             to="/compare"
@@ -92,6 +101,13 @@ export default function Layout() {
             to="/reference"
             label="Referenz"
             leftSection={<NavIcon icon={IconBook} color="gray" />}
+            onClick={close}
+          />
+          <MantineNavLink
+            component={NavLink}
+            to="/settings"
+            label="Einstellungen"
+            leftSection={<NavIcon icon={IconSettings} color="gray" />}
             onClick={close}
           />
         </Stack>

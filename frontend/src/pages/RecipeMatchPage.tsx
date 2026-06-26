@@ -2,26 +2,21 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Stack, Title, Text, Button, Group, Card, Badge, Image, Box, Center,
-  Paper, SimpleGrid, ThemeIcon, Select, Switch,
+  Paper, SimpleGrid, ThemeIcon, Switch,
 } from '@mantine/core'
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone'
 import '@mantine/dropzone/styles.css'
 import { IconPhoto, IconUpload, IconX, IconSearch } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
 import { useMatchRecipe } from '../api/recipes'
+import { useSettings } from '../contexts/SettingsContext'
 import { filmSimLabel } from '../filmSimLabel'
 import type { RecipeMatchResult } from '../api/types'
 
-const MODEL_OPTIONS = [
-  { value: 'claude-sonnet-4-6', label: 'Sonnet (Standard)' },
-  { value: 'claude-haiku-4-5-20251001', label: 'Haiku (Schnell)' },
-  { value: 'claude-opus-4-8', label: 'Opus (Genau)' },
-]
-
 export default function RecipeMatchPage() {
+  const { settings } = useSettings()
   const [image, setImage] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
-  const [model, setModel] = useState('claude-sonnet-4-6')
   const [onlySlots, setOnlySlots] = useState(false)
   const [results, setResults] = useState<RecipeMatchResult[] | null>(null)
 
@@ -38,7 +33,7 @@ export default function RecipeMatchPage() {
   async function handleAnalyze() {
     if (!image) return
     try {
-      const matches = await matchRecipe.mutateAsync({ image, model, onlySlots })
+      const matches = await matchRecipe.mutateAsync({ image, model: settings.defaultModel, onlySlots })
       setResults(matches)
       if (matches.length === 0) {
         notifications.show({ message: 'Keine passenden Recipes gefunden.', color: 'orange' })
@@ -109,13 +104,6 @@ export default function RecipeMatchPage() {
           )}
 
           <Group>
-            <Select
-              data={MODEL_OPTIONS}
-              value={model}
-              onChange={(v) => v && setModel(v)}
-              size="sm"
-              w={200}
-            />
             <Switch
               label="Nur C1–C7"
               checked={onlySlots}

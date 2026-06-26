@@ -42,7 +42,8 @@ X-T50 Recipes
 | `RecipeRepository` | Spring Data JPA; nativer SQL-Filter für alle Kombinationen (filmSim, tag, favorites, scenario) |
 | `RecipeService` | CRUD, Duplikation, Camera-Slot-Verwaltung mit Konflikt-Handling (force/nicht-force) |
 | `RecipeController` | REST-Endpoints: `/api/recipes/**`, `/api/camera-status` |
-| `RecipeExportService` | ZIP-Export (JSON + Bilder) und ZIP-Import |
+| `RecipeExportService` | ZIP-Export/-Import einzelner Recipes + Bulk-Backup/Restore (`exportAllZip`, `importAllZip`) |
+| `BackupController` | `GET /api/backup` (Download) + `POST /api/backup` (Import/Restore) |
 | `RecipeRequest` | Eingehende DTO (Java Record) |
 | `RecipeResponse` | Vollständige Ausgabe-DTO (Java Record) |
 | `RecipeListItem` | Kompakte Listen-DTO für die Bibliotheksübersicht (Java Record) |
@@ -68,6 +69,7 @@ X-T50 Recipes
 | `AiConstants` | Package-private Konstanten: Anthropic-URL, Default-Modell, ALLOWED_MODELS, SUPPORTED_IMAGE_TYPES |
 | `AiSuggestionController` | `POST /api/suggest` |
 | `RecipeMatchController` | `POST /api/match` |
+| `AiStatusController` | `GET /api/ai-status` → `{ available: boolean }` (prüft ob `ANTHROPIC_API_KEY` gesetzt) |
 | `AiSuggestionException` | Domain-Exception → 502 bei Anthropic-API-Fehler |
 | `RecipeMatchResponse` | Ausgabe-DTO: `{id, name, filmSimulation, previewImageFilename, cameraSlot, reason}` |
 
@@ -98,6 +100,7 @@ X-T50 Recipes
 | `GenerateRecipePage` | `/generate` | KI-Generierung: Fotos hochladen → Formular vorbefüllt |
 | `SimilarityMapPage` | `/map` | Interaktive MDS-Karte; optional nur C1–C7 |
 | `RecipeMatchPage` | `/match` | Foto hochladen → Top-3 passende Recipes |
+| `SettingsPage` | `/settings` | Datensicherung (Backup-Export/-Import) + KI-Einstellungen (Toggle, Standard-Modell) |
 | `ReferencePage` | `/reference` | Parameter-Referenz |
 | `LoginPage` | `/login` | Single-User-Login |
 
@@ -107,7 +110,8 @@ X-T50 Recipes
 |---|---|
 | `recipeSimilarity.ts` | `computeSimilarity(a, b)` → 0–100 (100 = identisch); gewichtete Distanz mit Filmsimulations-Distanzmatrix; genutzt in Ähnlichkeits-Map, Compare, Detailansicht und Duplikat-Check im Formular |
 | `recipePca.ts` | `computeMds(recipes)` → 2D-Koordinaten via Classical MDS (Double Centering + Power Iteration) |
-| `labels.ts` | Deutsche Labels für alle Enum-Werte (kamera-menü-konform) + Select-Daten für Formulare |
+| `labels.ts` | Deutsche Labels für alle Enum-Werte (kamera-menü-konform) + Select-Daten + `MODEL_OPTIONS`/`DEFAULT_MODEL` für KI-Modell-Auswahl |
 | `recipeImageExport.ts` | `exportRecipeAsPng(recipe)` → PNG-Download via Canvas 2D API im fujirecipes.co OCR-Format |
 | `api/client.ts` | Axios-Instanz mit JWT-Interceptor (automatischer `Authorization`-Header) |
-| `api/recipes.ts` | React Query Hooks für alle Recipe-Endpoints; `['recipe', id]` (Einzel) vs. `['recipes', ...]` (Liste) als separate Cache-Namespaces |
+| `api/recipes.ts` | React Query Hooks für alle Recipe-Endpoints; `['recipe', id]` (Einzel) vs. `['recipes', ...]` (Liste) als separate Cache-Namespaces; `useAiStatus()` (staleTime: Infinity) + `useImportBackup()` |
+| `contexts/SettingsContext.tsx` | React Context für App-Einstellungen (`aiEnabled`, `defaultModel`), localStorage-backed; `SettingsProvider` + `useSettings()` Hook |

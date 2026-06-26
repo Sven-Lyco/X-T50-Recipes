@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { isLoggedIn } from './api/auth'
+import { SettingsProvider } from './contexts/SettingsContext'
 import LoginPage from './pages/LoginPage'
 import Layout from './components/Layout'
 import LibraryPage from './pages/LibraryPage'
@@ -12,6 +13,7 @@ import CompareResultPage from './pages/CompareResultPage'
 import GenerateRecipePage from './pages/GenerateRecipePage'
 import SimilarityMapPage from './pages/SimilarityMapPage'
 import RecipeMatchPage from './pages/RecipeMatchPage'
+import SettingsPage from './pages/SettingsPage'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   return isLoggedIn() ? <>{children}</> : <Navigate to="/login" replace />
@@ -19,6 +21,7 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
+    <SettingsProvider>
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route
@@ -40,7 +43,9 @@ export default function App() {
         <Route path="generate" element={<GenerateRecipePage />} />
         <Route path="map" element={<SimilarityMapPage />} />
         <Route path="match" element={<RecipeMatchPage />} />
+        <Route path="settings" element={<SettingsPage />} />
       </Route>
     </Routes>
+    </SettingsProvider>
   )
 }

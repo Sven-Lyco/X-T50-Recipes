@@ -12,6 +12,7 @@ Persönliche Web-App zur Verwaltung von Fujifilm X-T50 Film-Simulation-Recipes. 
 - **Ähnlichkeits-Map** – alle Recipes als interaktive 2D-Karte (MDS), ähnliche Recipes clustern zusammen; optional nur C1–C7
 - **KI-Generierung** – Referenzfoto(s) hochladen → Claude Vision schlägt passende Einstellungen vor (inkl. EXIF-Kontext)
 - **Recipe Match** – Foto hochladen → KI findet die 3 am besten passenden Recipes aus der Bibliothek
+- **Einstellungen** – Backup aller Recipes als ZIP exportieren/importieren; KI-Funktionen global an-/ausschalten; Standard-KI-Modell wählen
 - **PWA** – installierbar auf iOS/iPadOS über den Home-Screen
 
 ## Tech-Stack
@@ -40,7 +41,8 @@ X-T50-Recipes/
 │   └── application.yml
 ├── frontend/          React + TypeScript + Vite
 │   └── src/
-│       ├── pages/     Screens (Library, Detail, Form, Camera, Compare, Map, Match, Generate)
+│       ├── pages/     Screens (Library, Detail, Form, Camera, Compare, Map, Match, Generate, Settings)
+│       ├── contexts/  SettingsContext (localStorage-backed App-Einstellungen)
 │       ├── api/       React Query Hooks + Axios Client
 │       ├── utils/     Similarity-Score, MDS-Algorithmus, Labels
 │       └── components/ PDF-Renderer
@@ -145,7 +147,7 @@ KI-generierte Recipes erhalten ein violettes „KI-Generiert"-Badge.
 
 Unter „Recipe Match" ein einzelnes Foto hochladen. Die KI analysiert den visuellen Charakter (Tonkurve, Farbpalette, Körnung, Stimmung) und gibt die 3 am besten passenden Recipes aus der Bibliothek zurück – mit Begründung, warum jedes Recipe zu dem Foto passt. Optional kann die Suche auf die aktuell belegten C1–C7-Slots eingeschränkt werden.
 
-Modellauswahl für beide KI-Features:
+Das Standard-Modell wird zentral in den Einstellungen (`/settings`) konfiguriert:
 
 - **Haiku 4.5** – schnell und günstig
 - **Sonnet 4.6** – bessere Bildanalyse (empfohlen)

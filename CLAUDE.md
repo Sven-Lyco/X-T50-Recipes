@@ -114,16 +114,22 @@ aktuell auf welcher Custom-Bank (C1–C7) der Kamera geladen ist.
    mit Hervorhebung von Unterschieden, client-seitiger Ähnlichkeits-Score (0–100%,
    hoch = ähnlich = rot, niedrig = verschieden = grün)
 6. **KI-Generierung** – bis zu 5 Referenzfotos hochladen, optionale Beschreibung des
-   gewünschten Looks, Modellauswahl (Haiku/Sonnet/Opus); Claude Vision analysiert die Bilder
-   und befüllt das Recipe-Formular vor (Name, alle Parameter, Begründung). EXIF-Metadaten
-   (ISO, Belichtungszeit, Blende) werden automatisch extrahiert und als Kontext mitgeschickt.
-   KI-generierte Recipes erhalten ein „KI-Generiert"-Badge in der UI.
+   gewünschten Looks; Claude Vision analysiert die Bilder und befüllt das Recipe-Formular
+   vor (Name, alle Parameter, Begründung). EXIF-Metadaten (ISO, Belichtungszeit, Blende)
+   werden automatisch extrahiert und als Kontext mitgeschickt. KI-Modell wird aus den
+   Einstellungen übernommen. KI-generierte Recipes erhalten ein „KI-Generiert"-Badge in der UI.
 7. **Ähnlichkeits-Map** – alle Recipes als interaktive 2D-Punktwolke (MDS-Projektion auf
    Basis von `computeSimilarity()`), ähnliche Recipes clustern zusammen, Farbe = Filmsimulation,
    Klick → Detailansicht; optional nur C1–C7-Slots anzeigen; komplett client-seitig
 8. **Recipe Match** – einzelnes Foto hochladen; Claude Vision analysiert visuellen Charakter
    (Tonkurve, Farbpalette, Körnung, Stimmung) und gibt die 3 am besten passenden Recipes
-   aus der Bibliothek zurück; optional auf C1–C7-Slots einschränken
+   aus der Bibliothek zurück; optional auf C1–C7-Slots einschränken; KI-Modell aus Einstellungen
+9. **Einstellungsseite (`/settings`)** – zwei Sektionen:
+   - *Datensicherung*: Backup aller Recipes als ZIP (JSON + Bilder) herunterladen oder aus
+     Backup-ZIP importieren (addiert zu bestehenden Recipes)
+   - *KI-Einstellungen*: KI-Funktionen global an-/ausschalten (versteckt „Recipe generieren"
+     und „Recipe Match" aus der Navigation); Standard-KI-Modell wählen (Haiku/Sonnet/Opus);
+     Toggle ist deaktiviert wenn kein `ANTHROPIC_API_KEY` konfiguriert ist (`GET /api/ai-status`)
 
 ## Frontend-Labels (Kamera-Menü-Konformität)
 
@@ -163,6 +169,9 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 - `PUT /api/recipes/{id}/favorite`
 - `POST /api/suggest` (Multipart: images[], description?, model?) → RecipeRequest JSON
 - `POST /api/match` (Multipart: image, model?, onlySlots?) → RecipeMatchResponse[]
+- `GET /api/ai-status` → `{ available: boolean }` (prüft ob ANTHROPIC_API_KEY gesetzt)
+- `GET /api/backup` → ZIP aller Recipes (je `{uuid}/recipe.json` + `{uuid}/images/*`)
+- `POST /api/backup` (Multipart: file=ZIP) → importierte Recipes als Liste
 
 ## DB-Migrationen
 
@@ -217,9 +226,3 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
   in die EXIF-MakerNotes jedes JPEGs; Upload eines Kamera-JPEGs extrahiert die tatsächlich
   verwendeten Einstellungen und befüllt das Recipe-Formular exakt (nicht KI-geschätzt);
   `metadata-extractor`-Library ist bereits im Projekt und unterstützt Fujifilm-MakerNotes
-- **Einstellungsseite (`/settings`)** – zentrale Seite für App-Konfiguration:
-  - Kompletter Export aller Recipes als ZIP (JSON + alle Bilder) → Backup
-  - Import aus Backup-ZIP → Restore
-  - Standard-KI-Modell auswählen (Haiku/Sonnet/Opus)
-  - KI-Funktionen global an-/ausschalten; bei Deaktivierung werden KI-Menüpunkte
-    (KI-Generierung, Recipe Match, Auto-Beschreibung, Recipe-Variation) ausgeblendet

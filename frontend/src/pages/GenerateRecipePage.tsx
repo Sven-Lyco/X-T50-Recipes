@@ -2,28 +2,23 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Stack, Title, Text, Button, Textarea, Paper, Image,
-  Group, Center, Box, Loader, Select, SimpleGrid, ActionIcon,
+  Group, Center, Box, Loader, SimpleGrid, ActionIcon,
 } from '@mantine/core'
 import { Dropzone } from '@mantine/dropzone'
 import '@mantine/dropzone/styles.css'
 import { IconPhoto, IconUpload, IconX } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
 import { useSuggestRecipe } from '../api/recipes'
-
-const MODEL_OPTIONS = [
-  { value: 'claude-haiku-4-5-20251001', label: 'Haiku 4.5 – schnell & günstig' },
-  { value: 'claude-sonnet-4-6', label: 'Sonnet 4.6 – besser (empfohlen)' },
-  { value: 'claude-opus-4-8', label: 'Opus 4.8 – stärkstes Modell' },
-]
+import { useSettings } from '../contexts/SettingsContext'
 
 const MAX_IMAGES = 5
 
 export default function GenerateRecipePage() {
   const navigate = useNavigate()
+  const { settings } = useSettings()
   const [images, setImages] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
   const [description, setDescription] = useState('')
-  const [model, setModel] = useState('claude-sonnet-4-6')
   const suggest = useSuggestRecipe()
 
   function handleDrop(files: File[]) {
@@ -42,7 +37,7 @@ export default function GenerateRecipePage() {
   async function handleGenerate() {
     if (images.length === 0) return
     try {
-      const suggestion = await suggest.mutateAsync({ images, description, model })
+      const suggestion = await suggest.mutateAsync({ images, description, model: settings.defaultModel })
       navigate('/recipes/new', { state: { suggestion } })
     } catch {
       notifications.show({ color: 'red', title: 'Fehler', message: 'KI-Service nicht verfügbar. Bitte prüfe den API-Key.' })
@@ -106,23 +101,14 @@ export default function GenerateRecipePage() {
       </Paper>
 
       <Paper withBorder p="md" radius="md">
-        <Stack gap="md">
-          <Textarea
-            label="Hinweis (optional)"
-            description='Z.B. "soll wärmer wirken" oder "klassischer Analogfilm-Look"'
-            placeholder="Beschreibe den gewünschten Look..."
-            rows={3}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-          <Select
-            label="KI-Modell"
-            data={MODEL_OPTIONS}
-            value={model}
-            onChange={(v) => setModel(v ?? 'claude-sonnet-4-6')}
-            allowDeselect={false}
-          />
-        </Stack>
+        <Textarea
+          label="Hinweis (optional)"
+          description='Z.B. "soll wärmer wirken" oder "klassischer Analogfilm-Look"'
+          placeholder="Beschreibe den gewünschten Look..."
+          rows={3}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
       </Paper>
 
       <Group justify="flex-end">

@@ -177,3 +177,23 @@ export function useReorderImages(recipeId: string) {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['recipe', recipeId] }),
   })
 }
+
+export function useAiStatus() {
+  return useQuery({
+    queryKey: ['ai-status'],
+    queryFn: () => client.get<{ available: boolean }>('/ai-status').then(r => r.data),
+    staleTime: Infinity,
+  })
+}
+
+export function useImportBackup() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (file: File) => {
+      const fd = new FormData()
+      fd.append('file', file)
+      return client.post<Recipe[]>('/backup', fd).then(r => r.data)
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['recipes'] }),
+  })
+}
