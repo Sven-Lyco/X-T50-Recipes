@@ -197,10 +197,6 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 
 ## Geplante Features
 
-- **Sortierung in der Bibliothek** – nach Name, Datum, Filmsimulation (aktuell nur Datum desc)
-- **C1–C7 Spickzettel als PDF** – alle sieben aktiven Slots auf einer Seite zum Ausdrucken
-- **Ähnliche Recipes per Score** – Detailansicht zeigt aktuell Recipes gleicher Filmsimulation;
-  sollte stattdessen `computeSimilarity()` nutzen
 - **Recipe-Protokoll** – jede Änderung der C1–C7-Belegung wird automatisch geloggt
   (Slot, altes Recipe, neues Recipe, Zeitstempel); einfache Protokoll-Ansicht zeigt welche
   Slots du häufig tauschst (aktives Experimentieren) vs. welche seit Monaten gleich sind
@@ -208,3 +204,23 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 - **Recipe-Variation** – bestehendes Recipe als Ausgangspunkt: KI kennt alle aktuellen
   Werte und schlägt eine gezielte Abwandlung vor („wärmer", „mehr analog", „weniger Körnung");
   Ergebnis landet wie bei der KI-Generierung im Bearbeiten-Formular zur Kontrolle
+- **Collections** – Recipes in benannte Sets gruppieren (z.B. „Hochzeit", „Japan-Trip 2024"),
+  unabhängig von Tags; eigene DB-Tabelle mit m:n-Relation; Collections als Filter in der
+  Bibliothek auswählbar
+- **Auto-Beschreibung generieren** – Button in der Detailansicht/Bearbeitungsformular;
+  schickt nur die Recipe-Parameter (ohne Bild) an Claude und bekommt eine Erklärung zurück
+  warum diese Kombination fotografisch funktioniert (Stimmung, Tonkurve, Farbpalette);
+  befüllt das `description`-Feld vor, das der User noch bearbeiten kann
+- **Recipe aus Fuji-JPEG erstellen** – Fujifilm schreibt Film-Simulation und Kameraparameter
+  in die EXIF-MakerNotes jedes JPEGs; Upload eines Kamera-JPEGs extrahiert die tatsächlich
+  verwendeten Einstellungen und befüllt das Recipe-Formular exakt (nicht KI-geschätzt);
+  `metadata-extractor`-Library ist bereits im Projekt und unterstützt Fujifilm-MakerNotes
+- **Duplikat-Warnung beim Speichern** – beim Anlegen oder Bearbeiten eines Recipes prüfen ob
+  ein sehr ähnliches Recipe bereits existiert (hoher `computeSimilarity()`-Score, z.B. ≥ 85 %);
+  Hinweis mit Links zu den ähnlichen Recipes, kein hartes Blockieren
+- **Einstellungsseite (`/settings`)** – zentrale Seite für App-Konfiguration:
+  - Kompletter Export aller Recipes als ZIP (JSON + alle Bilder) → Backup
+  - Import aus Backup-ZIP → Restore
+  - Standard-KI-Modell auswählen (Haiku/Sonnet/Opus)
+  - KI-Funktionen global an-/ausschalten; bei Deaktivierung werden KI-Menüpunkte
+    (KI-Generierung, Recipe Match, Auto-Beschreibung, Recipe-Variation) ausgeblendet
