@@ -105,7 +105,7 @@ X-T50 Recipes
 
 | Modul | Beschreibung |
 |---|---|
-| `recipeSimilarity.ts` | `computeSimilarity(a, b)` → 0–100 (100 = identisch); gewichtete Distanz mit Filmsimulations-Distanzmatrix |
+| `recipeSimilarity.ts` | `computeSimilarity(a, b)` → 0–100 (100 = identisch); gewichtete Distanz mit Filmsimulations-Distanzmatrix; genutzt in Ähnlichkeits-Map, Compare, Detailansicht und Duplikat-Check im Formular |
 | `recipePca.ts` | `computeMds(recipes)` → 2D-Koordinaten via Classical MDS (Double Centering + Power Iteration) |
 | `labels.ts` | Deutsche Labels für alle Enum-Werte (kamera-menü-konform) + Select-Daten für Formulare |
 | `recipeImageExport.ts` | `exportRecipeAsPng(recipe)` → PNG-Download via Canvas 2D API im fujirecipes.co OCR-Format |

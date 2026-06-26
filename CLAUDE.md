@@ -107,7 +107,9 @@ aktuell auf welcher Custom-Bank (C1–C7) der Kamera geladen ist.
    Recipe (Name + Vorschaubild); Neuzuordnung direkt aus dem Dashboard möglich
 4. **Anlegen/Bearbeiten-Formular** – alle Recipe-Felder editierbar inkl. Shooting-Szenario,
    Bild-Upload (Multipart, Drag-and-Drop-Sortierung); Bilder können nur im Bearbeitungsmodus
-   (nicht beim Neuanlegen) hinzugefügt werden
+   (nicht beim Neuanlegen) hinzugefügt werden; beim Speichern wird geprüft ob ein anderes
+   Recipe ≥ 85 % ähnlich ist (`computeSimilarity()`); wenn ja: Modal mit Links zu den
+   ähnlichen Recipes und Score-Badge — kein hartes Blockieren, „Trotzdem speichern" möglich
 5. **Recipes vergleichen** – Auswahl von bis zu 4 Recipes, Side-by-Side-Parametertabelle
    mit Hervorhebung von Unterschieden, client-seitiger Ähnlichkeits-Score (0–100%,
    hoch = ähnlich = rot, niedrig = verschieden = grün)
@@ -215,9 +217,6 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
   in die EXIF-MakerNotes jedes JPEGs; Upload eines Kamera-JPEGs extrahiert die tatsächlich
   verwendeten Einstellungen und befüllt das Recipe-Formular exakt (nicht KI-geschätzt);
   `metadata-extractor`-Library ist bereits im Projekt und unterstützt Fujifilm-MakerNotes
-- **Duplikat-Warnung beim Speichern** – beim Anlegen oder Bearbeiten eines Recipes prüfen ob
-  ein sehr ähnliches Recipe bereits existiert (hoher `computeSimilarity()`-Score, z.B. ≥ 85 %);
-  Hinweis mit Links zu den ähnlichen Recipes, kein hartes Blockieren
 - **Einstellungsseite (`/settings`)** – zentrale Seite für App-Konfiguration:
   - Kompletter Export aller Recipes als ZIP (JSON + alle Bilder) → Backup
   - Import aus Backup-ZIP → Restore

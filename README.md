@@ -6,6 +6,7 @@ Persönliche Web-App zur Verwaltung von Fujifilm X-T50 Film-Simulation-Recipes. 
 
 - **Bibliothek** – Kartenraster aller Recipes, filterbar nach Filmsimulation, Tags, Shooting-Szenario und Favoriten
 - **Detailansicht** – alle Parameter in Sektionen, Bildergalerie, PDF-Export, A6-Karten-Export, ZIP-Export, PNG-Export (für fujirecipes.co Screenshot-Import), Duplizieren
+- **Duplikat-Warnung** – beim Speichern (Neu anlegen & Bearbeiten) wird automatisch auf ähnliche Recipes geprüft (≥ 85 % Ähnlichkeit); Modal mit Links und Score, kein hartes Blockieren
 - **Kamera-Dashboard** – C1–C7-Slots mit Direktzuweisung
 - **Vergleichen** – bis zu 4 Recipes Side-by-Side mit Unterschieds-Highlighting und Ähnlichkeits-Score
 - **Ähnlichkeits-Map** – alle Recipes als interaktive 2D-Karte (MDS), ähnliche Recipes clustern zusammen; optional nur C1–C7

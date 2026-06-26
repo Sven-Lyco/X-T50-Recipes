@@ -4,6 +4,7 @@ import {
   Stack, Title, Paper, SimpleGrid, TextInput, Textarea,
   Select, SegmentedControl, NumberInput, TagsInput,
   Button, Group, Text, FileButton, Image, ActionIcon, Box, AspectRatio, Modal,
+  Badge, Anchor,
 } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { notifications } from '@mantine/notifications'
@@ -16,9 +17,10 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { IconGripVertical, IconMaximize, IconMinus, IconPlus, IconX } from '@tabler/icons-react'
-import { useRecipe, useRecipes, useCreateRecipe, useUpdateRecipe, useUploadImage, useDeleteImage, useReorderImages } from '../api/recipes'
+import { useRecipe, useRecipes, useRecipesBulk, useCreateRecipe, useUpdateRecipe, useUploadImage, useDeleteImage, useReorderImages } from '../api/recipes'
 import { FILM_SIMS, MONOCHROME_SIMS, filmSimLabel } from '../filmSimLabel'
-import { CAMERA_SLOTS, type CameraSlot, type GrainSize, type GrainStrength, type RecipeRequest, type ShootingScenario, type WhiteBalanceMode } from '../api/types'
+import { CAMERA_SLOTS, type CameraSlot, type GrainSize, type GrainStrength, type Recipe, type RecipeRequest, type ShootingScenario, type WhiteBalanceMode } from '../api/types'
+import { computeSimilarity, similarityColor } from '../utils/recipeSimilarity'
 import { DR_DATA, GRAIN_SIZE_DATA, ISO_MODE_DATA, SCENARIO_DATA, STRENGTH_DATA, wbModeLabel } from '../utils/labels'
 
 const WB_MODES: WhiteBalanceMode[] = [
@@ -27,6 +29,7 @@ const WB_MODES: WhiteBalanceMode[] = [
   'INCANDESCENT', 'UNDERWATER', 'COLOR_TEMP', 'CUSTOM_1', 'CUSTOM_2', 'CUSTOM_3',
 ]
 const SLOTS: (CameraSlot | 'BIBLIOTHEK')[] = ['BIBLIOTHEK', ...CAMERA_SLOTS]
+const DUPLICATE_THRESHOLD = 85
 
 const DEFAULTS: RecipeRequest = {
   name: '', filmSimulation: 'PROVIA', dynamicRange: 'DR100',
@@ -144,6 +147,7 @@ export default function RecipeFormPage() {
   const suggestion = location.state?.suggestion as Partial<RecipeRequest> | undefined
   const { data: existing } = useRecipe(id)
   const { data: allRecipes } = useRecipes()
+  const { data: allFullRecipes } = useRecipesBulk(allRecipes?.map(r => r.id) ?? [])
   const existingTags = useMemo(
     () => [...new Set((allRecipes ?? []).flatMap((r) => r.tags).map((t) => t.toLowerCase()))].sort(),
     [allRecipes]
@@ -155,6 +159,11 @@ export default function RecipeFormPage() {
   const reorderImages = useReorderImages(id ?? '')
   const navigate = useNavigate()
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
+  const [duplicateWarning, setDuplicateWarning] = useState<{
+    open: boolean
+    matches: Array<{ recipe: Recipe; score: number }>
+    pendingPayload: RecipeRequest | null
+  }>({ open: false, matches: [], pendingPayload: null })
   const [imageOrder, setImageOrder] = useState<string[]>([])
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
@@ -192,16 +201,7 @@ export default function RecipeFormPage() {
     })
   }
 
-  async function handleSubmit(values: RecipeRequest & { slotSelection: string }) {
-    const { slotSelection, ...rest } = values
-    const payload: RecipeRequest = {
-      ...rest,
-      cameraSlot: slotSelection === 'BIBLIOTHEK' ? null : slotSelection as CameraSlot,
-      grainSize: values.grainStrength === 'OFF' ? null : values.grainSize,
-      colorTempKelvin: values.whiteBalanceMode === 'COLOR_TEMP' ? values.colorTempKelvin : null,
-      monochromeWarmCool: MONOCHROME_SIMS.includes(values.filmSimulation) ? values.monochromeWarmCool : null,
-      monochromeGreenMagenta: MONOCHROME_SIMS.includes(values.filmSimulation) ? values.monochromeGreenMagenta : null,
-    }
+  async function doSave(payload: RecipeRequest) {
     try {
       if (isEdit) {
         await updateRecipe.mutateAsync(payload)
@@ -215,6 +215,31 @@ export default function RecipeFormPage() {
     } catch {
       notifications.show({ message: 'Fehler beim Speichern', color: 'red' })
     }
+  }
+
+  async function handleSubmit(values: RecipeRequest & { slotSelection: string }) {
+    const { slotSelection, ...rest } = values
+    const payload: RecipeRequest = {
+      ...rest,
+      cameraSlot: slotSelection === 'BIBLIOTHEK' ? null : slotSelection as CameraSlot,
+      grainSize: values.grainStrength === 'OFF' ? null : values.grainSize,
+      colorTempKelvin: values.whiteBalanceMode === 'COLOR_TEMP' ? values.colorTempKelvin : null,
+      monochromeWarmCool: MONOCHROME_SIMS.includes(values.filmSimulation) ? values.monochromeWarmCool : null,
+      monochromeGreenMagenta: MONOCHROME_SIMS.includes(values.filmSimulation) ? values.monochromeGreenMagenta : null,
+    }
+
+    const matches = (allFullRecipes ?? [])
+      .filter(r => r.id !== id)
+      .map(r => ({ recipe: r, score: computeSimilarity(payload as unknown as Recipe, r) }))
+      .filter(m => m.score >= DUPLICATE_THRESHOLD)
+      .sort((a, b) => b.score - a.score)
+
+    if (matches.length > 0) {
+      setDuplicateWarning({ open: true, matches, pendingPayload: payload })
+      return
+    }
+
+    await doSave(payload)
   }
 
   const isMonochrome = MONOCHROME_SIMS.includes(form.values.filmSimulation)
@@ -459,6 +484,39 @@ export default function RecipeFormPage() {
             </ActionIcon>
           </Box>
         )}
+      </Modal>
+
+      <Modal
+        opened={duplicateWarning.open}
+        onClose={() => setDuplicateWarning(w => ({ ...w, open: false }))}
+        title="Ähnliche Recipes gefunden"
+        centered
+      >
+        <Stack gap="md">
+          <Text size="sm">Diese Einstellungen sind sehr ähnlich zu vorhandenen Recipes:</Text>
+          {duplicateWarning.matches.map(({ recipe, score }) => (
+            <Group key={recipe.id} justify="space-between">
+              <Anchor href={`/recipes/${recipe.id}`} target="_blank" size="sm">
+                {recipe.name}
+              </Anchor>
+              <Badge color={similarityColor(score)}>{score} %</Badge>
+            </Group>
+          ))}
+          <Group justify="flex-end" mt="xs">
+            <Button variant="default" onClick={() => setDuplicateWarning(w => ({ ...w, open: false }))}>
+              Abbrechen
+            </Button>
+            <Button
+              loading={isBusy}
+              onClick={async () => {
+                setDuplicateWarning(w => ({ ...w, open: false }))
+                if (duplicateWarning.pendingPayload) await doSave(duplicateWarning.pendingPayload)
+              }}
+            >
+              Trotzdem speichern
+            </Button>
+          </Group>
+        </Stack>
       </Modal>
     </form>
   )
