@@ -66,6 +66,12 @@ Alle sensiblen Werte werden als Coolify-Secrets hinterlegt — niemals im Source
 | `APP_ADMIN_USERNAME` | Nein | Login-Username (Default: `admin`) |
 | `JWT_EXPIRATION_MS` | Nein | Token-Gültigkeit in ms (Default: `86400000` = 24 h) |
 
+## CI/CD
+
+GitHub Actions (`.github/workflows/ci.yml`) führt bei jedem Push auf `main` und bei Pull Requests `./gradlew test` aus. Der ubuntu-latest-Runner hat nativen Docker-Zugang — Testcontainers-Tests (inkl. PostgreSQL-Integration) laufen dort ohne weitere Konfiguration.
+
+Coolify baut und deployt das Image automatisch bei jedem Push auf `main` (Webhook-Trigger).
+
 ## Lokale Entwicklung
 
 ```

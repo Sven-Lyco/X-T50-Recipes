@@ -130,3 +130,20 @@ Die **Filmsimulations-Distanzmatrix** teilt Simulationen in 7 fotografische Grup
 ## Logging
 
 Spring Boot Logging via SLF4J/Logback. Log-Level `DEBUG` für `de.fuji.xt50recipes` (konfigurierbar). KI-Requests und -Responses werden vollständig auf `INFO`/`DEBUG` geloggt (inkl. Prompt-Länge, Antwort-Dauer, EXIF-Kontext).
+
+---
+
+## Automatisierte Tests
+
+**Test-Pyramide:**
+
+| Schicht | Klasse | Scope | Tooling |
+| --- | --- | --- | --- |
+| Unit | `RecipeServiceTest` | Slot-Konflikt-Logik, duplicate, setFavorite | Mockito, kein Spring-Context |
+| Unit | `ImageUtilsTest` | MIME-Erkennung via Magic Bytes, EXIF-Parsing | JUnit 5, kein Spring-Context |
+| Web Slice | `RecipeControllerTest` | HTTP-Mapping, Auth (401), Validation (400/201) | `@WebMvcTest`, MockMvc, `@WithMockUser` |
+| Integration | `RecipeRepositoryTest` | PostgreSQL-spezifische `ANY()`-Abfrage, alle Filter | `@DataJpaTest` + Testcontainers (`postgres:16-alpine`) |
+
+**Testcontainers-Hinweis:** `RecipeRepositoryTest` erfordert Docker mit API-Version ≥ 1.40. Lokal mit OrbStack schlägt der Test fehl (docker-java 3.3.6 nutzt API-Version 1.32 hardcoded); in GitHub Actions CI (ubuntu-latest mit nativem Docker) läuft er korrekt durch.
+
+**CI/CD:** GitHub Actions Workflow (`.github/workflows/ci.yml`) führt `./gradlew test` bei jedem Push auf `main` und bei Pull Requests aus. Bei Fehlern wird der HTML-Testbericht als Artefakt hochgeladen.
