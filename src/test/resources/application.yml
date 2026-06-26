@@ -1,0 +1,18 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: true
+
+app:
+  jwt-secret: test-secret-change-me-in-test-minimum-32-chars
+  jwt-expiration-ms: 86400000
+  image-storage-path: /tmp/test-images
+  admin-username: admin
+  admin-password: testpassword
+  anthropic-api-key: ""

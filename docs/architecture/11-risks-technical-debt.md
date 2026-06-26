@@ -6,7 +6,7 @@
 | --- | --- | --- | --- | --- |
 | R1 | Traefik/Coolify blockiert Bild-Uploads > ~1 MB | Hoch (bereits beobachtet) | Mittel | Traefik-Middleware für Body-Buffering in Coolify konfigurieren (`middlewares: buffering`) |
 | R2 | Rate-Limiter reset bei App-Neustart | Niedrig (Single-User) | Niedrig | Akzeptiert; bei Bedarf Redis-backed Limiter nachrüsten |
-| R3 | Keine automatisierten Tests | Mittel | Hoch | Unit-Tests für Service-Layer nachrüsten; Integrationstests für API-Endpoints mit `@SpringBootTest` |
+| R3 | ~~Keine automatisierten Tests~~ | ~~Mittel~~ | ~~Hoch~~ | ✅ Behoben: Unit-Tests (`RecipeServiceTest`, `ImageUtilsTest`), Web-Slice-Tests (`RecipeControllerTest`), Integrationstests mit Testcontainers (`RecipeRepositoryTest`); GitHub Actions CI auf `main` |
 | R4 | Power Iteration konvergiert nicht immer perfekt | Niedrig | Niedrig | 200 Iterationen als Kompromiss; bei sehr kleinen Bibliotheken (< 5 Recipes) wenig aussagekräftig |
 
 ## Technische Schulden
