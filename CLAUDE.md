@@ -101,8 +101,8 @@ aktuell auf welcher Custom-Bank (C1–C7) der Kamera geladen ist.
    nach Tags, Filmsimulation, Shooting-Szenario und Favoriten
 2. **Detailansicht** – alle Parameter in Sektionen (Bildparameter, Körnung & Effekte,
    Weißabgleich, Monochrome Farbe), Bildergalerie, Beschreibung, Referenz-Link, Tags,
-   "Ähnliche Recipes" (gleiche Filmsimulation), PDF-Export, A6-Karten-Export, ZIP-Export,
-   Duplizieren
+   "Ähnliche Recipes" (Top-5 nach `computeSimilarity()`-Score), PDF-Export, A6-Karten-Export,
+   ZIP-Export, PNG-Export (fujirecipes.co Screenshot-Import-Format), Duplizieren
 3. **Kamera-Dashboard** – Übersicht der sieben C1–C7-Slots mit jeweils zugeordnetem
    Recipe (Name + Vorschaubild); Neuzuordnung direkt aus dem Dashboard möglich
 4. **Anlegen/Bearbeiten-Formular** – alle Recipe-Felder editierbar inkl. Shooting-Szenario,

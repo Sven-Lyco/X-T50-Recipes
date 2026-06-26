@@ -65,6 +65,7 @@ X-T50 Recipes
 | `AiSuggestionService` | Claude Vision: bis zu 5 Bilder → Recipe-Parameter vorschlagen |
 | `RecipeMatchService` | Claude Vision: 1 Bild + alle Recipes → Top-3-Matches zurückgeben |
 | `ImageUtils` | Geteilte Utilities: MIME-Erkennung per Magic Bytes, EXIF-Extraktion (ISO, Belichtung, Blende, Brennweite, WB, Kameramodell) |
+| `AiConstants` | Package-private Konstanten: Anthropic-URL, Default-Modell, ALLOWED_MODELS, SUPPORTED_IMAGE_TYPES |
 | `AiSuggestionController` | `POST /api/suggest` |
 | `RecipeMatchController` | `POST /api/match` |
 | `AiSuggestionException` | Domain-Exception → 502 bei Anthropic-API-Fehler |
@@ -107,5 +108,6 @@ X-T50 Recipes
 | `recipeSimilarity.ts` | `computeSimilarity(a, b)` → 0–100 (100 = identisch); gewichtete Distanz mit Filmsimulations-Distanzmatrix |
 | `recipePca.ts` | `computeMds(recipes)` → 2D-Koordinaten via Classical MDS (Double Centering + Power Iteration) |
 | `labels.ts` | Deutsche Labels für alle Enum-Werte (kamera-menü-konform) + Select-Daten für Formulare |
+| `recipeImageExport.ts` | `exportRecipeAsPng(recipe)` → PNG-Download via Canvas 2D API im fujirecipes.co OCR-Format |
 | `api/client.ts` | Axios-Instanz mit JWT-Interceptor (automatischer `Authorization`-Header) |
-| `api/recipes.ts` | React Query Hooks für alle Recipe-Endpoints |
+| `api/recipes.ts` | React Query Hooks für alle Recipe-Endpoints; `['recipe', id]` (Einzel) vs. `['recipes', ...]` (Liste) als separate Cache-Namespaces |
