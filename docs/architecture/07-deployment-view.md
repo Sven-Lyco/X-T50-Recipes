@@ -68,7 +68,11 @@ Alle sensiblen Werte werden als Coolify-Secrets hinterlegt — niemals im Source
 
 ## CI/CD
 
-GitHub Actions (`.github/workflows/ci.yml`) führt bei jedem Push auf `main` und bei Pull Requests `./gradlew test` aus. Der ubuntu-latest-Runner hat nativen Docker-Zugang — Testcontainers-Tests (inkl. PostgreSQL-Integration) laufen dort ohne weitere Konfiguration.
+GitHub Actions (`.github/workflows/ci.yml`) führt bei jedem Push auf `main` und bei Pull Requests zwei parallele Jobs aus:
+- **test-backend**: `./gradlew test` inkl. Testcontainers-Integration (PostgreSQL); ubuntu-latest hat nativen Docker-Zugang
+- **test-frontend**: `npm test` mit Vitest 2.x; Testergebnisse als JUnit XML
+
+Testergebnisse werden via `dorny/test-reporter` als GitHub-native Check-Run-Annotationen im Checks-Tab angezeigt — bei Erfolg und Fehler.
 
 Coolify baut und deployt das Image automatisch bei jedem Push auf `main` (Webhook-Trigger).
 

@@ -8,6 +8,7 @@ Persönliche Web-App zur Verwaltung von Fujifilm X-T50 Film-Simulation-Recipes. 
 - **Detailansicht** – alle Parameter in Sektionen, Bildergalerie, PDF-Export, A6-Karten-Export, ZIP-Export, PNG-Export (für fujirecipes.co Screenshot-Import), Duplizieren
 - **Duplikat-Warnung** – beim Speichern (Neu anlegen & Bearbeiten) wird automatisch auf ähnliche Recipes geprüft (≥ 85 % Ähnlichkeit); Modal mit Links und Score, kein hartes Blockieren
 - **Kamera-Dashboard** – C1–C7-Slots mit Direktzuweisung
+- **Slot-Protokoll** – Verlauf aller C1–C7-Slot-Änderungen; zeigt pro Slot ob er häufig wechselt (aktiv) oder seit Langem konstant belegt ist (stabil)
 - **Vergleichen** – bis zu 4 Recipes Side-by-Side mit Unterschieds-Highlighting und Ähnlichkeits-Score
 - **Ähnlichkeits-Map** – alle Recipes als interaktive 2D-Karte (MDS), ähnliche Recipes clustern zusammen; optional nur C1–C7
 - **KI-Generierung** – Referenzfoto(s) hochladen → Claude Vision schlägt passende Einstellungen vor (inkl. EXIF-Kontext)
@@ -37,7 +38,7 @@ X-T50-Recipes/
 │   ├── user/          AppUser Entity
 │   └── config/        Security, SPA-Fallback, Image-Serving
 ├── src/main/resources/
-│   ├── db/migration/  Flyway-Migrationen (V1–V8)
+│   ├── db/migration/  Flyway-Migrationen (V1–V9)
 │   └── application.yml
 ├── frontend/          React + TypeScript + Vite
 │   └── src/

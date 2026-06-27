@@ -1,6 +1,6 @@
 import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query'
 import client from './client'
-import type { Recipe, RecipeListItem, RecipeRequest, CameraSlot, ShootingScenario } from './types'
+import type { Recipe, RecipeListItem, RecipeRequest, CameraSlot, ShootingScenario, SlotChangeLog } from './types'
 
 export function useRecipes(filmSimulation?: string, tag?: string, onlyFavorites?: boolean, scenario?: ShootingScenario) {
   return useQuery({
@@ -74,7 +74,15 @@ export function useAssignCameraSlot() {
       qc.invalidateQueries({ queryKey: ['recipes'] })
       qc.invalidateQueries({ queryKey: ['camera-status'] })
       qc.invalidateQueries({ queryKey: ['recipe', id] })
+      qc.invalidateQueries({ queryKey: ['slot-protocol'] })
     },
+  })
+}
+
+export function useSlotProtocol() {
+  return useQuery<SlotChangeLog[]>({
+    queryKey: ['slot-protocol'],
+    queryFn: () => client.get<SlotChangeLog[]>('/slot-protocol').then((r) => r.data),
   })
 }
 

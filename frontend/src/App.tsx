@@ -14,6 +14,7 @@ import GenerateRecipePage from './pages/GenerateRecipePage'
 import SimilarityMapPage from './pages/SimilarityMapPage'
 import RecipeMatchPage from './pages/RecipeMatchPage'
 import SettingsPage from './pages/SettingsPage'
+import SlotProtocolPage from './pages/SlotProtocolPage'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   return isLoggedIn() ? <>{children}</> : <Navigate to="/login" replace />
@@ -44,6 +45,7 @@ export default function App() {
         <Route path="map" element={<SimilarityMapPage />} />
         <Route path="match" element={<RecipeMatchPage />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="protocol" element={<SlotProtocolPage />} />
       </Route>
     </Routes>
     </SettingsProvider>

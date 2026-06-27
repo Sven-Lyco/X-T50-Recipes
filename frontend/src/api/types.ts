@@ -113,6 +113,16 @@ export interface SlotConflict {
   occupiedBy: { id: string; name: string }
 }
 
+export interface SlotChangeLog {
+  id: string
+  slot: CameraSlot
+  previousRecipeId: string | null
+  previousRecipeName: string | null
+  newRecipeId: string | null
+  newRecipeName: string | null
+  changedAt: string
+}
+
 export interface RecipeMatchResult {
   id: string
   name: string

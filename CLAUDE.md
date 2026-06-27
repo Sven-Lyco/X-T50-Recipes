@@ -124,7 +124,12 @@ aktuell auf welcher Custom-Bank (C1–C7) der Kamera geladen ist.
 8. **Recipe Match** – einzelnes Foto hochladen; Claude Vision analysiert visuellen Charakter
    (Tonkurve, Farbpalette, Körnung, Stimmung) und gibt die 3 am besten passenden Recipes
    aus der Bibliothek zurück; optional auf C1–C7-Slots einschränken; KI-Modell aus Einstellungen
-9. **Einstellungsseite (`/settings`)** – zwei Sektionen:
+9. **Slot-Protokoll (`/protocol`)** – Verlauf aller C1–C7-Slot-Änderungen; wird automatisch
+   bei jeder Slot-Zuweisung via `PUT /api/recipes/{id}/camera-slot` geschrieben; Protokollseite
+   zeigt 7 Slot-Cards (aktiv/stabil-Badge basierend auf Wechseln in den letzten 30 Tagen) +
+   chronologische Tabelle mit Links auf die beteiligten Recipes; Einträge bleiben nach
+   Recipe-Löschung erhalten (kein FK zur Recipe-Tabelle); DB-Tabelle `slot_change_log`
+10. **Einstellungsseite (`/settings`)** – zwei Sektionen:
    - *Datensicherung*: Backup aller Recipes als ZIP (JSON + Bilder) herunterladen oder aus
      Backup-ZIP importieren (addiert zu bestehenden Recipes)
    - *KI-Einstellungen*: KI-Funktionen global an-/ausschalten (versteckt „Recipe generieren"
@@ -172,6 +177,7 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 - `GET /api/ai-status` → `{ available: boolean }` (prüft ob ANTHROPIC_API_KEY gesetzt)
 - `GET /api/backup` → ZIP aller Recipes (je `{uuid}/recipe.json` + `{uuid}/images/*`)
 - `POST /api/backup` (Multipart: file=ZIP) → importierte Recipes als Liste
+- `GET /api/slot-protocol` → alle Slot-Wechsel-Einträge, neueste zuerst
 
 ## DB-Migrationen
 
@@ -183,6 +189,7 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 - V6: Tags auf lowercase normalisiert
 - V7: ai_generated BOOLEAN
 - V8: shooting_scenario VARCHAR(20)
+- V9: slot_change_log Tabelle (kein FK zur Recipe-Tabelle)
 
 ## KI-Features (Anthropic)
 
@@ -208,10 +215,6 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 
 ## Geplante Features
 
-- **Recipe-Protokoll** – jede Änderung der C1–C7-Belegung wird automatisch geloggt
-  (Slot, altes Recipe, neues Recipe, Zeitstempel); einfache Protokoll-Ansicht zeigt welche
-  Slots du häufig tauschst (aktives Experimentieren) vs. welche seit Monaten gleich sind
-  (festes Repertoire); eigene DB-Tabelle `slot_change_log`
 - **Recipe-Variation** – bestehendes Recipe als Ausgangspunkt: KI kennt alle aktuellen
   Werte und schlägt eine gezielte Abwandlung vor („wärmer", „mehr analog", „weniger Körnung");
   Ergebnis landet wie bei der KI-Generierung im Bearbeiten-Formular zur Kontrolle

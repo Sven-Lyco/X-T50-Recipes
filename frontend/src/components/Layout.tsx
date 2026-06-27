@@ -5,7 +5,7 @@ import {
 } from '@mantine/core'
 import {
   IconLayoutGrid, IconCamera, IconWand, IconSearch,
-  IconScale, IconChartDots, IconBook, IconSettings,
+  IconScale, IconChartDots, IconBook, IconSettings, IconHistory,
 } from '@tabler/icons-react'
 import { useDisclosure } from '@mantine/hooks'
 import { logout } from '../api/auth'
@@ -62,6 +62,13 @@ export default function Layout() {
             to="/camera"
             label="Kamera-Dashboard"
             leftSection={<NavIcon icon={IconCamera} color="gray" />}
+            onClick={close}
+          />
+          <MantineNavLink
+            component={NavLink}
+            to="/protocol"
+            label="Protokoll"
+            leftSection={<NavIcon icon={IconHistory} color="gray" />}
             onClick={close}
           />
           {aiEnabled && (

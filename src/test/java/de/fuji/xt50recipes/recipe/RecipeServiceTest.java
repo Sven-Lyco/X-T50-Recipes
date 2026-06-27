@@ -20,6 +20,9 @@ class RecipeServiceTest {
     @Mock
     RecipeRepository recipeRepository;
 
+    @Mock
+    SlotChangeLogRepository slotChangeLogRepository;
+
     @InjectMocks
     RecipeService recipeService;
 

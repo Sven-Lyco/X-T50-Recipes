@@ -49,6 +49,10 @@ X-T50 Recipes
 | `RecipeListItem` | Kompakte Listen-DTO für die Bibliotheksübersicht (Java Record) |
 | Enums | `FilmSimulation`, `DynamicRange`, `GrainStrength`, `GrainSize`, `EffectStrength`, `WhiteBalanceMode`, `CameraSlot`, `ShootingScenario` |
 | `SlotConflictException` | Domain-Exception → 409 wenn Slot bereits belegt und `force=false` |
+| `SlotChangeLog` | JPA-Entity für den Slot-Wechsel-Log (kein Fremdschlüssel zur Recipe-Tabelle — Einträge bleiben nach Recipe-Löschung erhalten) |
+| `SlotChangeLogRepository` | Spring Data JPA; `findAllByOrderByChangedAtDesc()` |
+| `SlotChangeLogResponse` | Ausgabe-DTO (Java Record) |
+| `SlotProtocolController` | `GET /api/slot-protocol` → alle Log-Einträge neueste zuerst |
 
 ### `image`
 
@@ -95,6 +99,7 @@ X-T50 Recipes
 | `RecipeDetailPage` | `/recipes/:id` | Vollansicht, Bildergalerie, Aktionen (Export, Duplizieren, Match) |
 | `RecipeFormPage` | `/recipes/new`, `/recipes/:id/edit` | Anlegen/Bearbeiten aller Parameter inkl. Bild-Upload |
 | `CameraDashboardPage` | `/camera` | C1–C7 Slot-Übersicht mit Direktzuweisung |
+| `SlotProtocolPage` | `/protocol` | Verlauf aller Slot-Änderungen; Slot-Cards mit aktiv/stabil-Badge + Protokolltabelle |
 | `CompareSelectPage` | `/compare` | Bis zu 4 Recipes für Vergleich auswählen |
 | `CompareResultPage` | `/compare/result` | Side-by-Side-Tabelle mit Diff-Highlighting und Ähnlichkeits-Score |
 | `GenerateRecipePage` | `/generate` | KI-Generierung: Fotos hochladen → Formular vorbefüllt |
@@ -113,5 +118,5 @@ X-T50 Recipes
 | `labels.ts` | Deutsche Labels für alle Enum-Werte (kamera-menü-konform) + Select-Daten + `MODEL_OPTIONS`/`DEFAULT_MODEL` für KI-Modell-Auswahl |
 | `recipeImageExport.ts` | `exportRecipeAsPng(recipe)` → PNG-Download via Canvas 2D API im fujirecipes.co OCR-Format |
 | `api/client.ts` | Axios-Instanz mit JWT-Interceptor (automatischer `Authorization`-Header) |
-| `api/recipes.ts` | React Query Hooks für alle Recipe-Endpoints; `['recipe', id]` (Einzel) vs. `['recipes', ...]` (Liste) als separate Cache-Namespaces; `useAiStatus()` (staleTime: Infinity) + `useImportBackup()` |
+| `api/recipes.ts` | React Query Hooks für alle Recipe-Endpoints; `['recipe', id]` (Einzel) vs. `['recipes', ...]` (Liste) als separate Cache-Namespaces; `useAiStatus()` (staleTime: Infinity) + `useImportBackup()` + `useSlotProtocol()` |
 | `contexts/SettingsContext.tsx` | React Context für App-Einstellungen (`aiEnabled`, `defaultModel`), localStorage-backed; `SettingsProvider` + `useSettings()` Hook |

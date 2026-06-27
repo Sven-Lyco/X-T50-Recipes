@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -15,6 +17,7 @@ import java.util.UUID;
 public class RecipeService {
 
     private final RecipeRepository recipeRepository;
+    private final SlotChangeLogRepository slotChangeLogRepository;
 
     @Transactional(readOnly = true)
     public List<RecipeListItem> findAll(FilmSimulation filmSimulation, String tag, boolean onlyFavorites, ShootingScenario scenario) {
@@ -76,18 +79,49 @@ public class RecipeService {
     public RecipeResponse assignCameraSlot(UUID id, CameraSlot slot, boolean force) {
         log.info("Assigning camera slot: id={}, slot={}, force={}", id, slot, force);
         Recipe recipe = getOrThrow(id);
+        CameraSlot oldSlot = recipe.getCameraSlot();
+
+        Recipe previousOccupant = null;
         if (slot != null) {
-            recipeRepository.findByCameraSlot(slot).ifPresent(occupant -> {
+            Optional<Recipe> occupantOpt = recipeRepository.findByCameraSlot(slot);
+            if (occupantOpt.isPresent()) {
+                Recipe occupant = occupantOpt.get();
                 if (!occupant.getId().equals(id)) {
                     if (!force) throw new SlotConflictException(occupant.getId(), occupant.getName());
                     log.info("Freeing slot {} from recipe id={} (force)", slot, occupant.getId());
+                    previousOccupant = occupant;
                     occupant.setCameraSlot(null);
                     recipeRepository.saveAndFlush(occupant);
                 }
-            });
+            }
         }
+
         recipe.setCameraSlot(slot);
-        return RecipeResponse.from(recipeRepository.save(recipe));
+        Recipe saved = recipeRepository.save(recipe);
+
+        if (slot == null && oldSlot != null) {
+            logSlotChange(oldSlot, recipe, null);
+        } else if (slot != null && !slot.equals(oldSlot)) {
+            if (oldSlot != null) logSlotChange(oldSlot, recipe, null);
+            logSlotChange(slot, previousOccupant, saved);
+        }
+
+        return RecipeResponse.from(saved);
+    }
+
+    private void logSlotChange(CameraSlot slot, Recipe prev, Recipe next) {
+        SlotChangeLog entry = new SlotChangeLog();
+        entry.setSlot(slot);
+        if (prev != null) {
+            entry.setPreviousRecipeId(prev.getId());
+            entry.setPreviousRecipeName(prev.getName());
+        }
+        if (next != null) {
+            entry.setNewRecipeId(next.getId());
+            entry.setNewRecipeName(next.getName());
+        }
+        entry.setChangedAt(Instant.now());
+        slotChangeLogRepository.save(entry);
     }
 
     public RecipeResponse setFavorite(UUID id, boolean favorite) {

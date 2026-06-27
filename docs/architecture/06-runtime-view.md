@@ -85,6 +85,7 @@ Browser             Spring Boot API
       │   {slot: "C3", force: true}                     │
       │                              occupant.cameraSlot = null (saveAndFlush)
       │                              recipe.cameraSlot = C3 (save)
+      │                              logSlotChange(C3, occupant, recipe) → slot_change_log
       │◄── 200 RecipeResponse ──────────────────────────│
 ```
 

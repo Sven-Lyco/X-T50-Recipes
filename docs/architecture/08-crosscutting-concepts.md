@@ -137,6 +137,8 @@ Spring Boot Logging via SLF4J/Logback. Log-Level `DEBUG` für `de.fuji.xt50recip
 
 **Test-Pyramide:**
 
+**Backend (Java/JUnit 5):**
+
 | Schicht | Klasse | Scope | Tooling |
 | --- | --- | --- | --- |
 | Unit | `RecipeServiceTest` | Slot-Konflikt-Logik, duplicate, setFavorite | Mockito, kein Spring-Context |
@@ -146,4 +148,11 @@ Spring Boot Logging via SLF4J/Logback. Log-Level `DEBUG` für `de.fuji.xt50recip
 
 **Testcontainers-Hinweis:** `RecipeRepositoryTest` erfordert Docker mit API-Version ≥ 1.40. Lokal mit OrbStack schlägt der Test fehl (docker-java 3.3.6 nutzt API-Version 1.32 hardcoded); in GitHub Actions CI (ubuntu-latest mit nativem Docker) läuft er korrekt durch.
 
-**CI/CD:** GitHub Actions Workflow (`.github/workflows/ci.yml`) führt `./gradlew test` bei jedem Push auf `main` und bei Pull Requests aus. Bei Fehlern wird der HTML-Testbericht als Artefakt hochgeladen.
+**Frontend (Vitest 2.x):**
+
+| Datei | Scope | Tooling |
+| --- | --- | --- |
+| `labels.test.ts` | Alle Label-Funktionen und Select-Daten (`dynamicRangeLabel`, `strengthLabel`, `wbModeLabel`, `scenarioLabel` etc.) | Vitest, reines Node-Environment |
+| `recipeSimilarity.test.ts` | `computeSimilarity()` (Grenzwerte, Filmsimulations-Gruppen, Monochrome-Gewichtung) und `similarityColor()` | Vitest, reines Node-Environment |
+
+**CI/CD:** GitHub Actions Workflow (`.github/workflows/ci.yml`) führt bei jedem Push auf `main` und bei Pull Requests zwei parallele Jobs aus — `test-backend` (`./gradlew test`) und `test-frontend` (`npm test`). Testergebnisse werden via `dorny/test-reporter` als GitHub-native Check-Run-Annotationen angezeigt (immer verfügbar, nicht nur bei Fehler).
