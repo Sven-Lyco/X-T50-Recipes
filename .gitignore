@@ -32,3 +32,6 @@ docker-compose.override.yml
 
 # Images volume (lokal)
 images/
+
+# Frontend test output
+frontend/test-report/
