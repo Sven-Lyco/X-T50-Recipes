@@ -35,3 +35,4 @@ images/
 
 # Frontend test output
 frontend/test-report/
+frontend/test-results/

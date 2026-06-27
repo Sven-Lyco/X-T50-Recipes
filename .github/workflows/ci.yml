@@ -22,12 +22,13 @@ jobs:
       - name: Run backend tests
         run: ./gradlew test
 
-      - name: Upload backend test report
+      - name: Publish backend test results
+        uses: dorny/test-reporter@v1
         if: always()
-        uses: actions/upload-artifact@v4
         with:
-          name: backend-test-report
-          path: build/reports/tests/
+          name: Backend Tests
+          path: build/test-results/test/*.xml
+          reporter: java-junit
 
   test-frontend:
     runs-on: ubuntu-latest
@@ -49,9 +50,10 @@ jobs:
         run: npm test
         working-directory: frontend
 
-      - name: Upload frontend test report
+      - name: Publish frontend test results
+        uses: dorny/test-reporter@v1
         if: always()
-        uses: actions/upload-artifact@v4
         with:
-          name: frontend-test-report
-          path: frontend/test-report/
+          name: Frontend Tests
+          path: frontend/test-results/junit.xml
+          reporter: jest-junit
