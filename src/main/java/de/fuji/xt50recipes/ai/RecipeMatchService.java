@@ -145,26 +145,29 @@ public class RecipeMatchService {
     }
 
     private static String buildPrompt(String recipeList, String exifContext) {
-        String exif = exifContext != null ? "\nEXIF-Metadaten des Fotos: " + exifContext + "\n" : "";
+        String exif = exifContext != null ? "\nTechnische Metadaten des Referenzfotos: " + exifContext + "\n" : "";
         return """
-                Du bist ein Experte für Fujifilm X-T50 Film-Simulation-Recipes.
+                Du bist ein Experte für Fujifilm X-T50 Kamera-Einstellungen.
 
-                Analysiere das hochgeladene Foto hinsichtlich seiner visuellen Charakteristika:
-                - Tonkurve: hell/dunkel, flach/kontrastreich, Verhalten von Spitzlichtern und Tiefen
-                - Farbpalette: warm/kühl/neutral, gesättigt/gedämpft, Farbstiche
-                - Körnung und Textur
-                - Gesamtstimmung und fotografischer Stil
+                Das hochgeladene Foto zeigt das Motiv oder die Szene, die ich mit meiner X-T50 fotografieren möchte.
+
+                Analysiere das Motiv anhand von:
+                - Lichtstimmung: Tageszeit, Qualität des Lichts (hart/weich, warm/kühl, kontrastreich/flach)
+                - Motiv und Kontext (Portrait, Landschaft, Street, Architektur, Innenraum, Natur, …)
+                - Atmosphäre und gewünschte Bildstimmung
+                - Herausforderungen (Gegenlicht, flaches Licht, hoher Kontrast, …)
                 """ + exif + """
 
-                Hier sind alle verfügbaren Recipes:
+                Meine verfügbaren Kamera-Einstellungen:
                 """ + recipeList + """
 
-                Wähle die 3 Recipes, die den Look dieses Fotos am besten reproduzieren würden,
-                wenn man es mit der X-T50 nachshooten würde.
+                Empfehle die 3 Kamera-Einstellungen, die für dieses Motiv den besten Look erzeugen würden.
+                Erkläre jeweils in 1-2 Sätzen auf Deutsch, warum genau diese Einstellung für dieses Motiv
+                und diese Lichtsituation passt.
 
                 Antworte AUSSCHLIESSLICH mit folgendem JSON ohne weitere Erklärungen:
                 {"matches": [
-                  {"id": "<exakte UUID aus der Liste>", "reason": "<1-2 Sätze auf Deutsch warum dieses Recipe passt>"},
+                  {"id": "<exakte UUID aus der Liste>", "reason": "<1-2 Sätze auf Deutsch warum diese Einstellung für das Motiv passt>"},
                   {"id": "<exakte UUID>", "reason": "..."},
                   {"id": "<exakte UUID>", "reason": "..."}
                 ]}

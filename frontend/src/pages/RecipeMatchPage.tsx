@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  Stack, Title, Text, Button, Group, Card, Badge, Image, Box, Center,
+  Stack, Title, Text, Button, Group, Card, Badge, Image, Box,
   Paper, SimpleGrid, ThemeIcon, Switch,
 } from '@mantine/core'
 import { Dropzone, IMAGE_MIME_TYPE } from '@mantine/dropzone'
@@ -17,7 +17,7 @@ export default function RecipeMatchPage() {
   const { settings } = useSettings()
   const [image, setImage] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
-  const [onlySlots, setOnlySlots] = useState(false)
+  const [onlySlots, setOnlySlots] = useState(true)
   const [results, setResults] = useState<RecipeMatchResult[] | null>(null)
 
   const matchRecipe = useMatchRecipe()
@@ -36,7 +36,7 @@ export default function RecipeMatchPage() {
       const matches = await matchRecipe.mutateAsync({ image, model: settings.defaultModel, onlySlots })
       setResults(matches)
       if (matches.length === 0) {
-        notifications.show({ message: 'Keine passenden Recipes gefunden.', color: 'orange' })
+        notifications.show({ message: 'Keine passenden Einstellungen gefunden.', color: 'orange' })
       }
     } catch {
       notifications.show({ message: 'Analyse fehlgeschlagen.', color: 'red' })
@@ -48,7 +48,7 @@ export default function RecipeMatchPage() {
       <Stack gap={4}>
         <Title order={2}>Recipe Match</Title>
         <Text size="sm" c="dimmed">
-          Foto hochladen – die KI findet die Recipes aus deiner Bibliothek, die diesen Look am besten reproduzieren.
+          Foto der Szene aufnehmen – die KI empfiehlt welche Kamera-Einstellung (C1–C7) du verwenden sollst.
         </Text>
       </Stack>
 
@@ -125,31 +125,26 @@ export default function RecipeMatchPage() {
       {results && results.length > 0 && (
         <Stack gap="sm">
           <Text fw={600} size="sm" c="dimmed" tt="uppercase">
-            Beste Treffer
+            Empfehlung
           </Text>
           <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md">
             {results.map((match, i) => (
-              <Card key={match.id} withBorder radius="md" padding="sm">
-                <Box h={120} mb="sm" style={{ borderRadius: 6, overflow: 'hidden', background: 'var(--mantine-color-gray-1)' }}>
-                  {match.previewImageFilename ? (
-                    <Image src={`/images/${match.previewImageFilename}`} h={120} fit="cover" alt={match.name} />
-                  ) : (
-                    <Center h={120}>
-                      <IconPhoto size={32} color="var(--mantine-color-gray-5)" />
-                    </Center>
-                  )}
-                </Box>
-
-                <Group gap="xs" mb={6}>
-                  <Badge size="xs" variant="filled" color="dark">#{i + 1}</Badge>
-                  {match.cameraSlot && (
-                    <Badge size="xs" color="dark" variant="light">{match.cameraSlot}</Badge>
-                  )}
-                  <Badge size="xs" color="gray" variant="light">{filmSimLabel(match.filmSimulation)}</Badge>
+              <Card key={match.id} withBorder radius="md" padding="md">
+                <Group gap="xs" mb="sm" align="center">
+                  <Badge size="xl" variant="filled" color="dark" radius="sm" style={{ fontSize: 18, padding: '6px 12px' }}>
+                    {match.cameraSlot ?? `#${i + 1}`}
+                  </Badge>
+                  <Badge size="sm" color="gray" variant="light">{filmSimLabel(match.filmSimulation)}</Badge>
                 </Group>
 
-                <Text fw={600} size="sm" lineClamp={1} mb={4}>{match.name}</Text>
-                <Text size="xs" c="dimmed" lineClamp={3} mb="sm">{match.reason}</Text>
+                <Text fw={600} size="sm" mb={4} lineClamp={1}>{match.name}</Text>
+                <Text size="xs" c="dimmed" lineClamp={4} mb="sm">{match.reason}</Text>
+
+                {match.previewImageFilename && (
+                  <Box mb="sm" style={{ borderRadius: 6, overflow: 'hidden' }}>
+                    <Image src={`/images/${match.previewImageFilename}`} h={80} fit="cover" alt={match.name} />
+                  </Box>
+                )}
 
                 <Button
                   component={Link}
