@@ -7,7 +7,7 @@ import {
   Stack, Group, Title, Button, Badge, SimpleGrid,
   Paper, Text, Image, Divider, ActionIcon, Box, AspectRatio, Modal, CloseButton, Card, Center, Anchor, Loader,
 } from '@mantine/core'
-import { IconStar, IconStarFilled, IconPhoto } from '@tabler/icons-react'
+import { IconStar, IconStarFilled, IconPhoto, IconChevronLeft, IconChevronRight } from '@tabler/icons-react'
 import { Carousel } from '@mantine/carousel'
 import { notifications } from '@mantine/notifications'
 import '@mantine/carousel/styles.css'
@@ -51,7 +51,7 @@ export default function RecipeDetailPage() {
 
   const duplicateRecipe = useDuplicateRecipe()
 
-  const [lightbox, setLightbox] = useState<string | null>(null)
+  const [lightbox, setLightbox] = useState<number | null>(null)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [pdfLoading, setPdfLoading] = useState(false)
   const [cardPdfLoading, setCardPdfLoading] = useState(false)
@@ -207,9 +207,9 @@ export default function RecipeDetailPage() {
             slideGap="md"
             align="start"
           >
-            {recipe.images.map((img) => (
+            {recipe.images.map((img, index) => (
               <Carousel.Slide key={img.id}>
-                <AspectRatio ratio={3 / 2} onClick={() => setLightbox(img.filename)} style={{ cursor: 'zoom-in' }}>
+                <AspectRatio ratio={3 / 2} onClick={() => setLightbox(index)} style={{ cursor: 'zoom-in' }}>
                   <Image
                     src={`/images/${img.filename}`}
                     alt={img.caption ?? recipe.name}
@@ -389,19 +389,45 @@ export default function RecipeDetailPage() {
     </Stack>
 
     <Modal
-      opened={!!lightbox}
+      opened={lightbox !== null}
       onClose={() => setLightbox(null)}
       size="xl"
       padding={0}
       withCloseButton={false}
       centered
     >
-      {lightbox && (
-        <Box pos="relative">
-          <Image src={`/images/${lightbox}`} fit="contain" mah="90vh" />
-          <CloseButton pos="absolute" top={8} right={8} variant="filled" color="dark" radius="xl" onClick={() => setLightbox(null)} />
-        </Box>
-      )}
+      {lightbox !== null && (() => {
+        const images = recipe.images
+        const img = images[lightbox]
+        const hasSiblings = images.length > 1
+        return (
+          <Box pos="relative">
+            <Image src={`/images/${img.filename}`} fit="contain" mah="90vh" />
+            <CloseButton pos="absolute" top={8} right={8} variant="filled" color="dark" radius="xl" onClick={() => setLightbox(null)} />
+            {hasSiblings && (
+              <>
+                <ActionIcon
+                  pos="absolute" left={8} top="50%" style={{ transform: 'translateY(-50%)' }}
+                  variant="filled" color="dark" radius="xl" size="lg"
+                  onClick={() => setLightbox((lightbox - 1 + images.length) % images.length)}
+                >
+                  <IconChevronLeft size={18} />
+                </ActionIcon>
+                <ActionIcon
+                  pos="absolute" right={8} top="50%" style={{ transform: 'translateY(-50%)' }}
+                  variant="filled" color="dark" radius="xl" size="lg"
+                  onClick={() => setLightbox((lightbox + 1) % images.length)}
+                >
+                  <IconChevronRight size={18} />
+                </ActionIcon>
+              </>
+            )}
+            {img.caption && (
+              <Text size="xs" c="dimmed" ta="center" py={6}>{img.caption}</Text>
+            )}
+          </Box>
+        )
+      })()}
     </Modal>
 
     <Modal
