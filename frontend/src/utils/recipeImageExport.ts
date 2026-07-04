@@ -125,9 +125,21 @@ export function exportRecipeAsPng(recipe: Recipe): void {
   ctx.font = '13px Arial, sans-serif'
   ctx.fillText(`X-T50 Recipes · ${new Date().toLocaleDateString('de-DE')}`, PADDING, y + 13)
 
+  const dataUrl = canvas.toDataURL('image/png')
   const safeName = recipe.name.replace(/[<>:"/\\|?*]/g, '_')
+
+  // iOS (including PWA standalone) does not honor the download attribute —
+  // open in new tab so the user can save via the share sheet ("Bild sichern")
+  const isIos =
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  if (isIos) {
+    window.open(dataUrl, '_blank')
+    return
+  }
+
   const a = document.createElement('a')
   a.download = `${safeName}.png`
-  a.href = canvas.toDataURL('image/png')
+  a.href = dataUrl
   a.click()
 }
