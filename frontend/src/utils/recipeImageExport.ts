@@ -33,7 +33,7 @@ const WB_EN: Record<string, string> = {
   CUSTOM_3: 'CUSTOM 3',
 }
 
-export function exportRecipeAsPng(recipe: Recipe): void {
+export async function exportRecipeAsPng(recipe: Recipe): Promise<void> {
   const isMonochrome = MONOCHROME_SIMS.includes(recipe.filmSimulation)
 
   // Build WB line: "DAYLIGHT, +2 RED & -5 BLUE" or "5500K, +2 RED & -5 BLUE"
@@ -125,21 +125,25 @@ export function exportRecipeAsPng(recipe: Recipe): void {
   ctx.font = '13px Arial, sans-serif'
   ctx.fillText(`X-T50 Recipes · ${new Date().toLocaleDateString('de-DE')}`, PADDING, y + 13)
 
-  const dataUrl = canvas.toDataURL('image/png')
   const safeName = recipe.name.replace(/[<>:"/\\|?*]/g, '_')
 
-  // iOS (including PWA standalone) does not honor the download attribute —
-  // open in new tab so the user can save via the share sheet ("Bild sichern")
-  const isIos =
-    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
-  if (isIos) {
-    window.open(dataUrl, '_blank')
+  // Use Web Share API with file sharing where available (iOS PWA, Safari mobile).
+  // iOS does not honor the download attribute and blocks window.open() from async
+  // handlers — Web Share API is the only reliable path on iOS.
+  const blob = await new Promise<Blob>((resolve, reject) =>
+    canvas.toBlob(b => b ? resolve(b) : reject(new Error('canvas.toBlob failed')), 'image/png')
+  )
+  const file = new File([blob], `${safeName}.png`, { type: 'image/png' })
+  if (typeof navigator.share === 'function' && navigator.canShare?.({ files: [file] })) {
+    await navigator.share({ files: [file], title: recipe.name })
     return
   }
 
+  // Fallback: anchor download (desktop browsers, Android Chrome)
+  const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.download = `${safeName}.png`
-  a.href = dataUrl
+  a.href = url
   a.click()
+  URL.revokeObjectURL(url)
 }

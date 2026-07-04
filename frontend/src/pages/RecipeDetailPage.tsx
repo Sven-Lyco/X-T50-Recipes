@@ -77,7 +77,7 @@ export default function RecipeDetailPage() {
   async function handleImageExport() {
     setImageExportLoading(true)
     try {
-      exportRecipeAsPng(recipe!)
+      await exportRecipeAsPng(recipe!)
     } finally {
       setImageExportLoading(false)
     }
