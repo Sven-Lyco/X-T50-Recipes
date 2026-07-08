@@ -66,6 +66,20 @@ Alle sensiblen Werte werden als Coolify-Secrets hinterlegt — niemals im Source
 | `APP_ADMIN_USERNAME` | Nein | Login-Username (Default: `admin`) |
 | `JWT_EXPIRATION_MS` | Nein | Token-Gültigkeit in ms (Default: `86400000` = 24 h) |
 
+## Traefik-Buffering für große Uploads
+
+Ohne die Traefik-Buffering-Middleware kam es bei Bild-Uploads über den Reverse-Proxy zu Problemen (Timeouts/blockierte Requests). Der `app`-Service in [`docker-compose.yml`](../../docker-compose.yml) trägt daher zwei zusätzliche Labels:
+
+```yaml
+labels:
+  - "traefik.http.middlewares.buffer-uploads.buffering.maxRequestBodyBytes=31457280"
+  - "coolify.traefik.middlewares=buffer-uploads"
+```
+
+`coolify.traefik.middlewares` ist Coolifys Shorthand-Label: Es wird beim Deployment ausgewertet und in die intern generierte Traefik-Router-Konfiguration eingehängt (erscheint nicht im laufenden Container) — man muss dafür nicht den auto-generierten Router-Namen kennen. Die 30-MB-Grenze liegt knapp über dem Spring-Boot-Limit (`max-request-size: 25MB`, siehe `application.yml`), damit die Middleware nicht selbst zur neuen Engstelle wird.
+
+Diese Labels gehören ins Repo statt in Coolifys UI-Label-Editor, weil "Preserve Repository During Deployment" nicht aktiviert ist — manuelle UI-Änderungen würden beim nächsten Git-Deploy wieder überschrieben.
+
 ## CI/CD
 
 GitHub Actions (`.github/workflows/ci.yml`) führt bei jedem Push auf `main` und bei Pull Requests zwei parallele Jobs aus:

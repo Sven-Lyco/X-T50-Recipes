@@ -150,6 +150,8 @@ In Coolify:
 4. Alle Pflicht-Env-Vars als Secrets eintragen
 5. `ANTHROPIC_API_KEY` optional für KI-Features
 
+`docker-compose.yml` enthält bereits die Traefik-Buffering-Middleware für große Bild-Uploads (Labels am `app`-Service) – dafür ist keine manuelle Konfiguration in Coolifys UI nötig, siehe [07-deployment-view.md](docs/architecture/07-deployment-view.md#traefik-buffering-für-große-uploads).
+
 ## KI-Features
 
 ### Recipe generieren
