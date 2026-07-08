@@ -4,10 +4,13 @@ import { pdf } from '@react-pdf/renderer'
 import { RecipePdf } from '../components/RecipePdf'
 import { RecipeCardPdf } from '../components/RecipeCardPdf'
 import {
-  Stack, Group, Title, Button, Badge, SimpleGrid,
+  Stack, Group, Title, Button, Badge, SimpleGrid, Menu,
   Paper, Text, Image, Divider, ActionIcon, Box, AspectRatio, Modal, CloseButton, Card, Center, Anchor, Loader,
 } from '@mantine/core'
-import { IconStar, IconStarFilled, IconPhoto, IconChevronLeft, IconChevronRight } from '@tabler/icons-react'
+import {
+  IconStar, IconStarFilled, IconPhoto, IconChevronLeft, IconChevronRight, IconChevronDown,
+  IconFileZip, IconFileTypePdf, IconCreditCard,
+} from '@tabler/icons-react'
 import { Carousel } from '@mantine/carousel'
 import { notifications } from '@mantine/notifications'
 import '@mantine/carousel/styles.css'
@@ -370,18 +373,46 @@ export default function RecipeDetailPage() {
         <Button variant="default" loading={duplicateRecipe.isPending} onClick={handleDuplicate}>
           Duplizieren
         </Button>
-        <Button variant="default" loading={zipLoading} onClick={handleZipExport}>
-          Als ZIP exportieren
-        </Button>
-        <Button variant="default" loading={pdfLoading} onClick={handlePdfExport}>
-          Als PDF exportieren
-        </Button>
-        <Button variant="default" loading={cardPdfLoading} onClick={handleCardPdfExport}>
-          A6-Karte
-        </Button>
-        <Button variant="default" loading={imageExportLoading} onClick={handleImageExport} leftSection={<IconPhoto size={16} />}>
-          Als Bild
-        </Button>
+        <Menu shadow="md" position="bottom-start">
+          <Menu.Target>
+            <Button variant="default" rightSection={<IconChevronDown size={16} />}>
+              Exportieren
+            </Button>
+          </Menu.Target>
+          <Menu.Dropdown>
+            <Menu.Item
+              leftSection={zipLoading ? <Loader size="xs" /> : <IconFileZip size={16} />}
+              disabled={zipLoading}
+              onClick={handleZipExport}
+            >
+              Als ZIP
+            </Menu.Item>
+            <Menu.Item
+              leftSection={pdfLoading ? <Loader size="xs" /> : <IconFileTypePdf size={16} />}
+              disabled={pdfLoading}
+              onClick={handlePdfExport}
+            >
+              Als PDF
+            </Menu.Item>
+            <Menu.Item
+              leftSection={cardPdfLoading ? <Loader size="xs" /> : <IconCreditCard size={16} />}
+              disabled={cardPdfLoading}
+              onClick={handleCardPdfExport}
+            >
+              Als A6-Karte
+            </Menu.Item>
+            <Menu.Item
+              leftSection={imageExportLoading ? <Loader size="xs" /> : <IconPhoto size={16} />}
+              disabled={imageExportLoading}
+              onClick={handleImageExport}
+            >
+              Als Bild
+            </Menu.Item>
+          </Menu.Dropdown>
+        </Menu>
+      </Group>
+
+      <Group gap="xs" mt="xs">
         <Button color="red" variant="light" onClick={() => setDeleteModalOpen(true)} loading={deleteRecipe.isPending}>
           Löschen
         </Button>
