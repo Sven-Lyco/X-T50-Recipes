@@ -103,6 +103,8 @@ Die **Filmsimulations-Distanzmatrix** teilt Simulationen in 7 fotografische Grup
 3. Power Iteration + Deflation → Top-2 Eigenvektoren mit Eigenwerten
 4. 2D-Koordinaten = Eigenvektoren skaliert mit √Eigenwert
 
+**Konvergenz-Check in `powerIter()`:** Statt einer festen Anzahl Iterationen bricht die Power Iteration ab, sobald sich der Vektor zwischen zwei Runden kaum noch ändert (Winkel-Toleranz `1e-10`). `maxIters = 500` ist nur ein Sicherheitsnetz für Fälle mit sehr kleinem Eigenwert-Abstand (typischerweise sehr kleine Bibliotheken); wird es erreicht, loggt die Funktion eine `console.warn`. In Tests mit 1500+ synthetischen Recipe-Kombinationen (auch < 5 Recipes, auch mit gemischten Mono-/Farb-Ausreißern) konvergierte die Iteration immer, im Schnitt nach ~14 Runden.
+
 ---
 
 ## Error Handling

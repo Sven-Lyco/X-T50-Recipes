@@ -12,7 +12,8 @@ Persönliche Web-App zur Verwaltung von Fujifilm X-T50 Film-Simulation-Recipes. 
 - **Vergleichen** – bis zu 4 Recipes Side-by-Side mit Unterschieds-Highlighting und Ähnlichkeits-Score
 - **Ähnlichkeits-Map** – alle Recipes als interaktive 2D-Karte (MDS), ähnliche Recipes clustern zusammen; optional nur C1–C7
 - **KI-Generierung** – Referenzfoto(s) hochladen → Claude Vision schlägt passende Einstellungen vor (inkl. EXIF-Kontext)
-- **Recipe Match** – Foto hochladen → KI findet die 3 am besten passenden Recipes aus der Bibliothek
+- **Recipe Match** – Foto hochladen → KI empfiehlt, welcher C1–C7-Slot am besten zu Motiv/Licht passt (optional auf alle Recipes erweiterbar)
+- **Parameter-Referenz** – Nachschlagewerk zu allen Filmsimulationen und Bildparametern mit Kamera-Menü-Beschreibungen
 - **Einstellungen** – Backup aller Recipes als ZIP exportieren/importieren; KI-Funktionen global an-/ausschalten; Standard-KI-Modell wählen
 - **PWA** – installierbar auf iOS/iPadOS über den Home-Screen
 
@@ -42,7 +43,7 @@ X-T50-Recipes/
 │   └── application.yml
 ├── frontend/          React + TypeScript + Vite
 │   └── src/
-│       ├── pages/     Screens (Library, Detail, Form, Camera, Compare, Map, Match, Generate, Settings)
+│       ├── pages/     Screens (Library, Detail, Form, Camera, Compare, Map, Match, Generate, Reference, Protocol, Settings)
 │       ├── contexts/  SettingsContext (localStorage-backed App-Einstellungen)
 │       ├── api/       React Query Hooks + Axios Client
 │       ├── utils/     Similarity-Score, MDS-Algorithmus, Labels
@@ -110,6 +111,19 @@ Die App ist dann unter `http://localhost:8080` erreichbar.
 ### Erster Login
 
 Der initiale Admin-User wird per Flyway-Migration angelegt. Zugangsdaten über die Env-Vars `APP_ADMIN_USERNAME` / `APP_ADMIN_PASSWORD` konfigurierbar (Default: `admin` / kein Passwort gesetzt → muss gesetzt sein).
+
+### Tests
+
+```bash
+# Backend
+./gradlew test
+
+# Frontend
+cd frontend
+npm test
+```
+
+GitHub Actions (`.github/workflows/ci.yml`) führt bei jedem Push auf `main` und bei Pull Requests `test-backend` und `test-frontend` parallel aus; Testergebnisse erscheinen als GitHub-native Check-Run-Annotationen (`dorny/test-reporter`).
 
 ## Umgebungsvariablen
 

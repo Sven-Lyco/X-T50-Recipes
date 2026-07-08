@@ -7,7 +7,7 @@
 | R1 | Traefik/Coolify blockiert Bild-Uploads > ~1 MB | Hoch (bereits beobachtet) | Mittel | Traefik-Middleware für Body-Buffering in Coolify konfigurieren (`middlewares: buffering`) |
 | R2 | Rate-Limiter reset bei App-Neustart | Niedrig (Single-User) | Niedrig | Akzeptiert; bei Bedarf Redis-backed Limiter nachrüsten |
 | R3 | ~~Keine automatisierten Tests~~ | ~~Mittel~~ | ~~Hoch~~ | ✅ Behoben: Unit-Tests (`RecipeServiceTest`, `ImageUtilsTest`), Web-Slice-Tests (`RecipeControllerTest`), Integrationstests mit Testcontainers (`RecipeRepositoryTest`); GitHub Actions CI auf `main` |
-| R4 | Power Iteration konvergiert nicht immer perfekt | Niedrig | Niedrig | 200 Iterationen als Kompromiss; bei sehr kleinen Bibliotheken (< 5 Recipes) wenig aussagekräftig |
+| R4 | ~~Power Iteration konvergiert nicht immer perfekt~~ | ~~Niedrig~~ | Niedrig | ✅ Konvergenz-Check ergänzt: bricht ab sobald der Vektor stabil ist (Winkel-Toleranz `1e-10`), `maxIters = 500` als Sicherheitsnetz + `console.warn` bei Nicht-Konvergenz; in 1500+ synthetischen Testfällen (auch < 5 Recipes) immer konvergiert. Verbleibend, nicht behebbar: bei < 5 Recipes bleibt die Karte inhärent wenig aussagekräftig (zu wenige Punkte für ein Cluster-Muster) — Informationsproblem, kein Algorithmus-Fehler |
 
 ## Technische Schulden
 

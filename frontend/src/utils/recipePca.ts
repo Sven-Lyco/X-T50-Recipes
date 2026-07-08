@@ -30,9 +30,18 @@ function normalize(v: number[]): number[] {
   return v.map(x => x / norm)
 }
 
-function powerIter(A: number[][], iters = 200): number[] {
+// Konvergenz-Check: bricht ab, sobald sich der Vektor kaum noch ändert (Winkel zur Vorrunde ~0),
+// statt blind alle maxIters Runden durchzurechnen. maxIters ist nur ein Sicherheitsnetz für
+// Fälle mit sehr kleinem Eigenwert-Abstand (typ. bei sehr kleinen Bibliotheken, < 5 Recipes).
+function powerIter(A: number[][], maxIters = 500, tol = 1e-10): number[] {
   let v = normalize(A[0].map((_, i) => i === 0 ? 1 : 0.01 * (i + 1)))
-  for (let i = 0; i < iters; i++) v = normalize(matVec(A, v))
+  for (let i = 0; i < maxIters; i++) {
+    const next = normalize(matVec(A, v))
+    const dot = next.reduce((s, x, j) => s + x * v[j], 0)
+    v = next
+    if (Math.abs(dot) >= 1 - tol) return v
+  }
+  console.warn(`[recipePca] Power Iteration nicht konvergiert nach ${maxIters} Iterationen — Ähnlichkeits-Map kann ungenau sein`)
   return v
 }
 
