@@ -1,6 +1,24 @@
 # X-T50 Recipes
 
+[![CI](https://github.com/Sven-Lyco/X-T50-Recipes/actions/workflows/ci.yml/badge.svg)](https://github.com/Sven-Lyco/X-T50-Recipes/actions/workflows/ci.yml)
+
 Persönliche Web-App zur Verwaltung von Fujifilm X-T50 Film-Simulation-Recipes. Recipes enthalten alle JPEG-Kameraeinstellungen, Beispielbilder, Beschreibungen und Tags. Ein Dashboard zeigt, welches Recipe auf welcher Custom-Bank (C1–C7) der Kamera aktiv ist.
+
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/library.png" alt="Bibliothek" width="380"/><br/><em>Bibliothek</em></td>
+    <td align="center"><img src="docs/screenshots/detail.png" alt="Detailansicht" width="380"/><br/><em>Detailansicht</em></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/camera-dashboard.png" alt="Kamera-Dashboard" width="380"/><br/><em>Kamera-Dashboard</em></td>
+    <td align="center"><img src="docs/screenshots/similarity-map.png" alt="Ähnlichkeits-Map" width="380"/><br/><em>Ähnlichkeits-Map</em></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><img src="docs/screenshots/recipe-match.png" alt="Recipe Match" width="380"/><br/><em>Recipe Match</em></td>
+  </tr>
+</table>
 
 ## Features
 
@@ -162,7 +180,7 @@ KI-generierte Recipes erhalten ein violettes „KI-Generiert"-Badge.
 
 ### Recipe Match
 
-Unter „Recipe Match" ein einzelnes Foto hochladen. Die KI analysiert den visuellen Charakter (Tonkurve, Farbpalette, Körnung, Stimmung) und gibt die 3 am besten passenden Recipes aus der Bibliothek zurück – mit Begründung, warum jedes Recipe zu dem Foto passt. Optional kann die Suche auf die aktuell belegten C1–C7-Slots eingeschränkt werden.
+Unter „Recipe Match" ein Foto der Szene hochladen, die fotografiert werden soll. Die KI analysiert Lichtstimmung, Motiv und Atmosphäre und empfiehlt, welche der belegten C1–C7-Einstellungen am besten zu dieser Situation passt – mit kurzer Begründung pro Empfehlung. Standardmäßig wird auf C1–C7 eingeschränkt, optional kann auch die gesamte Bibliothek durchsucht werden.
 
 Das Standard-Modell wird zentral in den Einstellungen (`/settings`) konfiguriert:
 
