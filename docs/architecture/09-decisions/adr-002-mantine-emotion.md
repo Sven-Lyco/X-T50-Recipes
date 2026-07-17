@@ -13,7 +13,7 @@ Mantine UI (`@mantine/core`) für Komponenten, `@emotion/styled` für Custom-Sty
 
 ## Begründung
 
-Mantine bietet eine vollständige, zugängliche Komponenten-Bibliothek speziell für React. Die benötigten Komponenten (NumberInput mit Inkrement-Buttons, Select mit Gruppen, Drag-and-Drop via `@mantine/dnd`) sind vorhanden und qualitativ hochwertig.
+Mantine bietet eine vollständige, zugängliche Komponenten-Bibliothek speziell für React. Die benötigten Komponenten (NumberInput mit Inkrement-Buttons, Select mit Gruppen, Dropzone via `@mantine/dropzone`) sind vorhanden und qualitativ hochwertig. Für die Drag-and-Drop-Sortierung der Bildergalerie im Bearbeitungsformular wird `@dnd-kit` (core + sortable) genutzt, da Mantine keine eigene Sortable-Implementierung bietet.
 
 `@emotion/styled` ermöglicht typisierte, komponentenbasierte Custom-Styles ohne Scoping-Probleme. Styles sind lokal zur Komponente, kein globaler Namensraum.
 

@@ -13,10 +13,3 @@
 | Q7 | Wartbarkeit | Neues Datenbankfeld hinzufügen | Flyway-Migration schreiben, deployen — kein manueller SQL nötig |
 | Q8 | Portabilität | App auf neuem iOS-Gerät nutzen | Als PWA über Safari „Zum Home-Bildschirm" installierbar |
 | Q9 | Zuverlässigkeit | App-Neustart nach Update | Flyway-Migrationen laufen automatisch; kein manueller Eingriff |
-
-## Noch nicht erfüllte Anforderungen
-
-| Qualität | Lücke | Verweis |
-|---|---|---|
-| Testbarkeit | Keine automatisierten Tests vorhanden | [Risiko R3](11-risks-technical-debt.md) |
-| Upload-Zuverlässigkeit | Traefik blockiert Uploads > ~1 MB | [Risiko R1](11-risks-technical-debt.md) |

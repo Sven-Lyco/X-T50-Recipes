@@ -15,7 +15,7 @@ Die X-T50 bietet 20 Filmsimulationen und rund 15 einstellbare Parameter. Die Kom
 | 1 | Recipes persistent speichern und schnell wiederfinden (nach Filmsimulation, Tags, Szenario, Favoriten) |
 | 2 | Aktuelle C1–C7-Kamerabelegung jederzeit im Blick behalten und direkt ändern können |
 | 3 | Über KI (Claude Vision) aus Referenzfotos passende Einstellungen vorschlagen lassen |
-| 4 | Per „Recipe Match" das zu einem Foto am besten passende Recipe finden |
+| 4 | Per „Recipe Match" aus einem Foto der Szene die passendste C1–C7-Einstellung empfehlen lassen |
 | 5 | Als PWA auf dem iPhone installierbar sein — für den schnellen Zugriff im Feld |
 
 ## Qualitätsziele

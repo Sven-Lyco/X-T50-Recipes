@@ -6,7 +6,7 @@
 | **Filmsimulation** | Kernfeature der Fujifilm X-Serie: Emulation von analogen Filmrollen und Looks (z.B. Provia/Standard, Velvia/Vivid, Classic Chrome). Bestimmt maßgeblich den visuellen Charakter des JPEGs. |
 | **C1–C7 / Kamera-Slot** | Die sieben Custom-Slots der Fujifilm X-T50. Auf jeden Slot kann ein Recipe gespeichert werden, das direkt am Kamerawahlrad abrufbar ist. Jeder Slot kann maximal ein Recipe belegen. |
 | **KI-Generierung** | Feature: Bis zu 5 Referenzfotos hochladen → Claude Vision analysiert den Look → Recipe-Formular wird automatisch mit Einstellungen und Begründung vorbefüllt. |
-| **Recipe Match** | Feature: 1 Foto hochladen → Claude vergleicht den fotografischen Charakter mit allen gespeicherten Recipes → Top-3-Matches mit Begründung. |
+| **Recipe Match** | Feature: Foto der Szene hochladen → Claude analysiert Lichtstimmung, Motiv und Atmosphäre → empfiehlt welcher C1–C7-Slot am besten zu dieser Situation passt, mit kurzer Begründung pro Empfehlung. |
 | **Ähnlichkeits-Score** | Ganzzahliger Wert 0–100 (100 = identisch) aus `computeSimilarity()`. Berechnet aus gewichteten Parameterabständen inkl. einer fotografischen Filmsimulations-Distanzmatrix. |
 | **MDS (Multidimensional Scaling)** | Dimensionsreduktionsalgorithmus: bildet eine paarweise Distanzmatrix in einen niedrigdimensionalen Raum ab. Hier: Ähnlichkeits-Distanzmatrix → 2D-Scatter-Plot (Ähnlichkeits-Map). |
 | **Classical MDS** | Variante von MDS via Double Centering der quadrierten Distanzmatrix und anschließender Eigenwertzerlegung (Power Iteration + Deflation). Komplett client-seitig in TypeScript implementiert. |

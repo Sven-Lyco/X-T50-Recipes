@@ -26,5 +26,5 @@
 
 | Einschränkung | Status |
 |---|---|
-| Traefik (Coolify) blockiert Uploads > ~1 MB | Offen: Traefik-Middleware für Body-Buffering muss in Coolify konfiguriert werden. Spring Boot selbst ist auf 20 MB konfiguriert. |
+| Traefik (Coolify) blockiert Uploads > ~1 MB | ✅ Behoben: Buffering-Middleware im `docker-compose.yml` konfiguriert (`maxRequestBodyBytes` 30 MB via `coolify.traefik.middlewares`). Details: [07-deployment-view.md](07-deployment-view.md#traefik-buffering-für-große-uploads) |
 | Rate-Limiter ist in-memory | Akzeptiert: Reset bei App-Neustart; kein Problem bei Single-Instance-Deployment |

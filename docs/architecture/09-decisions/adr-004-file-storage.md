@@ -28,5 +28,5 @@ Bilder auf Docker-Volume `/app/images`; Spring Boot serviert den Ordner als stat
 ## Konsequenzen
 
 - Volume-Verlust = Bildverlust (kein Built-in Redundancy) — Backup via Coolify-Snapshots
-- Bekannte Einschränkung: Traefik/Coolify blockiert aktuell Uploads > ~1 MB (→ [Risiko R1](../11-risks-technical-debt.md))
+- ~~Bekannte Einschränkung: Traefik/Coolify blockierte Uploads > ~1 MB~~ → ✅ Behoben: Buffering-Middleware im `docker-compose.yml` konfiguriert (→ [Risiko R1](../11-risks-technical-debt.md))
 - Spring Boot ist auf 20 MB pro Datei / 25 MB pro Request konfiguriert

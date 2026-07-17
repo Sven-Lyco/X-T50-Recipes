@@ -58,6 +58,7 @@ Flyway in `src/main/resources/db/migration/`. Spring Boot ist auf `ddl-auto: val
 | V6 | Tags auf lowercase normalisiert (`UPDATE recipe SET tags = ARRAY(SELECT lower(t) FROM unnest(tags) t)`) |
 | V7 | `ai_generated` Boolean |
 | V8 | `shooting_scenario VARCHAR(20)` |
+| V9 | `slot_change_log` Tabelle (kein FK zur Recipe-Tabelle — Einträge bleiben nach Recipe-Löschung erhalten) |
 
 ---
 

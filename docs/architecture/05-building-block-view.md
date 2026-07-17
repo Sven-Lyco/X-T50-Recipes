@@ -104,7 +104,7 @@ X-T50 Recipes
 | `CompareResultPage` | `/compare/result` | Side-by-Side-Tabelle mit Diff-Highlighting und Ähnlichkeits-Score |
 | `GenerateRecipePage` | `/generate` | KI-Generierung: Fotos hochladen → Formular vorbefüllt |
 | `SimilarityMapPage` | `/map` | Interaktive MDS-Karte; optional nur C1–C7 |
-| `RecipeMatchPage` | `/match` | Foto hochladen → Top-3 passende Recipes |
+| `RecipeMatchPage` | `/match` | Foto der Szene hochladen → KI empfiehlt welcher C1–C7-Slot am besten passt |
 | `SettingsPage` | `/settings` | Datensicherung (Backup-Export/-Import) + KI-Einstellungen (Toggle, Standard-Modell) |
 | `ReferencePage` | `/reference` | Parameter-Referenz |
 | `LoginPage` | `/login` | Single-User-Login |

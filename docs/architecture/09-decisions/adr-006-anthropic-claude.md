@@ -5,7 +5,7 @@ Entschieden
 
 ## Kontext
 
-Zwei KI-Features sind geplant: (1) Aus Referenzfotos passende Recipe-Parameter vorschlagen; (2) Zu einem hochgeladenen Foto die am besten passenden Recipes aus der Bibliothek finden. Beide Features erfordern Bild-Analyse (Vision) und strukturierten Text-Output (JSON).
+Zwei KI-Features sind geplant: (1) Aus Referenzfotos passende Recipe-Parameter vorschlagen; (2) Foto der Szene hochladen → KI analysiert Lichtstimmung und Motiv und empfiehlt welcher C1–C7-Slot am besten passt. Beide Features erfordern Bild-Analyse (Vision) und strukturierten Text-Output (JSON).
 
 ## Entscheidung
 
