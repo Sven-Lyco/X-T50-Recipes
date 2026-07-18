@@ -55,6 +55,7 @@ function deflate(A: number[][], v: number[], lam: number): number[][] {
 
 export function computeMds(recipes: Recipe[]): [number, number][] {
   const n = recipes.length
+  if (n === 0) return []
 
   // Distanzmatrix: 0 = identisch, 1 = völlig verschieden
   const D2: number[][] = Array.from({ length: n }, (_, i) =>

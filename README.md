@@ -166,16 +166,19 @@ Der initiale Admin-User wird beim App-Start durch `DataInitializer` angelegt, so
 
 ### Tests
 
-```bash
-# Backend
-./gradlew test
+Coverage-Ziel: **≥ 80 % Lines** (Backend via JaCoCo, Frontend via vitest/v8).
 
-# Frontend
-cd frontend
-npm test
+```bash
+# Backend – Tests + Coverage-Prüfung (80 % Lines via JaCoCo)
+./gradlew check
+
+# Frontend – Tests + Coverage-Prüfung (80 % via vitest/v8)
+cd frontend && npm test -- --coverage
 ```
 
-GitHub Actions (`.github/workflows/ci.yml`) führt bei jedem Push auf `main` und bei Pull Requests `test-backend` und `test-frontend` parallel aus; Testergebnisse erscheinen als GitHub-native Check-Run-Annotationen (`dorny/test-reporter`).
+> **Hinweis lokal:** `RecipeRepositoryTest` (Testcontainers) wird unter OrbStack automatisch übersprungen — docker-java und OrbStack 2.x sind aktuell inkompatibel. Mit `./gradlew check -PallTests` kann er manuell eingeschlossen werden.
+
+GitHub Actions (`.github/workflows/ci.yml`) führt bei jedem Push auf `main` und bei Pull Requests `test-backend` und `test-frontend` parallel aus; Testergebnisse erscheinen als GitHub-native Check-Run-Annotationen (`dorny/test-reporter`). Der JaCoCo-Threshold (80 % Lines) schlägt lokal wie in CI den Build ab wenn die Coverage unterschritten wird.
 
 ## Umgebungsvariablen
 

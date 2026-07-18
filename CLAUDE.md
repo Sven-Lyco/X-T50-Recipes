@@ -229,3 +229,37 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
   in die EXIF-MakerNotes jedes JPEGs; Upload eines Kamera-JPEGs extrahiert die tatsächlich
   verwendeten Einstellungen und befüllt das Recipe-Formular exakt (nicht KI-geschätzt);
   `metadata-extractor`-Library ist bereits im Projekt und unterstützt Fujifilm-MakerNotes
+
+## Testing-Strategie
+
+### Ziel
+
+≥ 80 % Line-Coverage auf beiden Seiten (JaCoCo Backend, vitest/v8 Frontend).
+
+### Backend
+
+| Schicht | Test-Ansatz | Beispiel |
+|---|---|---|
+| Service-Layer | Mockito (`@ExtendWith(MockitoExtension.class)`) | `RecipeServiceTest`, `AiSuggestionServiceTest` |
+| HTTP-Layer | `@WebMvcTest` + `@MockBean` + MockMvc | `RecipeControllerTest`, `AuthControllerTest` |
+| Repository | `@DataJpaTest` + Testcontainers PostgreSQL | `RecipeRepositoryTest` |
+| Utility-Klassen | Plain JUnit 5, kein Spring-Kontext | `JwtUtilTest`, `LoginRateLimiterTest` |
+
+**Wichtige Eigenheiten:**
+- `RecipeRepositoryTest` wird lokal automatisch übersprungen (docker-java sendet beim Handshake API-Version 1.32, OrbStack 2.x verlangt ≥ 1.40). Lokal: `./gradlew check`; mit Opt-in: `./gradlew check -PallTests`; in CI läuft er immer.
+- `@WebMvcTest` lädt `SecurityConfig` nicht (JwtAuthFilter ist `@Component`, wird aus Slice-Scan ausgeschlossen) → Default-Security mit CSRF+Auth-everywhere gilt. Für permit-all-Endpoints (z.B. `/api/auth/login`) deshalb `@WithMockUser` + `.with(csrf())` verwenden.
+- JaCoCo-Threshold (80% Lines) wird immer erzwungen — lokal via `./gradlew check`, in CI via `./gradlew check` (mit `CI`-Env-Var wird `RecipeRepositoryTest` zusätzlich eingeschlossen).
+- `@Value`-injizierte Felder in Services per `ReflectionTestUtils.setField(service, "fieldName", value)` setzen.
+- `AppProperties` ist ein Record → direkt instanziieren: `new AppProperties(secret, expMs, storagePath, user, pass, apiKey)`.
+
+### Frontend
+
+- **Test-Umgebung:** jsdom — ermöglicht DOM, localStorage und React-Rendering
+- **React-Komponenten:** `@testing-library/react` + `renderWithProviders()` aus `src/test-utils.tsx` (enthält QueryClientProvider, MemoryRouter, SettingsProvider)
+- **API-Hooks:** per `vi.mock('../api/recipes')` gemockt — keine echten HTTP-Requests
+- **Pure Utils:** Plain vitest ohne Wrapper (`labels.ts`, `recipeSimilarity.ts`, `recipePca.ts`, `filmSimLabel.ts`)
+- **Frontend-Threshold:** 80% in `vite.config.ts` konfiguriert, wird bei `npm test -- --coverage` erzwungen
+
+Aus der Coverage ausgeschlossen (nicht testbar mit jsdom):
+- `src/components/RecipePdf.tsx` + `RecipeCardPdf.tsx` — @react-pdf/renderer (PDF-DOM)
+- `src/utils/recipeImageExport.ts` — Canvas-API + Web Share API (iOS PWA)

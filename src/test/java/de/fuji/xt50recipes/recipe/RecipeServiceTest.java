@@ -2,17 +2,20 @@ package de.fuji.xt50recipes.recipe;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+
 
 @ExtendWith(MockitoExtension.class)
 class RecipeServiceTest {
@@ -136,5 +139,108 @@ class RecipeServiceTest {
 
         assertThatThrownBy(() -> recipeService.findById(id))
                 .isInstanceOf(RecipeNotFoundException.class);
+    }
+
+    @Test
+    void findAll_noFilters_returnsMappedList() {
+        UUID id = UUID.randomUUID();
+        Recipe r = recipe(id, "Recipe A");
+        when(recipeRepository.findByFilters(null, null, false, null)).thenReturn(List.of(r));
+
+        List<RecipeListItem> result = recipeService.findAll(null, null, false, null);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).name()).isEqualTo("Recipe A");
+    }
+
+    @Test
+    void findAll_withFilmSimFilter_passesNameToRepo() {
+        when(recipeRepository.findByFilters("PROVIA", null, false, null)).thenReturn(List.of());
+
+        List<RecipeListItem> result = recipeService.findAll(FilmSimulation.PROVIA, null, false, null);
+
+        assertThat(result).isEmpty();
+        verify(recipeRepository).findByFilters("PROVIA", null, false, null);
+    }
+
+    @Test
+    void create_lowercasesTags() {
+        ArgumentCaptor<Recipe> captor = ArgumentCaptor.forClass(Recipe.class);
+        Recipe saved = recipe(UUID.randomUUID(), "My Recipe");
+        saved.setTags(new String[]{"street", "moody"});
+        when(recipeRepository.save(any(Recipe.class))).thenReturn(saved);
+
+        RecipeRequest request = new RecipeRequest(
+                "My Recipe", FilmSimulation.PROVIA, DynamicRange.DR100,
+                0.0, 0.0, 0, 0, 0, GrainStrength.OFF, null,
+                EffectStrength.OFF, EffectStrength.OFF, WhiteBalanceMode.AUTO,
+                0, 0, null, 0, null, null,
+                null, null, null, null, null, List.of("STREET", "Moody"), null, false, null
+        );
+        recipeService.create(request);
+
+        verify(recipeRepository).save(captor.capture());
+        assertThat(captor.getValue().getTags()).containsExactlyInAnyOrder("street", "moody");
+    }
+
+    @Test
+    void update_existingRecipe_appliesChanges() {
+        UUID id = UUID.randomUUID();
+        Recipe r = recipe(id, "Old Name");
+        Recipe updated = recipe(id, "New Name");
+        when(recipeRepository.findById(id)).thenReturn(Optional.of(r));
+        when(recipeRepository.save(r)).thenReturn(updated);
+
+        RecipeRequest request = new RecipeRequest(
+                "New Name", FilmSimulation.PROVIA, DynamicRange.DR100,
+                0.0, 0.0, 0, 0, 0, GrainStrength.OFF, null,
+                EffectStrength.OFF, EffectStrength.OFF, WhiteBalanceMode.AUTO,
+                0, 0, null, 0, null, null,
+                null, null, null, null, null, List.of(), null, false, null
+        );
+        RecipeResponse result = recipeService.update(id, request);
+
+        assertThat(result.name()).isEqualTo("New Name");
+    }
+
+    @Test
+    void delete_existingId_callsRepositoryDelete() {
+        UUID id = UUID.randomUUID();
+        Recipe r = recipe(id, "To Delete");
+        when(recipeRepository.findById(id)).thenReturn(Optional.of(r));
+
+        recipeService.delete(id);
+
+        verify(recipeRepository).delete(r);
+    }
+
+    @Test
+    void getCameraStatus_returnsSortedSlots() {
+        UUID id1 = UUID.randomUUID();
+        UUID id2 = UUID.randomUUID();
+        Recipe c1 = recipe(id1, "Slot C1");
+        c1.setCameraSlot(CameraSlot.C1);
+        Recipe c3 = recipe(id2, "Slot C3");
+        c3.setCameraSlot(CameraSlot.C3);
+        when(recipeRepository.findByCameraSlotIsNotNullOrderByCameraSlot()).thenReturn(List.of(c1, c3));
+
+        List<RecipeListItem> result = recipeService.getCameraStatus();
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).cameraSlot()).isEqualTo(CameraSlot.C1);
+        assertThat(result.get(1).cameraSlot()).isEqualTo(CameraSlot.C3);
+    }
+
+    @Test
+    void assignCameraSlot_removingSlot_logsChange() {
+        UUID id = UUID.randomUUID();
+        Recipe r = recipe(id, "My Recipe");
+        r.setCameraSlot(CameraSlot.C2);
+        when(recipeRepository.findById(id)).thenReturn(Optional.of(r));
+        when(recipeRepository.save(r)).thenReturn(r);
+
+        recipeService.assignCameraSlot(id, null, false);
+
+        verify(slotChangeLogRepository).save(any(SlotChangeLog.class));
     }
 }

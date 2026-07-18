@@ -138,24 +138,26 @@ Spring Boot Logging via SLF4J/Logback. Log-Level `DEBUG` für `de.fuji.xt50recip
 
 ## Automatisierte Tests
 
-**Test-Pyramide:**
+Coverage-Ziel: **≥ 80 % Lines** auf beiden Seiten (JaCoCo Backend, vitest/v8 Frontend).
 
 **Backend (Java/JUnit 5):**
 
-| Schicht | Klasse | Scope | Tooling |
-| --- | --- | --- | --- |
-| Unit | `RecipeServiceTest` | Slot-Konflikt-Logik, duplicate, setFavorite | Mockito, kein Spring-Context |
-| Unit | `ImageUtilsTest` | MIME-Erkennung via Magic Bytes, EXIF-Parsing | JUnit 5, kein Spring-Context |
-| Web Slice | `RecipeControllerTest` | HTTP-Mapping, Auth (401), Validation (400/201) | `@WebMvcTest`, MockMvc, `@WithMockUser` |
-| Integration | `RecipeRepositoryTest` | PostgreSQL-spezifische `ANY()`-Abfrage, alle Filter | `@DataJpaTest` + Testcontainers (`postgres:16-alpine`) |
-
-**Testcontainers-Hinweis:** `RecipeRepositoryTest` erfordert Docker mit API-Version ≥ 1.40. Lokal mit OrbStack schlägt der Test fehl (docker-java 3.3.6 nutzt API-Version 1.32 hardcoded); in GitHub Actions CI (ubuntu-latest mit nativem Docker) läuft er korrekt durch.
-
-**Frontend (Vitest 2.x):**
-
-| Datei | Scope | Tooling |
+| Schicht | Ansatz | Beispiele |
 | --- | --- | --- |
-| `labels.test.ts` | Alle Label-Funktionen und Select-Daten (`dynamicRangeLabel`, `strengthLabel`, `wbModeLabel`, `scenarioLabel` etc.) | Vitest, reines Node-Environment |
-| `recipeSimilarity.test.ts` | `computeSimilarity()` (Grenzwerte, Filmsimulations-Gruppen, Monochrome-Gewichtung) und `similarityColor()` | Vitest, reines Node-Environment |
+| Unit/Service | `@ExtendWith(MockitoExtension.class)`, kein Spring-Context | `RecipeServiceTest`, `ImageServiceTest`, `AiSuggestionServiceTest`, `RecipeMatchServiceTest`, `RecipeExportServiceTest`, `JwtUtilTest`, `LoginRateLimiterTest` |
+| Web Slice | `@WebMvcTest` + MockMvc + `@WithMockUser` | `RecipeControllerTest`, `AuthControllerTest`, `ImageControllerTest`, `AiSuggestionControllerTest`, `RecipeMatchControllerTest`, `BackupControllerTest`, `SlotProtocolControllerTest` |
+| Integration | `@DataJpaTest` + Testcontainers (`postgres:16-alpine`) | `RecipeRepositoryTest` |
 
-**CI/CD:** GitHub Actions Workflow (`.github/workflows/ci.yml`) führt bei jedem Push auf `main` und bei Pull Requests zwei parallele Jobs aus — `test-backend` (`./gradlew test`) und `test-frontend` (`npm test`). Testergebnisse werden via `dorny/test-reporter` als GitHub-native Check-Run-Annotationen angezeigt (immer verfügbar, nicht nur bei Fehler).
+**Testcontainers-Hinweis:** `RecipeRepositoryTest` wird lokal automatisch übersprungen — docker-java sendet beim initialen Handshake API-Version 1.32, OrbStack 2.x verlangt ≥ 1.40. Lokal: `./gradlew check`; manuelles Opt-in: `./gradlew check -PallTests`; in CI läuft er immer.
+
+**Frontend (Vitest 2.x + jsdom):**
+
+| Schicht | Ansatz | Beispiele |
+| --- | --- | --- |
+| Pure Utils | Plain Vitest, kein DOM | `labels.test.ts`, `recipeSimilarity.test.ts`, `recipePca.test.ts`, `filmSimLabel.test.ts` |
+| DOM/Context | jsdom + localStorage | `auth.test.ts`, `SettingsContext.test.tsx` |
+| React-Komponenten | `@testing-library/react` + `renderWithProviders()` | alle `*Page.test.tsx`, `Layout.test.tsx`, `App.test.tsx` |
+
+Ausgeschlossen (jsdom-inkompatibel): `RecipePdf.tsx`, `RecipeCardPdf.tsx` (@react-pdf/renderer), `recipeImageExport.ts` (Canvas + Web Share API).
+
+**CI/CD:** GitHub Actions (`.github/workflows/ci.yml`) führt `test-backend` (`./gradlew check`) und `test-frontend` (`npm test -- --coverage`) parallel aus. Testergebnisse via `dorny/test-reporter` als GitHub-native Check-Run-Annotationen; JaCoCo- und vitest-Threshold brechen den Build bei < 80 % ab.
