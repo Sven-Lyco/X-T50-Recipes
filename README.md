@@ -1,8 +1,22 @@
 # X-T50 Recipes
 
 [![CI](https://github.com/Sven-Lyco/X-T50-Recipes/actions/workflows/ci.yml/badge.svg)](https://github.com/Sven-Lyco/X-T50-Recipes/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Persönliche Web-App zur Verwaltung von Fujifilm X-T50 Film-Simulation-Recipes. Recipes enthalten alle JPEG-Kameraeinstellungen, Beispielbilder, Beschreibungen und Tags. Ein Dashboard zeigt, welches Recipe auf welcher Custom-Bank (C1–C7) der Kamera aktiv ist.
+
+## Inhaltsverzeichnis
+
+- [Screenshots](#screenshots)
+- [Quick Start](#quick-start)
+- [Features](#features)
+- [Tech-Stack](#tech-stack)
+- [Projektstruktur](#projektstruktur)
+- [Architekturdokumentation](#architekturdokumentation)
+- [Lokale Entwicklung](#lokale-entwicklung)
+- [Umgebungsvariablen](#umgebungsvariablen)
+- [Deployment (Coolify)](#deployment-coolify)
+- [KI-Features](#ki-features)
 
 ## Screenshots
 
@@ -19,6 +33,23 @@ Persönliche Web-App zur Verwaltung von Fujifilm X-T50 Film-Simulation-Recipes. 
     <td colspan="2" align="center"><img src="docs/screenshots/recipe-match.png" alt="Recipe Match" width="380"/><br/><em>Recipe Match</em></td>
   </tr>
 </table>
+
+## Quick Start
+
+Der schnellste Weg zur laufenden App:
+
+```bash
+# 1. Konfigurationsdateien anlegen und anpassen
+cp .env.example .env
+cp docker-compose.override.yml.example docker-compose.override.yml
+
+# 2. Starten
+docker compose up --build -d
+```
+
+In `.env` mindestens `JWT_SECRET` (≥ 32 Zeichen) und `APP_ADMIN_PASSWORD` setzen. Die App ist dann unter `http://localhost:8080` erreichbar.
+
+> Für die Entwicklung mit Hot-Reload (Backend + Frontend separat) siehe [Lokale Entwicklung](#lokale-entwicklung).
 
 ## Features
 
@@ -37,13 +68,13 @@ Persönliche Web-App zur Verwaltung von Fujifilm X-T50 Film-Simulation-Recipes. 
 
 ## Tech-Stack
 
-| Schicht | Technologie |
-|---|---|
-| Backend | Java 21, Spring Boot 3, Spring Data JPA, Spring Security + JWT |
-| Datenbank | PostgreSQL, Flyway-Migrationen |
-| Frontend | React, TypeScript, Vite, Mantine UI, React Query |
-| KI | Anthropic Claude Vision API (Haiku / Sonnet / Opus) |
-| Deployment | Docker (Multi-Stage), Coolify, Hetzner |
+| Schicht    | Technologie                                                    |
+| ---------- | -------------------------------------------------------------- |
+| Backend    | Java 21, Spring Boot 3, Spring Data JPA, Spring Security + JWT |
+| Datenbank  | PostgreSQL, Flyway-Migrationen                                 |
+| Frontend   | React, TypeScript, Vite, Mantine UI, React Query               |
+| KI         | Anthropic Claude Vision API (Haiku / Sonnet / Opus)            |
+| Deployment | Docker (Multi-Stage), Coolify, Hetzner                         |
 
 ## Projektstruktur
 
@@ -73,22 +104,25 @@ X-T50-Recipes/
 
 ## Architekturdokumentation
 
-Die vollständige arc42-Dokumentation liegt unter [`docs/architecture/`](docs/architecture/):
+<details>
+<summary>Vollständige arc42-Dokumentation (12 Dokumente + 7 ADRs) unter <code>docs/architecture/</code></summary>
 
-| Dokument | Inhalt |
-|---|---|
-| [01 — Einführung & Ziele](docs/architecture/01-introduction-goals.md) | Motivation, Ziele, Qualitätsanforderungen |
-| [02 — Randbedingungen](docs/architecture/02-constraints.md) | Technische und organisatorische Constraints |
-| [03 — Systemkontext](docs/architecture/03-context-scope.md) | Systemgrenzen, externe Schnittstellen |
-| [04 — Lösungsstrategie](docs/architecture/04-solution-strategy.md) | Zentrale Architekturentscheidungen im Überblick |
-| [05 — Bausteinsicht](docs/architecture/05-building-block-view.md) | Backend-Packages, Frontend-Struktur, alle Klassen |
-| [06 — Laufzeitsicht](docs/architecture/06-runtime-view.md) | Login, KI-Generierung, Recipe Match, Slot-Zuweisung, MDS-Map |
-| [07 — Verteilungssicht](docs/architecture/07-deployment-view.md) | Docker-Build, Coolify, Volumes, Env-Vars |
-| [08 — Querschnittliche Konzepte](docs/architecture/08-crosscutting-concepts.md) | Auth, Bild-Handling, Migrationen, KI-Integration, Ähnlichkeits-Algo |
-| [09 — Architekturentscheidungen](docs/architecture/09-decisions/) | 7 ADRs (Spring Boot, Mantine, JWT, Storage, MDS, Claude, Deployment) |
-| [10 — Qualitätsanforderungen](docs/architecture/10-quality-requirements.md) | Qualitätsszenarien und Zielwerte |
-| [11 — Risiken & Tech-Debt](docs/architecture/11-risks-technical-debt.md) | Bekannte Risiken und offene Schulden |
-| [12 — Glossar](docs/architecture/12-glossary.md) | Domänen- und Technikbegriffe |
+| Dokument                                                                        | Inhalt                                                               |
+| ------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| [01 — Einführung & Ziele](docs/architecture/01-introduction-goals.md)           | Motivation, Ziele, Qualitätsanforderungen                            |
+| [02 — Randbedingungen](docs/architecture/02-constraints.md)                     | Technische und organisatorische Constraints                          |
+| [03 — Systemkontext](docs/architecture/03-context-scope.md)                     | Systemgrenzen, externe Schnittstellen                                |
+| [04 — Lösungsstrategie](docs/architecture/04-solution-strategy.md)              | Zentrale Architekturentscheidungen im Überblick                      |
+| [05 — Bausteinsicht](docs/architecture/05-building-block-view.md)               | Backend-Packages, Frontend-Struktur, alle Klassen                    |
+| [06 — Laufzeitsicht](docs/architecture/06-runtime-view.md)                      | Login, KI-Generierung, Recipe Match, Slot-Zuweisung, MDS-Map         |
+| [07 — Verteilungssicht](docs/architecture/07-deployment-view.md)                | Docker-Build, Coolify, Volumes, Env-Vars                             |
+| [08 — Querschnittliche Konzepte](docs/architecture/08-crosscutting-concepts.md) | Auth, Bild-Handling, Migrationen, KI-Integration, Ähnlichkeits-Algo  |
+| [09 — Architekturentscheidungen](docs/architecture/09-decisions/)               | 7 ADRs (Spring Boot, Mantine, JWT, Storage, MDS, Claude, Deployment) |
+| [10 — Qualitätsanforderungen](docs/architecture/10-quality-requirements.md)     | Qualitätsszenarien und Zielwerte                                     |
+| [11 — Risiken & Tech-Debt](docs/architecture/11-risks-technical-debt.md)        | Bekannte Risiken und offene Schulden                                 |
+| [12 — Glossar](docs/architecture/12-glossary.md)                                | Domänen- und Technikbegriffe                                         |
+
+</details>
 
 ## Lokale Entwicklung
 
@@ -128,7 +162,7 @@ Die App ist dann unter `http://localhost:8080` erreichbar.
 
 ### Erster Login
 
-Der initiale Admin-User wird per Flyway-Migration angelegt. Zugangsdaten über die Env-Vars `APP_ADMIN_USERNAME` / `APP_ADMIN_PASSWORD` konfigurierbar (Default: `admin` / kein Passwort gesetzt → muss gesetzt sein).
+Der initiale Admin-User wird beim App-Start durch `DataInitializer` angelegt, sofern noch kein User in der Datenbank existiert. Zugangsdaten über die Env-Vars `APP_ADMIN_USERNAME` / `APP_ADMIN_PASSWORD` konfigurierbar (Default-Username: `admin` — Passwort muss gesetzt sein).
 
 ### Tests
 
@@ -145,23 +179,24 @@ GitHub Actions (`.github/workflows/ci.yml`) führt bei jedem Push auf `main` und
 
 ## Umgebungsvariablen
 
-| Variable | Pflicht | Beschreibung |
-|---|---|---|
-| `DB_URL` | Ja | JDBC-URL, z.B. `jdbc:postgresql://db:5432/xt50recipes` |
-| `DB_USERNAME` | Ja | Datenbankbenutzer |
-| `DB_PASSWORD` | Ja | Datenbankpasswort |
-| `JWT_SECRET` | Ja | Mindestens 32 Zeichen, zufällig generieren |
-| `APP_ADMIN_USERNAME` | Nein | Login-Username (Default: `admin`) |
-| `APP_ADMIN_PASSWORD` | Ja | Login-Passwort (bcrypt wird intern erzeugt) |
-| `IMAGE_STORAGE_PATH` | Nein | Pfad für Bild-Uploads (Default: `./images`) |
-| `ANTHROPIC_API_KEY` | Nein | Für KI-Features (ohne Key sind Recipe-Generierung und Recipe Match deaktiviert) |
-| `JWT_EXPIRATION_MS` | Nein | Token-Gültigkeit in ms (Default: 86400000 = 24h) |
+| Variable             | Pflicht | Beschreibung                                                                    |
+| -------------------- | ------- | ------------------------------------------------------------------------------- |
+| `DB_URL`             | Ja      | JDBC-URL, z.B. `jdbc:postgresql://db:5432/xt50recipes`                          |
+| `DB_USERNAME`        | Ja      | Datenbankbenutzer                                                               |
+| `DB_PASSWORD`        | Ja      | Datenbankpasswort                                                               |
+| `JWT_SECRET`         | Ja      | Mindestens 32 Zeichen, zufällig generieren                                      |
+| `APP_ADMIN_USERNAME` | Nein    | Login-Username (Default: `admin`)                                               |
+| `APP_ADMIN_PASSWORD` | Ja      | Login-Passwort (bcrypt wird intern erzeugt)                                     |
+| `IMAGE_STORAGE_PATH` | Nein    | Pfad für Bild-Uploads (Default: `./images`)                                     |
+| `ANTHROPIC_API_KEY`  | Nein    | Für KI-Features (ohne Key sind Recipe-Generierung und Recipe Match deaktiviert) |
+| `JWT_EXPIRATION_MS`  | Nein    | Token-Gültigkeit in ms (Default: 86400000 = 24h)                                |
 
 ## Deployment (Coolify)
 
 Das Projekt nutzt ein Multi-Stage Dockerfile: Das React-Build wird nach `src/main/resources/static` kopiert, Spring Boot liefert Frontend und API aus einem einzigen Image aus.
 
 In Coolify:
+
 1. **App-Service** aus diesem Repo aufbauen
 2. **PostgreSQL-Service** hinzufügen, Credentials via Env-Vars verbinden
 3. **Volume** für Bild-Uploads mounten auf `/app/images`
