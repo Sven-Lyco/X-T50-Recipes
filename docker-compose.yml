@@ -16,7 +16,7 @@ services:
   app:
     build: .
     labels:
-      - "traefik.http.middlewares.buffer-uploads.buffering.maxRequestBodyBytes=31457280"
+      - "traefik.http.middlewares.buffer-uploads.buffering.maxRequestBodyBytes=209715200"
       - "coolify.traefik.middlewares=buffer-uploads"
     environment:
       DB_URL: jdbc:postgresql://db:5432/xt50recipes
