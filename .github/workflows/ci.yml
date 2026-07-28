@@ -27,6 +27,7 @@ jobs:
       - name: Publish backend test results
         uses: dorny/test-reporter@v1
         if: always()
+        continue-on-error: true
         with:
           name: Backend Tests
           path: build/test-results/test/*.xml
@@ -57,6 +58,7 @@ jobs:
       - name: Publish frontend test results
         uses: dorny/test-reporter@v1
         if: always()
+        continue-on-error: true
         with:
           name: Frontend Tests
           path: frontend/test-results/junit.xml
