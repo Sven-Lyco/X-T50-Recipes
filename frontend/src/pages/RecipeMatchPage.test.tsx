@@ -7,13 +7,15 @@ import type { RecipeMatchResult } from '../api/types'
 
 vi.mock('../api/recipes', () => ({
   useMatchRecipe: vi.fn(),
+  useLocationMatch: vi.fn(),
   useAiStatus: vi.fn(),
 }))
 
-import { useMatchRecipe, useAiStatus } from '../api/recipes'
+import { useMatchRecipe, useLocationMatch, useAiStatus } from '../api/recipes'
 
 beforeEach(() => {
   vi.mocked(useMatchRecipe).mockReturnValue({ mutateAsync: vi.fn(), isPending: false, data: null } as any)
+  vi.mocked(useLocationMatch).mockReturnValue({ mutate: vi.fn(), isPending: false, data: null } as any)
   vi.mocked(useAiStatus).mockReturnValue({ data: { available: true } } as any)
 })
 
