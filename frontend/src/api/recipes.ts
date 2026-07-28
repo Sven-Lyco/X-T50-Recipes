@@ -177,6 +177,15 @@ export function useMatchRecipe() {
   })
 }
 
+export function useLocationMatch() {
+  return useMutation({
+    mutationFn: ({ location, primarySubjects, secondarySubjects, model, onlySlots }: {
+      location: string; primarySubjects?: string[]; secondarySubjects?: string[]; model?: string; onlySlots: boolean
+    }) =>
+      client.post<import('./types').RecipeMatchResult[]>('/location-match', { location, primarySubjects, secondarySubjects, model, onlySlots }).then((r) => r.data),
+  })
+}
+
 export function useReorderImages(recipeId: string) {
   const qc = useQueryClient()
   return useMutation({

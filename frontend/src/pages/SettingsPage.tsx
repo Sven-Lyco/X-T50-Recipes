@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import {
   Stack, Title, Paper, Text, Button, Group, FileButton,
-  Select, Switch, Alert, Divider,
+  Select, Switch, Alert, Divider, Anchor,
 } from '@mantine/core'
-import { IconDownload, IconUpload, IconInfoCircle } from '@tabler/icons-react'
+import { IconDownload, IconUpload, IconInfoCircle, IconExternalLink } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
 import { useSettings } from '../contexts/SettingsContext'
 import { useAiStatus, useImportBackup } from '../api/recipes'
@@ -113,6 +113,17 @@ export default function SettingsPage() {
             disabled={!settings.aiEnabled || !aiAvailable}
             allowDeselect={false}
           />
+          <Group gap={4}>
+            <Anchor
+              href="https://console.anthropic.com/settings/billing"
+              target="_blank"
+              rel="noopener noreferrer"
+              size="sm"
+            >
+              API-Guthaben & Verbrauch in der Anthropic Console
+            </Anchor>
+            <IconExternalLink size={14} style={{ color: 'var(--mantine-color-anchor)' }} />
+          </Group>
         </Stack>
       </Paper>
     </Stack>
