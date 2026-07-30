@@ -1,11 +1,13 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   AppShell, Burger, Group, NavLink as MantineNavLink,
-  Text, Button, Stack, ThemeIcon,
+  Text, Button, Stack, ThemeIcon, ActionIcon,
+  useComputedColorScheme, useMantineColorScheme,
 } from '@mantine/core'
 import {
   IconLayoutGrid, IconCamera, IconWand, IconSearch,
   IconScale, IconChartDots, IconBook, IconSettings, IconHistory,
+  IconSun, IconMoon,
 } from '@tabler/icons-react'
 import { useDisclosure } from '@mantine/hooks'
 import { logout } from '../api/auth'
@@ -25,6 +27,8 @@ export default function Layout() {
   const navigate = useNavigate()
   const { settings } = useSettings()
   const { data: aiStatus } = useAiStatus()
+  const { setColorScheme } = useMantineColorScheme()
+  const computedScheme = useComputedColorScheme('light')
   const aiEnabled = settings.aiEnabled && (aiStatus?.available !== false)
 
   async function handleLogout() {
@@ -44,6 +48,14 @@ export default function Layout() {
             <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
             <Text fw={700} size="lg">X-T50 Recipes</Text>
           </Group>
+          <ActionIcon
+            variant="default"
+            size="lg"
+            aria-label="Farbschema wechseln"
+            onClick={() => setColorScheme(computedScheme === 'dark' ? 'light' : 'dark')}
+          >
+            {computedScheme === 'dark' ? <IconSun size={18} /> : <IconMoon size={18} />}
+          </ActionIcon>
         </Group>
       </AppShell.Header>
 

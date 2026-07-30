@@ -174,7 +174,7 @@ export default function SimilarityMapPage() {
             const isHov = hovered === recipe.id
             const dimmed = selected === null && hovered !== null && !isHov
             const r = isSelected ? 12 : isHov ? 10 : 8
-            const stroke = isSelected ? '#1864ab' : isHov ? '#000' : 'rgba(0,0,0,0.25)'
+            const stroke = isSelected ? '#1864ab' : isHov ? 'var(--mantine-color-text)' : 'rgba(128,128,128,0.35)'
             const strokeWidth = isSelected ? 3 : isHov ? 2 : 1
             return (
               <circle
@@ -183,10 +183,9 @@ export default function SimilarityMapPage() {
                 cy={sy}
                 r={r}
                 fill={getFill(recipe.id, recipe.filmSimulation)}
-                stroke={stroke}
                 strokeWidth={strokeWidth}
                 opacity={dimmed ? 0.2 : 0.9}
-                style={{ cursor: 'pointer', transition: 'r 0.1s, opacity 0.15s, fill 0.25s' }}
+                style={{ cursor: 'pointer', transition: 'r 0.1s, opacity 0.15s, fill 0.25s', stroke }}
                 onMouseEnter={() => setHovered(recipe.id)}
                 onMouseLeave={() => setHovered(null)}
                 onClick={(e) => {
@@ -207,8 +206,9 @@ export default function SimilarityMapPage() {
             const labelY = sy + 5
             return (
               <g style={{ pointerEvents: 'none' }}>
-                <rect x={rx - 4} y={labelY - 14} width={textWidth} height={22} rx={4} fill="white" stroke="#ddd" strokeWidth={1} />
-                <text x={rx + 4} y={labelY + 2} fontSize={12} fill="#333" fontWeight={500}>
+                <rect x={rx - 4} y={labelY - 14} width={textWidth} height={22} rx={4} strokeWidth={1}
+                  style={{ fill: 'var(--mantine-color-body)', stroke: 'var(--mantine-color-gray-3)' }} />
+                <text x={rx + 4} y={labelY + 2} fontSize={12} fontWeight={500} style={{ fill: 'var(--mantine-color-text)' }}>
                   {tooltipText.length > 40 ? tooltipText.slice(0, 38) + '…' : tooltipText}
                 </text>
               </g>

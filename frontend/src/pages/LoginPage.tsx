@@ -28,7 +28,7 @@ export default function LoginPage() {
   }
 
   return (
-    <Center h="100vh" bg="gray.0">
+    <Center h="100vh" bg="var(--mantine-color-body)">
       <Paper shadow="sm" p="xl" radius="md" w={360} withBorder>
         <form onSubmit={handleSubmit}>
           <Stack gap="md">
