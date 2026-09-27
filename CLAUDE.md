@@ -199,7 +199,7 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 - MIME-Typ wird aus Magic Bytes erkannt (nicht dem HTTP-Header vertraut)
 - EXIF-Metadaten (ISO, Belichtungszeit, Blende, Kameramodell) werden automatisch extrahiert
   und als Kontext im Prompt mitgeschickt (`metadata-extractor` Library)
-- Modelle: `claude-sonnet-4-6` (Default), `claude-haiku-4-5-20251001`, `claude-opus-4-8`
+- Modelle: `claude-sonnet-5` (Default), `claude-haiku-4-5-20251001`, `claude-opus-5`
 - max_tokens: 2048 (erhöht wegen description-Feld)
 - Prompt-Reihenfolge: technische Felder zuerst, description zuletzt (verhindert Token-Knappheit)
 - Env-Var: `ANTHROPIC_API_KEY`

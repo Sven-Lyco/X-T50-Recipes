@@ -86,7 +86,7 @@ class RecipeMatchServiceTest {
         when(restTemplate.postForEntity(eq(AiConstants.ANTHROPIC_URL), any(), eq(String.class)))
                 .thenReturn(ResponseEntity.ok(responseBody));
 
-        List<RecipeMatchResponse> result = service.match(JPEG_BYTES, "image/jpeg", "claude-sonnet-4-6", false);
+        List<RecipeMatchResponse> result = service.match(JPEG_BYTES, "image/jpeg", "claude-sonnet-5", false);
 
         assertThat(result).hasSize(2);
         assertThat(result.get(0).name()).isEqualTo("Recipe A");

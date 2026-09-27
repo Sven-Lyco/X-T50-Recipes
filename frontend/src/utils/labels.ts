@@ -104,10 +104,10 @@ export function scenarioLabel(v: string): string {
 
 export const SCENARIO_DATA = Object.entries(SCENARIO_LABELS).map(([value, label]) => ({ value, label }))
 
-export const DEFAULT_MODEL = 'claude-sonnet-4-6'
+export const DEFAULT_MODEL = 'claude-sonnet-5'
 
 export const MODEL_OPTIONS = [
   { value: 'claude-haiku-4-5-20251001', label: 'Haiku 4.5 – schnell & günstig' },
-  { value: 'claude-sonnet-4-6', label: 'Sonnet 4.6 – besser (empfohlen)' },
-  { value: 'claude-opus-4-8', label: 'Opus 4.8 – stärkstes Modell' },
+  { value: 'claude-sonnet-5', label: 'Sonnet 5 – besser (empfohlen)' },
+  { value: 'claude-opus-5', label: 'Opus 5 – stärkstes Modell' },
 ]

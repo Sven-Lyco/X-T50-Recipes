@@ -78,7 +78,7 @@ class AiSuggestionServiceTest {
 
         var result = service.suggest(
                 List.of(new AiSuggestionService.ImageInput(JPEG_BYTES, "image/jpeg")),
-                "warm look", "claude-sonnet-4-6"
+                "warm look", "claude-sonnet-5"
         );
 
         assertThat(result.name()).isEqualTo("Golden Hour");
@@ -108,7 +108,7 @@ class AiSuggestionServiceTest {
 
         var result = service.suggest(
                 List.of(new AiSuggestionService.ImageInput(JPEG_BYTES, "image/jpeg")),
-                null, "claude-opus-4-8"
+                null, "claude-opus-5"
         );
 
         assertThat(result.name()).isEqualTo("KI-Recipe");
