@@ -126,7 +126,7 @@ Die **Filmsimulations-Distanzmatrix** teilt Simulationen in 7 fotografische Grup
 - **Server-State**: React Query (`@tanstack/react-query`) — Caching, automatisches Re-fetching, Mutation-Handling
 - **UI-State**: Lokales `useState` in den jeweiligen Komponenten — kein globaler Store nötig
 - **Auth**: JWT im `localStorage`; `isLoggedIn()` prüft Token-Existenz; `RequireAuth`-Wrapper für geschützte Routes
-- **Routing**: React Router v6 mit geschachteltem Layout-Route
+- **Routing**: React Router v7 mit geschachteltem Layout-Route
 
 ---
 
@@ -150,7 +150,7 @@ Coverage-Ziel: **≥ 80 % Lines** auf beiden Seiten (JaCoCo Backend, vitest/v8 F
 
 **Testcontainers-Hinweis:** `RecipeRepositoryTest` wird lokal automatisch übersprungen — docker-java sendet beim initialen Handshake API-Version 1.32, OrbStack 2.x verlangt ≥ 1.40. Lokal: `./gradlew check`; manuelles Opt-in: `./gradlew check -PallTests`; in CI läuft er immer.
 
-**Frontend (Vitest 2.x + jsdom):**
+**Frontend (Vitest 4.x + jsdom):**
 
 | Schicht | Ansatz | Beispiele |
 | --- | --- | --- |
