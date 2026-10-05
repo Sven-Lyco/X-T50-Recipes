@@ -1,16 +1,15 @@
 plugins {
     id 'java'
     id 'jacoco'
-    id 'org.springframework.boot' version '3.3.5'
-    id 'io.spring.dependency-management' version '1.1.6'
+    id 'org.springframework.boot' version '3.5.16'
+    id 'io.spring.dependency-management' version '1.1.7'
 }
 
 group = 'de.fuji'
 version = '0.0.1-SNAPSHOT'
 
-// Testcontainers 1.20+ bringt docker-java 3.4.x mit, das OrbStack 2.x
-// (Docker API ≥ 1.40) korrekt unterstützt. Spring Boot 3.3 managed 1.19.x.
-ext['testcontainers.version'] = '1.20.4'
+// CVE-Fixes für transitive Abhängigkeiten (Versions-Overrides)
+apply from: 'gradle/dependency-overrides.gradle'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21
@@ -43,7 +42,6 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'
-    testImplementation platform('org.testcontainers:testcontainers-bom:1.20.4')
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:postgresql'
 }

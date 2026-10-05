@@ -84,7 +84,7 @@ Diese Labels gehören ins Repo statt in Coolifys UI-Label-Editor, weil "Preserve
 
 GitHub Actions (`.github/workflows/ci.yml`) führt bei jedem Push auf `main` und bei Pull Requests zwei parallele Jobs aus:
 - **test-backend**: `./gradlew test` inkl. Testcontainers-Integration (PostgreSQL); ubuntu-latest hat nativen Docker-Zugang
-- **test-frontend**: `npm test` mit Vitest 2.x; Testergebnisse als JUnit XML
+- **test-frontend**: `npm test` mit Vitest 4.x; Testergebnisse als JUnit XML
 
 Testergebnisse werden via `dorny/test-reporter` als GitHub-native Check-Run-Annotationen im Checks-Tab angezeigt — bei Erfolg und Fehler.
 

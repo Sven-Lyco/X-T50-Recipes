@@ -230,6 +230,15 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
   verwendeten Einstellungen und befüllt das Recipe-Formular exakt (nicht KI-geschätzt);
   `metadata-extractor`-Library ist bereits im Projekt und unterstützt Fujifilm-MakerNotes
 
+## Dependency-Overrides (CVE-Fixes)
+
+- Direkte Abhängigkeiten werden direkt angehoben (`frontend/package.json`, Spring-Boot-Version in `build.gradle`)
+- Transitive Abhängigkeiten werden überschrieben:
+  - Frontend: `overrides` in `frontend/package.json`
+  - Backend: `gradle/dependency-overrides.gradle` (Spring-Boot-BOM-Properties wie `ext['tomcat.version']`
+    bzw. `dependencyManagement` für nicht verwaltete Artefakte), eingebunden per `apply from` in `build.gradle`
+- Overrides entfernen, sobald die Elternabhängigkeit die gefixte Version selbst mitbringt
+
 ## Testing-Strategie
 
 ### Ziel
