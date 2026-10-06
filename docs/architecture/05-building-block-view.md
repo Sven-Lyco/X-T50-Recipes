@@ -42,7 +42,7 @@ X-T50 Recipes
 | `RecipeRepository` | Spring Data JPA; nativer SQL-Filter für alle Kombinationen (filmSim, tag, favorites, scenario) |
 | `RecipeService` | CRUD, Duplikation, Camera-Slot-Verwaltung mit Konflikt-Handling (force/nicht-force) |
 | `RecipeController` | REST-Endpoints: `/api/recipes/**`, `/api/camera-status` |
-| `RecipeExportService` | ZIP-Export/-Import einzelner Recipes + Bulk-Backup/Restore (`exportAllZip`, `importAllZip`) inkl. C1–C7-Belegung, Favoriten und Slot-Protokoll (`slot-protocol.json`) |
+| `RecipeExportService` | ZIP-Export/-Import einzelner Recipes + Bulk-Backup/Restore (`exportAllZip`, `importAllZip`) inkl. C1–C7-Belegung, Favoriten und Slot-Protokoll (`slot-protocol.json`); der Restore ersetzt den kompletten Bestand in einer Transaktion (alles-oder-nichts) |
 | `BackupController` | `GET /api/backup` (Download) + `POST /api/backup` (Import/Restore) |
 | `RecipeRequest` | Eingehende DTO (Java Record) |
 | `RecipeResponse` | Vollständige Ausgabe-DTO (Java Record) |

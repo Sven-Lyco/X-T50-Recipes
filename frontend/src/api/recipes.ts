@@ -206,12 +206,18 @@ export function useAiStatus() {
 export function useImportBackup() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (file: File) => {
+    mutationFn: ({ file, onUploadProgress }: { file: File; onUploadProgress?: (percent: number) => void }) => {
       const fd = new FormData()
       fd.append('file', file)
-      return client.post<Recipe[]>('/backup', fd).then(r => r.data)
+      return client.post<Recipe[]>('/backup', fd, {
+        onUploadProgress: (e) => {
+          if (e.total) onUploadProgress?.(Math.round((e.loaded / e.total) * 100))
+        },
+      }).then(r => r.data)
     },
     onSuccess: () => {
+      // The restore replaces every recipe, so cached detail entries point at IDs that no longer exist
+      qc.removeQueries({ queryKey: ['recipe'] })
       qc.invalidateQueries({ queryKey: ['recipes'] })
       qc.invalidateQueries({ queryKey: ['camera-status'] })
       qc.invalidateQueries({ queryKey: ['slot-protocol'] })

@@ -131,8 +131,9 @@ aktuell auf welcher Custom-Bank (C1–C7) der Kamera geladen ist.
    Recipe-Löschung erhalten (kein FK zur Recipe-Tabelle); DB-Tabelle `slot_change_log`
 10. **Einstellungsseite (`/settings`)** – zwei Sektionen:
    - *Datensicherung*: Backup aller Recipes (JSON + Bilder) inkl. C1–C7-Belegung, Favoriten und
-     Slot-Protokoll als ZIP herunterladen oder aus Backup-ZIP importieren (addiert zu bestehenden
-     Recipes; ein Slot wird nur wiederhergestellt, wenn er in der Ziel-Instanz frei ist)
+     Slot-Protokoll als ZIP herunterladen oder aus Backup-ZIP wiederherstellen. Der Import
+     **ersetzt** den kompletten Bestand (nach Sicherheitsabfrage), er addiert nicht; Fortschritt
+     und Ergebnis erscheinen in einer Meldung, die bis zum Schließen stehen bleibt
    - *KI-Einstellungen*: KI-Funktionen global an-/ausschalten (versteckt „Recipe generieren"
      und „Recipe Match" aus der Navigation); Standard-KI-Modell wählen (Haiku/Sonnet/Opus);
      Toggle ist deaktiviert wenn kein `ANTHROPIC_API_KEY` konfiguriert ist (`GET /api/ai-status`)
@@ -178,10 +179,15 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 - `GET /api/ai-status` → `{ available: boolean }` (prüft ob ANTHROPIC_API_KEY gesetzt)
 - `GET /api/backup` → ZIP aller Recipes (je `{uuid}/recipe.json` + `{uuid}/images/*`) plus
   `slot-protocol.json` (alle Slot-Wechsel) im ZIP-Root
-- `POST /api/backup` (Multipart: file=ZIP) → importierte Recipes als Liste; stellt `cameraSlot`
-  (nur wenn Slot frei) und `favorite` wieder her, importiert das Slot-Protokoll mit auf die neuen
-  Recipe-IDs umgeschriebenen Referenzen und überspringt bereits vorhandene Einträge
-  (gleicher Slot + Zeitstempel); ZIPs ohne `slot-protocol.json` bleiben importierbar
+- `POST /api/backup` (Multipart: file=ZIP) → wiederhergestellte Recipes als Liste. Vollständiger
+  Restore: löscht alle Recipes, Bilder (DB + Dateien) und das Slot-Protokoll und legt den Stand
+  des Backups an, inkl. `cameraSlot`, `favorite`, `createdAt`/`updatedAt` und Bild-Captions.
+  Recipes bekommen neue IDs, die Protokoll-Referenzen werden darauf umgeschrieben.
+  Alles-oder-nichts: das ZIP wird vor dem Löschen validiert (kein Recipe oder ungültiges JSON
+  → 400, nichts verändert), Fehler danach rollen die Transaktion zurück; alte Bilddateien werden
+  erst nach dem Commit gelöscht. Enthält das ZIP keine `slot-protocol.json` (altes Backup),
+  bleibt das vorhandene Protokoll unverändert.
+- `POST /api/recipes/import` (einzelnes Recipe-ZIP) addiert weiterhin, ohne Slot und Favorit
 - `GET /api/slot-protocol` → alle Slot-Wechsel-Einträge, neueste zuerst
 
 ## DB-Migrationen
