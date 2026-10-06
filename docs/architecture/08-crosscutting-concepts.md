@@ -65,7 +65,7 @@ Flyway in `src/main/resources/db/migration/`. Spring Boot ist auf `ddl-auto: val
 ## KI-Integration
 
 **Modell-Allowlist**
-Zulässige Modelle: `claude-haiku-4-5-20251001`, `claude-sonnet-4-6`, `claude-opus-4-8`. Ungültige Modell-Parameter fallen auf den Default (`claude-sonnet-4-6`) zurück.
+Zulässige Modelle: `claude-haiku-4-5-20251001`, `claude-sonnet-5-5`, `claude-opus-5-5`. Ungültige Modell-Parameter fallen auf den Default (`claude-opus-5-5`) zurück.
 
 **Prompt-Struktur**
 - Bilder werden Base64-kodiert als `image`-Content-Blöcke übermittelt

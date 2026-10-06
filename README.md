@@ -223,5 +223,5 @@ Unter „Recipe Match" ein Foto der Szene hochladen, die fotografiert werden sol
 Das Standard-Modell wird zentral in den Einstellungen (`/settings`) konfiguriert:
 
 - **Haiku 4.5** – schnell und günstig
-- **Sonnet 4.6** – bessere Bildanalyse (empfohlen)
-- **Opus 4.8** – stärkstes Modell
+- **Sonnet 5.5** – ausgewogen
+- **Opus 5.5** – stärkstes Modell (Standard)

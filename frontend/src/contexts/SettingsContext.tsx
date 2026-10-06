@@ -1,5 +1,5 @@
 import { createContext, useContext, useState } from 'react'
-import { DEFAULT_MODEL } from '../utils/labels'
+import { DEFAULT_MODEL, MODEL_OPTIONS } from '../utils/labels'
 
 interface AppSettings {
   aiEnabled: boolean
@@ -15,7 +15,12 @@ const STORAGE_KEY = 'app-settings'
 
 function loadSettings(): AppSettings {
   try {
-    return { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') }
+    const settings: AppSettings = { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') }
+    // A model stored before a model upgrade may no longer be offered
+    if (!MODEL_OPTIONS.some((o) => o.value === settings.defaultModel)) {
+      settings.defaultModel = DEFAULT_MODEL
+    }
+    return settings
   } catch {
     return DEFAULT_SETTINGS
   }

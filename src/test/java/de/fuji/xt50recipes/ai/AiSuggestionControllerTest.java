@@ -73,7 +73,7 @@ class AiSuggestionControllerTest {
         mockMvc.perform(multipart("/api/suggest")
                 .file(new MockMultipartFile("images", "photo.jpg", MediaType.IMAGE_JPEG_VALUE, new byte[100]))
                 .param("description", "warm look")
-                .param("model", "claude-sonnet-5")
+                .param("model", "claude-sonnet-5-5")
                 .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("KI-Recipe"));

@@ -199,8 +199,10 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 - MIME-Typ wird aus Magic Bytes erkannt (nicht dem HTTP-Header vertraut)
 - EXIF-Metadaten (ISO, Belichtungszeit, Blende, Kameramodell) werden automatisch extrahiert
   und als Kontext im Prompt mitgeschickt (`metadata-extractor` Library)
-- Modelle: `claude-sonnet-5` (Default), `claude-haiku-4-5-20251001`, `claude-opus-5`
-- max_tokens: 2048 (erhöht wegen description-Feld)
+- Modelle: `claude-opus-5-5` (Default), `claude-sonnet-5-5`, `claude-haiku-4-5-20251001`
+- max_tokens: 16000 (`AiConstants.MAX_TOKENS`, für alle KI-Calls) – Thinking-Tokens zählen mit
+- Opus 5.5 / Sonnet 5.5 denken standardmäßig: die Antwort beginnt mit `thinking`-Blöcken,
+  der Text wird deshalb über `AnthropicResponse.extractText()` gelesen (nie `content[0]`)
 - Prompt-Reihenfolge: technische Felder zuerst, description zuletzt (verhindert Token-Knappheit)
 - Env-Var: `ANTHROPIC_API_KEY`
 

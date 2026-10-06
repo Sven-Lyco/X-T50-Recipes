@@ -68,7 +68,7 @@ public class RecipeMatchService {
 
         Map<String, Object> body = Map.of(
                 "model", resolvedModel,
-                "max_tokens", 1024,
+                "max_tokens", AiConstants.MAX_TOKENS,
                 "messages", List.of(Map.of("role", "user", "content", content))
         );
 
@@ -93,8 +93,7 @@ public class RecipeMatchService {
     private List<RecipeMatchResponse> parseResponse(String responseBody, List<Recipe> allRecipes) {
         try {
             JsonNode root = objectMapper.readTree(responseBody);
-            String text = root.at("/content/0/text").asText();
-            text = text.replaceAll("(?s)```json\\s*", "").replaceAll("(?s)```\\s*", "").trim();
+            String text = AnthropicResponse.extractText(root);
             log.debug("Match response text: {}", text);
 
             JsonNode json = objectMapper.readTree(text);
