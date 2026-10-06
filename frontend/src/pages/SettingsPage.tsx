@@ -45,7 +45,7 @@ export default function SettingsPage() {
           <Group justify="space-between" align="flex-start">
             <Stack gap={2}>
               <Text size="sm" fw={500}>Backup exportieren</Text>
-              <Text size="xs" c="dimmed">Alle Recipes inkl. Bilder als ZIP</Text>
+              <Text size="xs" c="dimmed">Alle Recipes inkl. Bilder, C1–C7-Belegung und Slot-Protokoll als ZIP</Text>
             </Stack>
             <Button
               variant="default"
@@ -60,7 +60,7 @@ export default function SettingsPage() {
           <Group justify="space-between" align="flex-start">
             <Stack gap={2}>
               <Text size="sm" fw={500}>Backup importieren</Text>
-              <Text size="xs" c="dimmed">Recipes aus Backup-ZIP laden (addiert zu bestehenden)</Text>
+              <Text size="xs" c="dimmed">Recipes, C1–C7-Belegung und Slot-Protokoll aus Backup-ZIP laden (addiert zu bestehenden; belegte Slots bleiben unverändert)</Text>
             </Stack>
             <FileButton
               accept=".zip"

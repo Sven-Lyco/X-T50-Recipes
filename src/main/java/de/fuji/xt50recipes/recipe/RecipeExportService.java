@@ -1,5 +1,6 @@
 package de.fuji.xt50recipes.recipe;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fuji.xt50recipes.config.AppProperties;
 import de.fuji.xt50recipes.image.RecipeImage;
@@ -29,7 +30,10 @@ import java.util.zip.ZipOutputStream;
 public class RecipeExportService {
 
     private final RecipeRepository recipeRepository;
+    private static final String SLOT_PROTOCOL_ENTRY = "slot-protocol.json";
+
     private final RecipeImageRepository imageRepository;
+    private final SlotChangeLogRepository slotChangeLogRepository;
     private final AppProperties appProperties;
     private final ObjectMapper objectMapper;
 
@@ -84,6 +88,14 @@ public class RecipeExportService {
                     }
                 }
             }
+
+            List<SlotChangeLogResponse> protocol = slotChangeLogRepository.findAllByOrderByChangedAtDesc()
+                    .stream()
+                    .map(SlotChangeLogResponse::from)
+                    .toList();
+            zos.putNextEntry(new ZipEntry(SLOT_PROTOCOL_ENTRY));
+            zos.write(objectMapper.writeValueAsString(protocol).getBytes(StandardCharsets.UTF_8));
+            zos.closeEntry();
         }
         log.info("Exported all {} recipes as backup ZIP", all.size());
     }
@@ -97,11 +109,12 @@ public class RecipeExportService {
                 zis.closeEntry();
             }
         }
-        return importFromEntries(entries);
+        return importFromEntries(entries, false).recipe();
     }
 
     public List<RecipeResponse> importAllZip(MultipartFile file) throws IOException {
         Map<String, Map<String, byte[]>> byFolder = new LinkedHashMap<>();
+        byte[] protocolJson = null;
         try (ZipInputStream zis = new ZipInputStream(file.getInputStream())) {
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
@@ -112,6 +125,8 @@ public class RecipeExportService {
                         String folder = name.substring(0, slash);
                         String rest = name.substring(slash + 1);
                         byFolder.computeIfAbsent(folder, k -> new LinkedHashMap<>()).put(rest, zis.readAllBytes());
+                    } else if (SLOT_PROTOCOL_ENTRY.equals(name)) {
+                        protocolJson = zis.readAllBytes();
                     }
                 }
                 zis.closeEntry();
@@ -119,18 +134,61 @@ public class RecipeExportService {
         }
 
         List<RecipeResponse> result = new ArrayList<>();
+        // Imported recipes get new IDs; the protocol must point at those instead of the exported ones
+        Map<UUID, UUID> newIdByExportedId = new HashMap<>();
         for (Map<String, byte[]> entries : byFolder.values()) {
             try {
-                result.add(importFromEntries(entries));
+                ImportedRecipe imported = importFromEntries(entries, true);
+                result.add(imported.recipe());
+                if (imported.exportedId() != null) {
+                    newIdByExportedId.put(imported.exportedId(), imported.recipe().id());
+                }
             } catch (Exception e) {
                 log.warn("Skipping recipe folder during backup import: {}", e.getMessage());
             }
         }
-        log.info("Backup import complete: {} recipes imported", result.size());
+
+        int protocolEntries = protocolJson != null ? importSlotProtocol(protocolJson, newIdByExportedId) : 0;
+        log.info("Backup import complete: {} recipes, {} slot protocol entries imported", result.size(), protocolEntries);
         return result;
     }
 
-    private RecipeResponse importFromEntries(Map<String, byte[]> entries) throws IOException {
+    private int importSlotProtocol(byte[] json, Map<UUID, UUID> newIdByExportedId) {
+        List<SlotChangeLogResponse> exported;
+        try {
+            exported = objectMapper.readValue(json, new TypeReference<>() {});
+        } catch (IOException e) {
+            log.warn("Skipping slot protocol during backup import: {}", e.getMessage());
+            return 0;
+        }
+
+        int imported = 0;
+        for (SlotChangeLogResponse e : exported) {
+            if (e.slot() == null || e.changedAt() == null) continue;
+            // Makes re-importing a backup into the instance it came from idempotent for the protocol
+            if (slotChangeLogRepository.existsBySlotAndChangedAt(e.slot(), e.changedAt())) continue;
+
+            SlotChangeLog entry = new SlotChangeLog();
+            entry.setSlot(e.slot());
+            entry.setPreviousRecipeId(remapRecipeId(e.previousRecipeId(), newIdByExportedId));
+            entry.setPreviousRecipeName(e.previousRecipeName());
+            entry.setNewRecipeId(remapRecipeId(e.newRecipeId(), newIdByExportedId));
+            entry.setNewRecipeName(e.newRecipeName());
+            entry.setChangedAt(e.changedAt());
+            slotChangeLogRepository.save(entry);
+            imported++;
+        }
+        return imported;
+    }
+
+    private static UUID remapRecipeId(UUID exportedId, Map<UUID, UUID> newIdByExportedId) {
+        return exportedId != null ? newIdByExportedId.getOrDefault(exportedId, exportedId) : null;
+    }
+
+    private record ImportedRecipe(UUID exportedId, RecipeResponse recipe) {}
+
+    // restoreCameraState: backup restore keeps slot and favorite; a single shared recipe starts in the library
+    private ImportedRecipe importFromEntries(Map<String, byte[]> entries, boolean restoreCameraState) throws IOException {
         byte[] jsonBytes = entries.get("recipe.json");
         if (jsonBytes == null) throw new IllegalArgumentException("Keine recipe.json im ZIP gefunden.");
 
@@ -164,6 +222,18 @@ public class RecipeExportService {
         recipe.setInspirationSource(exported.inspirationSource());
         recipe.setTags(exported.tags() != null ? exported.tags().toArray(String[]::new) : new String[0]);
         recipe.setCameraSlot(null);
+        if (restoreCameraState) {
+            recipe.setFavorite(exported.favorite());
+            CameraSlot slot = exported.cameraSlot();
+            if (slot != null) {
+                // Never displace a recipe that is already on the camera in this instance
+                if (recipeRepository.findByCameraSlot(slot).isEmpty()) {
+                    recipe.setCameraSlot(slot);
+                } else {
+                    log.info("Slot {} already occupied, importing '{}' without slot", slot, exported.name());
+                }
+            }
+        }
         recipe.setAiGenerated(exported.aiGenerated());
         recipe.setShootingScenario(exported.shootingScenario());
         recipe = recipeRepository.save(recipe);
@@ -186,6 +256,6 @@ public class RecipeExportService {
         }
 
         log.info("Import complete: recipeId={}, images={}", recipe.getId(), sortOrder);
-        return RecipeResponse.from(recipeRepository.findById(recipe.getId()).orElseThrow());
+        return new ImportedRecipe(exported.id(), RecipeResponse.from(recipeRepository.findById(recipe.getId()).orElseThrow()));
     }
 }

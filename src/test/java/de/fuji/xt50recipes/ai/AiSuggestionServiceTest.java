@@ -78,12 +78,33 @@ class AiSuggestionServiceTest {
 
         var result = service.suggest(
                 List.of(new AiSuggestionService.ImageInput(JPEG_BYTES, "image/jpeg")),
-                "warm look", "claude-sonnet-5"
+                "warm look", "claude-sonnet-5-5"
         );
 
         assertThat(result.name()).isEqualTo("Golden Hour");
         assertThat(result.filmSimulation().name()).isEqualTo("CLASSIC_CHROME");
         assertThat(result.aiGenerated()).isTrue();
+    }
+
+    @Test
+    void suggest_thinkingBlockBeforeText_parsesRecipeRequest() throws Exception {
+        String innerJson = objectMapper.writeValueAsString(aiFields("Golden Hour", "CLASSIC_CHROME"));
+        String responseBody = objectMapper.writeValueAsString(Map.of(
+                "stop_reason", "end_turn",
+                "content", List.of(
+                        Map.of("type", "thinking", "thinking", "", "signature", "abc"),
+                        Map.of("type", "text", "text", innerJson)
+                )
+        ));
+        when(restTemplate.postForEntity(eq(AiConstants.ANTHROPIC_URL), any(), eq(String.class)))
+                .thenReturn(ResponseEntity.ok(responseBody));
+
+        var result = service.suggest(
+                List.of(new AiSuggestionService.ImageInput(JPEG_BYTES, "image/jpeg")),
+                null, "claude-opus-5-5"
+        );
+
+        assertThat(result.name()).isEqualTo("Golden Hour");
     }
 
     @Test
@@ -108,7 +129,7 @@ class AiSuggestionServiceTest {
 
         var result = service.suggest(
                 List.of(new AiSuggestionService.ImageInput(JPEG_BYTES, "image/jpeg")),
-                null, "claude-opus-5"
+                null, "claude-opus-5-5"
         );
 
         assertThat(result.name()).isEqualTo("KI-Recipe");

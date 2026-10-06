@@ -25,7 +25,7 @@ describe('SettingsContext', () => {
   })
 
   it('reads persisted settings from localStorage on mount', () => {
-    localStorage.setItem('app-settings', JSON.stringify({ aiEnabled: false, defaultModel: 'claude-haiku' }))
+    localStorage.setItem('app-settings', JSON.stringify({ aiEnabled: false, defaultModel: 'claude-haiku-4-5-20251001' }))
     let captured: ReturnType<typeof useSettings> | null = null
     render(
       <SettingsProvider>
@@ -33,7 +33,19 @@ describe('SettingsContext', () => {
       </SettingsProvider>
     )
     expect(captured!.settings.aiEnabled).toBe(false)
-    expect(captured!.settings.defaultModel).toBe('claude-haiku')
+    expect(captured!.settings.defaultModel).toBe('claude-haiku-4-5-20251001')
+  })
+
+  it('falls back to the default model when the persisted model is no longer offered', () => {
+    localStorage.setItem('app-settings', JSON.stringify({ aiEnabled: false, defaultModel: 'claude-opus-5' }))
+    let captured: ReturnType<typeof useSettings> | null = null
+    render(
+      <SettingsProvider>
+        <TestConsumer onRender={(s) => { captured = s }} />
+      </SettingsProvider>
+    )
+    expect(captured!.settings.aiEnabled).toBe(false)
+    expect(captured!.settings.defaultModel).toBe(DEFAULT_MODEL)
   })
 
   it('updateSettings merges patch into current settings', () => {

@@ -24,21 +24,17 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class RecipeMatchServiceTest {
+class LocationMatchServiceTest {
 
     @Mock RestTemplate restTemplate;
     @Mock RecipeRepository recipeRepository;
 
     ObjectMapper objectMapper = new ObjectMapper();
-    RecipeMatchService service;
-
-    private static final byte[] JPEG_BYTES = new byte[]{
-            (byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0, 0, 16, 0, 0, 0, 0
-    };
+    LocationMatchService service;
 
     @BeforeEach
     void setUp() {
-        service = new RecipeMatchService(restTemplate, objectMapper, recipeRepository);
+        service = new LocationMatchService(restTemplate, objectMapper, recipeRepository);
         ReflectionTestUtils.setField(service, "apiKey", "test-api-key");
     }
 
@@ -57,11 +53,19 @@ class RecipeMatchServiceTest {
         return r;
     }
 
+    private String matchesJson(UUID... ids) throws Exception {
+        return objectMapper.writeValueAsString(Map.of(
+                "matches", java.util.Arrays.stream(ids)
+                        .map(id -> Map.of("id", id.toString(), "reason", "Passt zum Licht."))
+                        .toList()
+        ));
+    }
+
     @Test
     void match_noRecipes_returnsEmpty() {
         when(recipeRepository.findAllByOrderByCreatedAtDesc()).thenReturn(List.of());
 
-        List<RecipeMatchResponse> result = service.match(JPEG_BYTES, "image/jpeg", null, false);
+        List<RecipeMatchResponse> result = service.match("Island", List.of(), List.of(), null, false);
 
         assertThat(result).isEmpty();
     }
@@ -70,14 +74,57 @@ class RecipeMatchServiceTest {
     void match_happyPath_returnsParsedMatches() throws Exception {
         UUID id1 = UUID.randomUUID();
         UUID id2 = UUID.randomUUID();
-        Recipe r1 = minimalRecipe(id1, "Recipe A");
-        Recipe r2 = minimalRecipe(id2, "Recipe B");
-        when(recipeRepository.findAllByOrderByCreatedAtDesc()).thenReturn(List.of(r1, r2));
+        when(recipeRepository.findAllByOrderByCreatedAtDesc())
+                .thenReturn(List.of(minimalRecipe(id1, "Recipe A"), minimalRecipe(id2, "Recipe B")));
+
+        String responseBody = objectMapper.writeValueAsString(Map.of(
+                "content", List.of(Map.of("type", "text", "text", matchesJson(id1, id2)))
+        ));
+        when(restTemplate.postForEntity(eq(AiConstants.ANTHROPIC_URL), any(), eq(String.class)))
+                .thenReturn(ResponseEntity.ok(responseBody));
+
+        List<RecipeMatchResponse> result = service.match(
+                "Island im September", List.of("Landschaft"), List.of("Nebel & diffuses Licht"),
+                "claude-sonnet-5-5", false);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).name()).isEqualTo("Recipe A");
+        assertThat(result.get(0).reason()).isEqualTo("Passt zum Licht.");
+    }
+
+    @Test
+    void match_thinkingBlockBeforeText_returnsParsedMatches() throws Exception {
+        UUID id1 = UUID.randomUUID();
+        Recipe r1 = minimalRecipe(id1, "Slot Recipe");
+        r1.setCameraSlot(CameraSlot.C1);
+        when(recipeRepository.findByCameraSlotIsNotNullOrderByCameraSlot()).thenReturn(List.of(r1));
+
+        String responseBody = objectMapper.writeValueAsString(Map.of(
+                "stop_reason", "end_turn",
+                "content", List.of(
+                        Map.of("type", "thinking", "thinking", "", "signature", "abc"),
+                        Map.of("type", "text", "text", matchesJson(id1))
+                )
+        ));
+        when(restTemplate.postForEntity(eq(AiConstants.ANTHROPIC_URL), any(), eq(String.class)))
+                .thenReturn(ResponseEntity.ok(responseBody));
+
+        List<RecipeMatchResponse> result = service.match("Kyoto", null, null, "claude-opus-5-5", true);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).cameraSlot()).isEqualTo("C1");
+    }
+
+    @Test
+    void match_unknownAndInvalidIds_areSkipped() throws Exception {
+        UUID id1 = UUID.randomUUID();
+        when(recipeRepository.findAllByOrderByCreatedAtDesc()).thenReturn(List.of(minimalRecipe(id1, "Recipe A")));
 
         String innerJson = objectMapper.writeValueAsString(Map.of(
                 "matches", List.of(
-                        Map.of("id", id1.toString(), "reason", "Great for portraits."),
-                        Map.of("id", id2.toString(), "reason", "Good contrast.")
+                        Map.of("id", UUID.randomUUID().toString(), "reason", "unbekannt"),
+                        Map.of("id", "not-a-uuid", "reason", "ungültig"),
+                        Map.of("id", id1.toString(), "reason", "Passt.")
                 )
         ));
         String responseBody = objectMapper.writeValueAsString(Map.of(
@@ -86,35 +133,10 @@ class RecipeMatchServiceTest {
         when(restTemplate.postForEntity(eq(AiConstants.ANTHROPIC_URL), any(), eq(String.class)))
                 .thenReturn(ResponseEntity.ok(responseBody));
 
-        List<RecipeMatchResponse> result = service.match(JPEG_BYTES, "image/jpeg", "claude-sonnet-5-5", false);
-
-        assertThat(result).hasSize(2);
-        assertThat(result.get(0).name()).isEqualTo("Recipe A");
-        assertThat(result.get(0).reason()).isEqualTo("Great for portraits.");
-    }
-
-    @Test
-    void match_thinkingBlockBeforeText_returnsParsedMatches() throws Exception {
-        UUID id1 = UUID.randomUUID();
-        when(recipeRepository.findAllByOrderByCreatedAtDesc()).thenReturn(List.of(minimalRecipe(id1, "Recipe A")));
-
-        String innerJson = objectMapper.writeValueAsString(Map.of(
-                "matches", List.of(Map.of("id", id1.toString(), "reason", "Great for portraits."))
-        ));
-        String responseBody = objectMapper.writeValueAsString(Map.of(
-                "stop_reason", "end_turn",
-                "content", List.of(
-                        Map.of("type", "thinking", "thinking", "", "signature", "abc"),
-                        Map.of("type", "text", "text", innerJson)
-                )
-        ));
-        when(restTemplate.postForEntity(eq(AiConstants.ANTHROPIC_URL), any(), eq(String.class)))
-                .thenReturn(ResponseEntity.ok(responseBody));
-
-        List<RecipeMatchResponse> result = service.match(JPEG_BYTES, "image/jpeg", "claude-opus-5-5", false);
+        List<RecipeMatchResponse> result = service.match("Toskana", List.of(), List.of(), null, false);
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).name()).isEqualTo("Recipe A");
+        assertThat(result.get(0).id()).isEqualTo(id1);
     }
 
     @Test
@@ -129,44 +151,21 @@ class RecipeMatchServiceTest {
         when(restTemplate.postForEntity(eq(AiConstants.ANTHROPIC_URL), any(), eq(String.class)))
                 .thenReturn(ResponseEntity.ok(responseBody));
 
-        assertThatThrownBy(() -> service.match(JPEG_BYTES, "image/jpeg", null, false))
+        assertThatThrownBy(() -> service.match("Island", List.of(), List.of(), null, false))
                 .isInstanceOf(AiSuggestionException.class)
                 .hasMessageContaining("abgeschnitten");
     }
 
     @Test
-    void match_onlySlots_queriesSlottedRecipes() throws Exception {
-        UUID id1 = UUID.randomUUID();
-        Recipe r1 = minimalRecipe(id1, "Slot Recipe");
-        r1.setCameraSlot(CameraSlot.C1);
-        when(recipeRepository.findByCameraSlotIsNotNullOrderByCameraSlot()).thenReturn(List.of(r1));
-
-        String innerJson = objectMapper.writeValueAsString(Map.of(
-                "matches", List.of(Map.of("id", id1.toString(), "reason", "Best match."))
-        ));
-        String responseBody = objectMapper.writeValueAsString(Map.of(
-                "content", List.of(Map.of("type", "text", "text", innerJson))
-        ));
-        when(restTemplate.postForEntity(eq(AiConstants.ANTHROPIC_URL), any(), eq(String.class)))
-                .thenReturn(ResponseEntity.ok(responseBody));
-
-        List<RecipeMatchResponse> result = service.match(JPEG_BYTES, "image/jpeg", null, true);
-
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).cameraSlot()).isEqualTo("C1");
-    }
-
-    @Test
     void match_httpError_throwsAiSuggestionException() {
-        UUID id = UUID.randomUUID();
         when(recipeRepository.findAllByOrderByCreatedAtDesc())
-                .thenReturn(List.of(minimalRecipe(id, "Recipe")));
+                .thenReturn(List.of(minimalRecipe(UUID.randomUUID(), "Recipe")));
         when(restTemplate.postForEntity(eq(AiConstants.ANTHROPIC_URL), any(), eq(String.class)))
                 .thenThrow(HttpClientErrorException.create(
                         HttpStatus.TOO_MANY_REQUESTS, "Rate limited",
                         org.springframework.http.HttpHeaders.EMPTY, null, null));
 
-        assertThatThrownBy(() -> service.match(JPEG_BYTES, "image/jpeg", null, false))
+        assertThatThrownBy(() -> service.match("Island", List.of(), List.of(), null, false))
                 .isInstanceOf(AiSuggestionException.class)
                 .hasMessageContaining("Anthropic API Fehler");
     }

@@ -9,7 +9,7 @@ Zwei KI-Features sind geplant: (1) Aus Referenzfotos passende Recipe-Parameter v
 
 ## Entscheidung
 
-Anthropic Claude Vision API. Verfügbare Modelle: `claude-haiku-4-5-20251001` (schnell/günstig), `claude-sonnet-4-6` (empfohlen), `claude-opus-4-8` (stärkstes Modell). Der Nutzer wählt das Modell pro Aufruf.
+Anthropic Claude Vision API. Verfügbare Modelle: `claude-haiku-4-5-20251001` (schnell/günstig), `claude-sonnet-5-5` (ausgewogen), `claude-opus-5-5` (stärkstes Modell, Default). Der Nutzer wählt das Modell pro Aufruf.
 
 ## Begründung
 
@@ -19,7 +19,7 @@ Anthropic Claude Vision API. Verfügbare Modelle: `claude-haiku-4-5-20251001` (s
 
 **Deutsche Prompts**: Claude antwortet auf Deutsch — das Beschreibungsfeld des Recipes wird auf Deutsch befüllt, was der deutschen UI entspricht.
 
-**Modell-Flexibilität**: Haiku für schnelle/günstige Anfragen (Batch-Testing neuer Recipes), Sonnet als produktiver Default, Opus für maximale Analyse-Tiefe.
+**Modell-Flexibilität**: Haiku für schnelle/günstige Anfragen (Batch-Testing neuer Recipes), Sonnet als ausgewogene Mitte, Opus als produktiver Default mit maximaler Analyse-Tiefe.
 
 **Opt-in-Integration**: Ohne `ANTHROPIC_API_KEY` sind beide Endpoints vollständig deaktiviert. Die App ist ohne KI-Features voll funktionsfähig.
 

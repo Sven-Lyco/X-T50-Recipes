@@ -74,7 +74,7 @@ public class AiSuggestionService {
 
         Map<String, Object> body = Map.of(
                 "model", resolvedModel,
-                "max_tokens", 2048,
+                "max_tokens", AiConstants.MAX_TOKENS,
                 "messages", List.of(Map.of("role", "user", "content", content))
         );
 
@@ -123,11 +123,9 @@ public class AiSuggestionService {
     private RecipeRequest parseResponse(String responseBody) {
         try {
             JsonNode root = objectMapper.readTree(responseBody);
-            String text = root.at("/content/0/text").asText();
+            String text = AnthropicResponse.extractText(root);
             log.info("Parsing AI response, raw text length={}", text.length());
             log.debug("AI response text: {}", text);
-
-            text = text.replaceAll("(?s)```json\\s*", "").replaceAll("(?s)```\\s*", "").trim();
 
             AiRecipeResponse ai = parseAiResponse(text);
             log.info("AI response parsed: name='{}', filmSimulation={}, dynamicRange={}, hasDescription={}",
