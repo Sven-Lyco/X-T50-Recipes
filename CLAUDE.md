@@ -130,8 +130,9 @@ aktuell auf welcher Custom-Bank (C1–C7) der Kamera geladen ist.
    chronologische Tabelle mit Links auf die beteiligten Recipes; Einträge bleiben nach
    Recipe-Löschung erhalten (kein FK zur Recipe-Tabelle); DB-Tabelle `slot_change_log`
 10. **Einstellungsseite (`/settings`)** – zwei Sektionen:
-   - *Datensicherung*: Backup aller Recipes als ZIP (JSON + Bilder) herunterladen oder aus
-     Backup-ZIP importieren (addiert zu bestehenden Recipes)
+   - *Datensicherung*: Backup aller Recipes (JSON + Bilder) inkl. C1–C7-Belegung, Favoriten und
+     Slot-Protokoll als ZIP herunterladen oder aus Backup-ZIP importieren (addiert zu bestehenden
+     Recipes; ein Slot wird nur wiederhergestellt, wenn er in der Ziel-Instanz frei ist)
    - *KI-Einstellungen*: KI-Funktionen global an-/ausschalten (versteckt „Recipe generieren"
      und „Recipe Match" aus der Navigation); Standard-KI-Modell wählen (Haiku/Sonnet/Opus);
      Toggle ist deaktiviert wenn kein `ANTHROPIC_API_KEY` konfiguriert ist (`GET /api/ai-status`)
@@ -175,8 +176,12 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 - `POST /api/suggest` (Multipart: images[], description?, model?) → RecipeRequest JSON
 - `POST /api/match` (Multipart: image, model?, onlySlots?) → RecipeMatchResponse[]
 - `GET /api/ai-status` → `{ available: boolean }` (prüft ob ANTHROPIC_API_KEY gesetzt)
-- `GET /api/backup` → ZIP aller Recipes (je `{uuid}/recipe.json` + `{uuid}/images/*`)
-- `POST /api/backup` (Multipart: file=ZIP) → importierte Recipes als Liste
+- `GET /api/backup` → ZIP aller Recipes (je `{uuid}/recipe.json` + `{uuid}/images/*`) plus
+  `slot-protocol.json` (alle Slot-Wechsel) im ZIP-Root
+- `POST /api/backup` (Multipart: file=ZIP) → importierte Recipes als Liste; stellt `cameraSlot`
+  (nur wenn Slot frei) und `favorite` wieder her, importiert das Slot-Protokoll mit auf die neuen
+  Recipe-IDs umgeschriebenen Referenzen und überspringt bereits vorhandene Einträge
+  (gleicher Slot + Zeitstempel); ZIPs ohne `slot-protocol.json` bleiben importierbar
 - `GET /api/slot-protocol` → alle Slot-Wechsel-Einträge, neueste zuerst
 
 ## DB-Migrationen

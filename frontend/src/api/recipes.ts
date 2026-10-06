@@ -211,6 +211,10 @@ export function useImportBackup() {
       fd.append('file', file)
       return client.post<Recipe[]>('/backup', fd).then(r => r.data)
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['recipes'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['recipes'] })
+      qc.invalidateQueries({ queryKey: ['camera-status'] })
+      qc.invalidateQueries({ queryKey: ['slot-protocol'] })
+    },
   })
 }
