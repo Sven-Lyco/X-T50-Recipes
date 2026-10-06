@@ -63,7 +63,7 @@ In `.env` mindestens `JWT_SECRET` (≥ 32 Zeichen) und `APP_ADMIN_PASSWORD` setz
 - **KI-Generierung** – Referenzfoto(s) hochladen → Claude Vision schlägt passende Einstellungen vor (inkl. EXIF-Kontext)
 - **Recipe Match** – Foto hochladen → KI empfiehlt, welcher C1–C7-Slot am besten zu Motiv/Licht passt (optional auf alle Recipes erweiterbar)
 - **Parameter-Referenz** – Nachschlagewerk zu allen Filmsimulationen und Bildparametern mit Kamera-Menü-Beschreibungen
-- **Einstellungen** – Backup aller Recipes inkl. C1–C7-Belegung und Slot-Protokoll als ZIP exportieren/importieren; KI-Funktionen global an-/ausschalten; Standard-KI-Modell wählen
+- **Einstellungen** – Backup aller Recipes inkl. Bilder, C1–C7-Belegung, Favoriten und Slot-Protokoll als ZIP exportieren; der Import stellt diesen Stand wieder her und ersetzt dabei den kompletten Bestand; KI-Funktionen global an-/ausschalten; Standard-KI-Modell wählen
 - **PWA** – installierbar auf iOS/iPadOS über den Home-Screen
 
 ## Tech-Stack

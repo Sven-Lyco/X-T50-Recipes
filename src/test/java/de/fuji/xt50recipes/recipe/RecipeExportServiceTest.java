@@ -4,21 +4,28 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.fuji.xt50recipes.config.AppProperties;
+import de.fuji.xt50recipes.image.RecipeImage;
 import de.fuji.xt50recipes.image.RecipeImageRepository;
+import de.fuji.xt50recipes.image.RecipeImageResponse;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.HashMap;
@@ -56,6 +63,17 @@ class RecipeExportServiceTest {
                 "secret-key-32-chars-minimum-test", 3600000L, tempDir.toString(), "admin", "pw", null
         );
         exportService = new RecipeExportService(recipeRepository, imageRepository, slotChangeLogRepository, props, objectMapper);
+        // importAllZip registers its image file cleanup on the surrounding transaction
+        TransactionSynchronizationManager.initSynchronization();
+    }
+
+    @AfterEach
+    void tearDown() {
+        TransactionSynchronizationManager.clearSynchronization();
+    }
+
+    private void completeTransaction(int status) {
+        TransactionSynchronizationManager.getSynchronizations().forEach(sync -> sync.afterCompletion(status));
     }
 
     private byte[] zipWithRecipeJson(RecipeResponse response) throws IOException {
@@ -82,6 +100,17 @@ class RecipeExportServiceTest {
         );
     }
 
+    private RecipeResponse sampleRecipeResponseWithImage(String filename, String caption, Instant createdAt, Instant updatedAt) {
+        return new RecipeResponse(
+                UUID.randomUUID(), "Imported Recipe", FilmSimulation.PROVIA, DynamicRange.DR100,
+                0.0, 0.0, 0, 0, 0, GrainStrength.OFF, null,
+                EffectStrength.OFF, EffectStrength.OFF, WhiteBalanceMode.AUTO,
+                0, 0, null, 0, null, null, null, null, null, null, null,
+                List.of(), null, false, false, null,
+                List.of(new RecipeImageResponse(UUID.randomUUID(), filename, caption, 0)), createdAt, updatedAt
+        );
+    }
+
     private byte[] backupZip(List<RecipeResponse> recipes, byte[] protocolJson) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(baos)) {
@@ -89,6 +118,11 @@ class RecipeExportServiceTest {
                 zos.putNextEntry(new ZipEntry(r.id() + "/recipe.json"));
                 zos.write(objectMapper.writeValueAsBytes(r));
                 zos.closeEntry();
+                for (RecipeImageResponse img : r.images()) {
+                    zos.putNextEntry(new ZipEntry(r.id() + "/images/" + img.filename()));
+                    zos.write("image-bytes".getBytes(StandardCharsets.UTF_8));
+                    zos.closeEntry();
+                }
             }
             if (protocolJson != null) {
                 zos.putNextEntry(new ZipEntry("slot-protocol.json"));
@@ -263,18 +297,6 @@ class RecipeExportServiceTest {
     }
 
     @Test
-    void importAllZip_slotAlreadyOccupied_importsWithoutSlot() throws IOException {
-        stubRecipePersistence();
-        when(recipeRepository.findByCameraSlot(CameraSlot.C3)).thenReturn(Optional.of(savedRecipe()));
-        byte[] zip = backupZip(List.of(sampleRecipeResponse(CameraSlot.C3, false)), null);
-
-        List<RecipeResponse> results = exportService.importAllZip(backupFile(zip));
-
-        assertThat(results).hasSize(1);
-        assertThat(results.get(0).cameraSlot()).isNull();
-    }
-
-    @Test
     void importZip_singleRecipe_doesNotRestoreSlotOrFavorite() throws IOException {
         stubRecipePersistence();
         byte[] zip = zipWithRecipeJson(sampleRecipeResponse(CameraSlot.C3, true));
@@ -299,7 +321,9 @@ class RecipeExportServiceTest {
         List<RecipeResponse> results = exportService.importAllZip(backupFile(backupZip(List.of(exported), protocolJson)));
 
         ArgumentCaptor<SlotChangeLog> captor = ArgumentCaptor.forClass(SlotChangeLog.class);
-        verify(slotChangeLogRepository).save(captor.capture());
+        InOrder protocolOrder = inOrder(slotChangeLogRepository);
+        protocolOrder.verify(slotChangeLogRepository).deleteAllInBatch();
+        protocolOrder.verify(slotChangeLogRepository).save(captor.capture());
         SlotChangeLog saved = captor.getValue();
         assertThat(saved.getId()).isNull();
         assertThat(saved.getSlot()).isEqualTo(CameraSlot.C1);
@@ -311,30 +335,117 @@ class RecipeExportServiceTest {
     }
 
     @Test
-    void importAllZip_skipsSlotProtocolEntriesThatAlreadyExist() throws IOException {
-        Instant known = Instant.parse("2026-09-01T10:15:30Z");
-        Instant fresh = Instant.parse("2026-09-02T08:00:00Z");
-        when(slotChangeLogRepository.existsBySlotAndChangedAt(CameraSlot.C1, known)).thenReturn(true);
-        byte[] protocolJson = objectMapper.writeValueAsBytes(List.of(
-                new SlotChangeLogResponse(UUID.randomUUID(), CameraSlot.C1, null, null, null, "A", known),
-                new SlotChangeLogResponse(UUID.randomUUID(), CameraSlot.C1, null, "A", null, "B", fresh)
-        ));
+    void importAllZip_replacesExistingRecipesAndImages() throws IOException {
+        stubRecipePersistence();
+        byte[] zip = backupZip(List.of(sampleRecipeResponse(CameraSlot.C3, false)), null);
 
-        exportService.importAllZip(backupFile(backupZip(List.of(), protocolJson)));
+        exportService.importAllZip(backupFile(zip));
 
-        ArgumentCaptor<SlotChangeLog> captor = ArgumentCaptor.forClass(SlotChangeLog.class);
-        verify(slotChangeLogRepository).save(captor.capture());
-        assertThat(captor.getValue().getChangedAt()).isEqualTo(fresh);
+        InOrder order = inOrder(imageRepository, recipeRepository);
+        order.verify(imageRepository).deleteAllInBatch();
+        order.verify(recipeRepository).deleteAllInBatch();
+        order.verify(recipeRepository).save(any(Recipe.class));
+        // No protocol in the backup: the existing one is kept
+        verifyNoInteractions(slotChangeLogRepository);
     }
 
     @Test
-    void importAllZip_malformedSlotProtocol_stillImportsRecipes() throws IOException {
+    void importAllZip_restoresTimestampsAndImageCaptions() throws IOException {
         stubRecipePersistence();
-        byte[] zip = backupZip(List.of(sampleRecipeResponse()), "not json".getBytes(StandardCharsets.UTF_8));
+        Instant createdAt = Instant.parse("2025-03-01T08:00:00Z");
+        Instant updatedAt = Instant.parse("2025-04-02T09:30:00Z");
+        byte[] zip = backupZip(List.of(sampleRecipeResponseWithImage("old.jpg", "Abendlicht", createdAt, updatedAt)), null);
 
         List<RecipeResponse> results = exportService.importAllZip(backupFile(zip));
 
-        assertThat(results).hasSize(1);
-        verify(slotChangeLogRepository, never()).save(any());
+        assertThat(results.get(0).createdAt()).isEqualTo(createdAt);
+        assertThat(results.get(0).updatedAt()).isEqualTo(updatedAt);
+        ArgumentCaptor<RecipeImage> image = ArgumentCaptor.forClass(RecipeImage.class);
+        verify(imageRepository).save(image.capture());
+        assertThat(image.getValue().getCaption()).isEqualTo("Abendlicht");
+        assertThat(image.getValue().getFilename()).endsWith(".jpg").isNotEqualTo("old.jpg");
+    }
+
+    @Test
+    void importAllZip_committed_removesReplacedImageFilesAndKeepsRestoredOnes() throws IOException {
+        stubRecipePersistence();
+        Files.writeString(tempDir.resolve("replaced.jpg"), "old");
+        when(imageRepository.findAllFilenames()).thenReturn(List.of("replaced.jpg"));
+        byte[] zip = backupZip(List.of(sampleRecipeResponseWithImage("old.jpg", null, Instant.now(), Instant.now())), null);
+
+        exportService.importAllZip(backupFile(zip));
+        ArgumentCaptor<RecipeImage> image = ArgumentCaptor.forClass(RecipeImage.class);
+        verify(imageRepository).save(image.capture());
+        Path restored = tempDir.resolve(image.getValue().getFilename());
+
+        assertThat(tempDir.resolve("replaced.jpg")).exists();
+        completeTransaction(TransactionSynchronization.STATUS_COMMITTED);
+
+        assertThat(tempDir.resolve("replaced.jpg")).doesNotExist();
+        assertThat(restored).exists();
+    }
+
+    @Test
+    void importAllZip_rolledBack_keepsExistingImageFilesAndRemovesWrittenOnes() throws IOException {
+        stubRecipePersistence();
+        Files.writeString(tempDir.resolve("replaced.jpg"), "old");
+        when(imageRepository.findAllFilenames()).thenReturn(List.of("replaced.jpg"));
+        byte[] zip = backupZip(List.of(sampleRecipeResponseWithImage("old.jpg", null, Instant.now(), Instant.now())), null);
+
+        exportService.importAllZip(backupFile(zip));
+        ArgumentCaptor<RecipeImage> image = ArgumentCaptor.forClass(RecipeImage.class);
+        verify(imageRepository).save(image.capture());
+        Path written = tempDir.resolve(image.getValue().getFilename());
+
+        completeTransaction(TransactionSynchronization.STATUS_ROLLED_BACK);
+
+        assertThat(tempDir.resolve("replaced.jpg")).exists();
+        assertThat(written).doesNotExist();
+    }
+
+    @Test
+    void importAllZip_withoutRecipes_isRejectedBeforeDeletingAnything() throws IOException {
+        // e.g. a single-recipe export, which has recipe.json in the ZIP root
+        byte[] zip = zipWithRecipeJson(sampleRecipeResponse());
+
+        assertThatThrownBy(() -> exportService.importAllZip(backupFile(zip)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("keine Recipes");
+
+        verify(recipeRepository, never()).deleteAllInBatch();
+        verify(imageRepository, never()).deleteAllInBatch();
+        verifyNoInteractions(slotChangeLogRepository);
+    }
+
+    @Test
+    void importAllZip_invalidRecipeJson_isRejectedBeforeDeletingAnything() throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (ZipOutputStream zos = new ZipOutputStream(baos)) {
+            zos.putNextEntry(new ZipEntry("good/recipe.json"));
+            zos.write(objectMapper.writeValueAsBytes(sampleRecipeResponse()));
+            zos.closeEntry();
+            zos.putNextEntry(new ZipEntry("broken/recipe.json"));
+            zos.write("not json".getBytes(StandardCharsets.UTF_8));
+            zos.closeEntry();
+        }
+
+        assertThatThrownBy(() -> exportService.importAllZip(backupFile(baos.toByteArray())))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("broken");
+
+        verify(recipeRepository, never()).deleteAllInBatch();
+        verify(recipeRepository, never()).save(any());
+    }
+
+    @Test
+    void importAllZip_invalidSlotProtocol_isRejectedBeforeDeletingAnything() throws IOException {
+        byte[] zip = backupZip(List.of(sampleRecipeResponse()), "not json".getBytes(StandardCharsets.UTF_8));
+
+        assertThatThrownBy(() -> exportService.importAllZip(backupFile(zip)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("slot-protocol.json");
+
+        verify(recipeRepository, never()).deleteAllInBatch();
+        verify(slotChangeLogRepository, never()).deleteAllInBatch();
     }
 }

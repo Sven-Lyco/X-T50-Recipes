@@ -128,8 +128,9 @@ public class Recipe {
 
     @PrePersist
     void prePersist() {
-        createdAt = Instant.now();
-        updatedAt = Instant.now();
+        // A backup restore sets both explicitly
+        if (createdAt == null) createdAt = Instant.now();
+        if (updatedAt == null) updatedAt = Instant.now();
     }
 
     @PreUpdate

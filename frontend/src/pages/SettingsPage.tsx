@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import {
   Stack, Title, Paper, Text, Button, Group, FileButton,
-  Select, Switch, Alert, Divider, Anchor,
+  Select, Switch, Alert, Divider, Anchor, Modal,
 } from '@mantine/core'
+import { isAxiosError } from 'axios'
 import { IconDownload, IconUpload, IconInfoCircle, IconExternalLink } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
 import { useSettings } from '../contexts/SettingsContext'
@@ -15,8 +16,58 @@ export default function SettingsPage() {
   const { data: aiStatus } = useAiStatus()
   const importBackup = useImportBackup()
   const [backupLoading, setBackupLoading] = useState(false)
+  const [pendingImport, setPendingImport] = useState<File | null>(null)
+  const resetFileInput = useRef<() => void>(null)
 
   const aiAvailable = aiStatus?.available ?? true
+
+  // Uses mutateAsync and one updatable notification, so the result is still reported
+  // after the user has left this page during a long upload.
+  function closeImportConfirm() {
+    setPendingImport(null)
+    // Lets the same file be picked again after cancelling
+    resetFileInput.current?.()
+  }
+
+  async function handleBackupImport(file: File) {
+    closeImportConfirm()
+    const id = notifications.show({
+      title: 'Backup-Import',
+      message: 'Wird hochgeladen … 0 %',
+      loading: true,
+      autoClose: false,
+      withCloseButton: false,
+    })
+    try {
+      const recipes = await importBackup.mutateAsync({
+        file,
+        onUploadProgress: (percent) =>
+          notifications.update({
+            id,
+            message: percent < 100 ? `Wird hochgeladen … ${percent} %` : 'Hochgeladen, wird verarbeitet …',
+          }),
+      })
+      const onCamera = recipes.filter((r) => r.cameraSlot).length
+      notifications.update({
+        id,
+        message: `Backup wiederhergestellt: ${recipes.length} Recipe(s), davon ${onCamera} auf C1–C7.`,
+        color: 'green',
+        loading: false,
+        autoClose: false,
+        withCloseButton: true,
+      })
+    } catch (e) {
+      const reason = isAxiosError(e) ? e.response?.data?.message : undefined
+      notifications.update({
+        id,
+        message: reason ?? 'Import fehlgeschlagen. Die vorhandenen Daten wurden nicht verändert.',
+        color: 'red',
+        loading: false,
+        autoClose: false,
+        withCloseButton: true,
+      })
+    }
+  }
 
   async function handleBackupDownload() {
     setBackupLoading(true)
@@ -39,13 +90,28 @@ export default function SettingsPage() {
     <Stack gap="lg" maw={600}>
       <Title order={2}>Einstellungen</Title>
 
+      <Modal opened={pendingImport !== null} onClose={closeImportConfirm} title="Backup wiederherstellen?" centered>
+        <Stack gap="md">
+          <Text size="sm">
+            Alle vorhandenen Recipes, Bilder, die C1–C7-Belegung und das Slot-Protokoll werden gelöscht und
+            durch den Inhalt von „{pendingImport?.name}“ ersetzt. Das lässt sich nicht rückgängig machen.
+          </Text>
+          <Group justify="flex-end">
+            <Button variant="default" onClick={closeImportConfirm}>Abbrechen</Button>
+            <Button color="red" onClick={() => pendingImport && handleBackupImport(pendingImport)}>
+              Alles ersetzen
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
       <Paper withBorder p="md" radius="md">
         <Text size="xs" fw={700} c="dimmed" tt="uppercase" mb="md">Datensicherung</Text>
         <Stack gap="md">
           <Group justify="space-between" align="flex-start">
             <Stack gap={2}>
               <Text size="sm" fw={500}>Backup exportieren</Text>
-              <Text size="xs" c="dimmed">Alle Recipes inkl. Bilder, C1–C7-Belegung und Slot-Protokoll als ZIP</Text>
+              <Text size="xs" c="dimmed">Alle Recipes inkl. Bilder, C1–C7-Belegung, Favoriten und Slot-Protokoll als ZIP</Text>
             </Stack>
             <Button
               variant="default"
@@ -60,18 +126,13 @@ export default function SettingsPage() {
           <Group justify="space-between" align="flex-start">
             <Stack gap={2}>
               <Text size="sm" fw={500}>Backup importieren</Text>
-              <Text size="xs" c="dimmed">Recipes, C1–C7-Belegung und Slot-Protokoll aus Backup-ZIP laden (addiert zu bestehenden; belegte Slots bleiben unverändert)</Text>
+              <Text size="xs" c="dimmed">Ersetzt alle vorhandenen Recipes, Bilder, die C1–C7-Belegung und das Slot-Protokoll durch den Stand des Backup-ZIPs</Text>
             </Stack>
             <FileButton
               accept=".zip"
+              resetRef={resetFileInput}
               onChange={(file) => {
-                if (!file) return
-                importBackup.mutate(file, {
-                  onSuccess: (recipes) =>
-                    notifications.show({ message: `${recipes.length} Recipe(s) importiert.`, color: 'green' }),
-                  onError: () =>
-                    notifications.show({ message: 'Import fehlgeschlagen.', color: 'red' }),
-                })
+                if (file) setPendingImport(file)
               }}
             >
               {(props) => (

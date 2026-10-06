@@ -15,10 +15,26 @@ vi.mock('../api/client', () => ({
 
 import client from '../api/client'
 import { useAiStatus, useImportBackup } from '../api/recipes'
+import { notifications } from '@mantine/notifications'
+
+const mutateAsync = vi.fn()
+
+function selectBackupFile() {
+  const input = document.querySelector('input[type="file"]') as HTMLInputElement
+  return userEvent.upload(input, new File(['zip'], 'backup.zip', { type: 'application/zip' }))
+}
+
+async function selectAndConfirmBackupFile() {
+  await selectBackupFile()
+  await userEvent.click(await screen.findByRole('button', { name: /Alles ersetzen/i }))
+}
 
 beforeEach(() => {
   vi.mocked(useAiStatus).mockReturnValue({ data: { available: true } } as any)
-  vi.mocked(useImportBackup).mockReturnValue({ mutate: vi.fn(), isPending: false } as any)
+  mutateAsync.mockReset()
+  vi.mocked(useImportBackup).mockReturnValue({ mutateAsync, isPending: false } as any)
+  vi.spyOn(notifications, 'show').mockClear().mockReturnValue('import-notification')
+  vi.spyOn(notifications, 'update').mockClear().mockReturnValue('import-notification')
 })
 
 describe('SettingsPage', () => {
@@ -70,5 +86,71 @@ describe('SettingsPage', () => {
     const downloadBtn = screen.getAllByRole('button', { name: /Herunterladen/i })[0]
     await userEvent.click(downloadBtn)
     // No crash — error is caught and notification shown
+  })
+
+  it('reports upload progress and the import result in a persistent notification', async () => {
+    mutateAsync.mockImplementation(async ({ onUploadProgress }) => {
+      onUploadProgress(40)
+      onUploadProgress(100)
+      return [{ cameraSlot: 'C1' }, { cameraSlot: null }]
+    })
+    renderWithProviders(<SettingsPage />)
+
+    await selectAndConfirmBackupFile()
+
+    expect(notifications.show).toHaveBeenCalledWith(expect.objectContaining({ loading: true, autoClose: false }))
+    expect(notifications.update).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'import-notification', message: 'Wird hochgeladen … 40 %' }))
+    expect(notifications.update).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'Hochgeladen, wird verarbeitet …' }))
+    expect(notifications.update).toHaveBeenLastCalledWith(expect.objectContaining({
+      id: 'import-notification',
+      message: 'Backup wiederhergestellt: 2 Recipe(s), davon 1 auf C1–C7.',
+      color: 'green',
+      loading: false,
+      autoClose: false,
+    }))
+  })
+
+  it('reports a failed import in a persistent notification', async () => {
+    mutateAsync.mockRejectedValue(new Error('Network error'))
+    renderWithProviders(<SettingsPage />)
+
+    await selectAndConfirmBackupFile()
+
+    expect(notifications.update).toHaveBeenLastCalledWith(expect.objectContaining({
+      id: 'import-notification',
+      message: 'Import fehlgeschlagen. Die vorhandenen Daten wurden nicht verändert.',
+      color: 'red',
+      autoClose: false,
+    }))
+  })
+
+  it('shows the reason the server gives for rejecting a backup', async () => {
+    mutateAsync.mockRejectedValue({
+      isAxiosError: true,
+      response: { data: { message: 'Backup nicht importiert: Das ZIP enthält keine Recipes.' } },
+    })
+    renderWithProviders(<SettingsPage />)
+
+    await selectAndConfirmBackupFile()
+
+    expect(notifications.update).toHaveBeenLastCalledWith(expect.objectContaining({
+      message: 'Backup nicht importiert: Das ZIP enthält keine Recipes.',
+      color: 'red',
+    }))
+  })
+
+  it('asks for confirmation and does not import when cancelled', async () => {
+    renderWithProviders(<SettingsPage />)
+
+    await selectBackupFile()
+    expect(await screen.findByText(/lässt sich nicht rückgängig machen/i)).toBeInTheDocument()
+    expect(mutateAsync).not.toHaveBeenCalled()
+
+    await userEvent.click(screen.getByRole('button', { name: /Abbrechen/i }))
+
+    expect(mutateAsync).not.toHaveBeenCalled()
+    expect(notifications.show).not.toHaveBeenCalled()
   })
 })
