@@ -18,6 +18,9 @@ RUN gradle bootJar --no-daemon
 # Stage 3: Runtime
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
+
+# Security fixes for Alpine packages that are newer than the base image
+RUN apk upgrade --no-cache
 COPY --from=backend-build /app/build/libs/*.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
