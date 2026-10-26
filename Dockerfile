@@ -1,7 +1,9 @@
 # Stage 1: React Build
-FROM node:20-alpine AS frontend-build
+# Exact Node.js release, so a build can never fall back to an older cached image.
+# Dependabot (.github/dependabot.yml) opens a pull request for newer 24.x releases.
+FROM node:24.22.1-alpine AS frontend-build
 WORKDIR /app/frontend
-COPY frontend/package*.json ./
+COPY frontend/package*.json frontend/.npmrc ./
 RUN npm ci
 COPY frontend/ ./
 RUN npm run build
