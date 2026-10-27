@@ -1,7 +1,5 @@
 package de.fuji.xt50recipes.ai;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fuji.xt50recipes.recipe.Recipe;
 import de.fuji.xt50recipes.recipe.RecipeRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.*;
 
@@ -103,8 +103,8 @@ public class RecipeMatchService {
 
             List<RecipeMatchResponse> result = new ArrayList<>();
             for (JsonNode match : json.path("matches")) {
-                String idStr = match.path("id").asText();
-                String reason = match.path("reason").asText();
+                String idStr = match.path("id").asString();
+                String reason = match.path("reason").asString();
                 try {
                     Recipe r = byId.get(UUID.fromString(idStr));
                     if (r == null) { log.warn("Match response contained unknown ID: {}", idStr); continue; }

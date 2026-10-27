@@ -1,19 +1,19 @@
 package de.fuji.xt50recipes.recipe;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fuji.xt50recipes.auth.AppUserDetailsService;
 import de.fuji.xt50recipes.auth.JwtUtil;
 import de.fuji.xt50recipes.config.AppProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
 import java.util.List;
@@ -33,10 +33,10 @@ class RecipeControllerTest {
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
 
-    @MockBean RecipeService recipeService;
-    @MockBean RecipeExportService recipeExportService;
-    @MockBean JwtUtil jwtUtil;
-    @MockBean AppUserDetailsService userDetailsService;
+    @MockitoBean RecipeService recipeService;
+    @MockitoBean RecipeExportService recipeExportService;
+    @MockitoBean JwtUtil jwtUtil;
+    @MockitoBean AppUserDetailsService userDetailsService;
 
     @Test
     @WithMockUser
@@ -144,6 +144,19 @@ class RecipeControllerTest {
                 .content("{\"slot\":\"C1\",\"force\":false}"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message", containsString("Occupied Recipe")));
+    }
+
+    @Test
+    @WithMockUser
+    void assignCameraSlot_withoutForce_defaultsToFalse() throws Exception {
+        UUID id = UUID.randomUUID();
+        when(recipeService.assignCameraSlot(eq(id), eq(CameraSlot.C1), eq(false))).thenReturn(sampleResponse());
+
+        mockMvc.perform(put("/api/recipes/{id}/camera-slot", id)
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"slot\":\"C1\"}"))
+                .andExpect(status().isOk());
     }
 
     @Test

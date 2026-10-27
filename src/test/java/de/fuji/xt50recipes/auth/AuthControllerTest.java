@@ -1,13 +1,12 @@
 package de.fuji.xt50recipes.auth;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fuji.xt50recipes.config.AppProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,6 +20,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import org.springframework.security.test.context.support.WithMockUser;
+import tools.jackson.databind.ObjectMapper;
 
 @WebMvcTest(value = AuthController.class, excludeAutoConfiguration = UserDetailsServiceAutoConfiguration.class)
 @EnableConfigurationProperties(AppProperties.class)
@@ -29,10 +29,10 @@ class AuthControllerTest {
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
 
-    @MockBean AuthenticationManager authenticationManager;
-    @MockBean JwtUtil jwtUtil;
-    @MockBean LoginRateLimiter rateLimiter;
-    @MockBean AppUserDetailsService userDetailsService;
+    @MockitoBean AuthenticationManager authenticationManager;
+    @MockitoBean JwtUtil jwtUtil;
+    @MockitoBean LoginRateLimiter rateLimiter;
+    @MockitoBean AppUserDetailsService userDetailsService;
 
     private String loginBody(String user, String pass) throws Exception {
         return objectMapper.writeValueAsString(new AuthController.LoginRequest(user, pass));
