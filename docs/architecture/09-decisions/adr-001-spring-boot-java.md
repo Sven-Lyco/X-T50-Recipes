@@ -9,7 +9,7 @@ Für das Backend werden benötigt: HTTP-Server, ORM, Datenbankmigrationen, Secur
 
 ## Entscheidung
 
-Java 21 mit Spring Boot 3.
+Java 21 mit Spring Boot (ursprünglich Spring Boot 3; im Oktober 2026 auf Spring Boot 4 angehoben, weil die Fixes für zwei kritische Spring-Framework-CVEs nur in Spring Framework 7 erscheinen, siehe Issue #5).
 
 ## Begründung
 

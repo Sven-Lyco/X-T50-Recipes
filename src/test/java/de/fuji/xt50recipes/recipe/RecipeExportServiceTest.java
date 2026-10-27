@@ -1,8 +1,5 @@
 package de.fuji.xt50recipes.recipe;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.fuji.xt50recipes.config.AppProperties;
 import de.fuji.xt50recipes.image.RecipeImage;
 import de.fuji.xt50recipes.image.RecipeImageRepository;
@@ -20,6 +17,10 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -56,9 +57,8 @@ class RecipeExportServiceTest {
 
     @BeforeEach
     void setUp() {
-        objectMapper = new ObjectMapper()
-                .registerModule(new JavaTimeModule())
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        // same setting as spring.jackson.deserialization in application.yml
+        objectMapper = JsonMapper.builder().disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES).build();
         AppProperties props = new AppProperties(
                 "secret-key-32-chars-minimum-test", 3600000L, tempDir.toString(), "admin", "pw", null
         );
@@ -281,6 +281,9 @@ class RecipeExportServiceTest {
         assertThat(protocol).hasSize(1);
         assertThat(protocol[0].slot()).isEqualTo(CameraSlot.C2);
         assertThat(protocol[0].changedAt()).isEqualTo(entry.getChangedAt());
+        // dates stay ISO-8601 strings, so older backups and the frontend read them unchanged
+        assertThat(new String(entries.get("slot-protocol.json"), StandardCharsets.UTF_8))
+                .contains("\"changedAt\":\"2026-09-01T10:15:30.123456Z\"");
     }
 
     @Test
@@ -294,6 +297,28 @@ class RecipeExportServiceTest {
         assertThat(results.get(0).cameraSlot()).isEqualTo(CameraSlot.C3);
         assertThat(results.get(0).favorite()).isTrue();
         verifyNoInteractions(slotChangeLogRepository);
+    }
+
+    @Test
+    void importAllZip_legacyRecipeJsonWithoutBooleanFields_importsWithDefaults() throws IOException {
+        // backups from before the favorite / aiGenerated columns lack these primitive fields
+        stubRecipePersistence();
+        RecipeResponse recipe = sampleRecipeResponse();
+        ObjectNode legacyJson = objectMapper.valueToTree(recipe);
+        legacyJson.remove("favorite");
+        legacyJson.remove("aiGenerated");
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (ZipOutputStream zos = new ZipOutputStream(baos)) {
+            zos.putNextEntry(new ZipEntry(recipe.id() + "/recipe.json"));
+            zos.write(objectMapper.writeValueAsBytes(legacyJson));
+            zos.closeEntry();
+        }
+
+        List<RecipeResponse> results = exportService.importAllZip(backupFile(baos.toByteArray()));
+
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0).favorite()).isFalse();
+        assertThat(results.get(0).aiGenerated()).isFalse();
     }
 
     @Test

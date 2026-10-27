@@ -10,7 +10,7 @@
 | Single-Deployable-Artifact | Ein Docker-Image liefert Frontend + API — kein separater CDN/Webserver nötig |
 | Bild-Storage als Datei-Volume | Kein S3-Setup für ein persönliches Projekt erforderlich |
 | Anthropic Claude API (extern) | Nur für KI-Features; App ist ohne API-Key vollständig funktionsfähig |
-| Java 21 + Spring Boot 3 | Typsicheres, produktionsreifes Backend-Ökosystem |
+| Java 21 + Spring Boot 4 | Typsicheres, produktionsreifes Backend-Ökosystem |
 | React + TypeScript + Vite | Modernes, typsicheres Frontend-Tooling |
 
 ## Organisations- und Scope-Randbedingungen

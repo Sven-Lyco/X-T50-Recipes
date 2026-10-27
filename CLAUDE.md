@@ -21,7 +21,11 @@ aktuell auf welcher Custom-Bank (C1–C7) der Kamera geladen ist.
 
 ### Backend
 
-- Java 21, Spring Boot 3
+- Java 21, Spring Boot 4 (Gradle ≥ 8.14)
+- JSON: Jackson 3 (`tools.jackson.*`; Annotationen bleiben `com.fasterxml.jackson.annotation`).
+  `spring.jackson.deserialization.fail-on-null-for-primitives: false` hält fehlende primitive Felder
+  (z.B. `force`, `favorite` in alten Backups) beim Default statt 400 – steht in `src/main/resources/application.yml`
+  **und** `src/test/resources/application.yml` (die Test-yml ersetzt die Haupt-yml komplett)
 - Spring Data JPA + Hibernate
 - PostgreSQL
 - Spring Security + JWT (Single-User-Login, initialer User per Seed/Migration)
@@ -248,8 +252,9 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 - Direkte Abhängigkeiten werden direkt angehoben (`frontend/package.json`, Spring-Boot-Version in `build.gradle`)
 - Transitive Abhängigkeiten werden überschrieben:
   - Frontend: `overrides` in `frontend/package.json`
-  - Backend: `gradle/dependency-overrides.gradle` (Spring-Boot-BOM-Properties wie `ext['tomcat.version']`
-    bzw. `dependencyManagement` für nicht verwaltete Artefakte), eingebunden per `apply from` in `build.gradle`
+  - Backend: aktuell keine. Bei Bedarf `gradle/dependency-overrides.gradle` anlegen (Spring-Boot-BOM-Properties
+    wie `ext['tomcat.version']` bzw. `dependencyManagement` für nicht verwaltete Artefakte) und per `apply from`
+    in `build.gradle` einbinden
 - Overrides entfernen, sobald die Elternabhängigkeit die gefixte Version selbst mitbringt
 
 ## Testing-Strategie
@@ -263,7 +268,7 @@ Kein Registrierungs-Flow – initialer User wird per DB-Migration/Seed angelegt.
 | Schicht | Test-Ansatz | Beispiel |
 |---|---|---|
 | Service-Layer | Mockito (`@ExtendWith(MockitoExtension.class)`) | `RecipeServiceTest`, `AiSuggestionServiceTest` |
-| HTTP-Layer | `@WebMvcTest` + `@MockBean` + MockMvc | `RecipeControllerTest`, `AuthControllerTest` |
+| HTTP-Layer | `@WebMvcTest` + `@MockitoBean` + MockMvc | `RecipeControllerTest`, `AuthControllerTest` |
 | Repository | `@DataJpaTest` + Testcontainers PostgreSQL | `RecipeRepositoryTest` |
 | Utility-Klassen | Plain JUnit 5, kein Spring-Kontext | `JwtUtilTest`, `LoginRateLimiterTest` |
 

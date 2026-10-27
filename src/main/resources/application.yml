@@ -7,9 +7,11 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+  jackson:
+    deserialization:
+      # Jackson 3 default is true: missing primitive fields (e.g. "force" on camera-slot,
+      # "favorite"/"aiGenerated" in older backups) would be rejected instead of defaulting to false
+      fail-on-null-for-primitives: false
   flyway:
     enabled: true
   web:

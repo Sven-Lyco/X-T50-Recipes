@@ -1,6 +1,6 @@
 package de.fuji.xt50recipes.ai;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 final class AnthropicResponse {
 
@@ -8,15 +8,15 @@ final class AnthropicResponse {
 
     // Models with thinking enabled put thinking blocks before the answer, so the text is not always content[0].
     static String extractText(JsonNode root) {
-        String stopReason = root.path("stop_reason").asText("");
+        String stopReason = root.path("stop_reason").asString("");
         if ("refusal".equals(stopReason)) {
             throw new AiSuggestionException("Anfrage vom Modell abgelehnt.");
         }
 
         StringBuilder sb = new StringBuilder();
         for (JsonNode block : root.path("content")) {
-            if ("text".equals(block.path("type").asText())) {
-                sb.append(block.path("text").asText());
+            if ("text".equals(block.path("type").asString())) {
+                sb.append(block.path("text").asString());
             }
         }
 

@@ -6,10 +6,10 @@ import de.fuji.xt50recipes.config.AppProperties;
 import de.fuji.xt50recipes.recipe.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -30,9 +30,9 @@ class AiSuggestionControllerTest {
 
     @Autowired MockMvc mockMvc;
 
-    @MockBean AiSuggestionService aiSuggestionService;
-    @MockBean JwtUtil jwtUtil;
-    @MockBean AppUserDetailsService userDetailsService;
+    @MockitoBean AiSuggestionService aiSuggestionService;
+    @MockitoBean JwtUtil jwtUtil;
+    @MockitoBean AppUserDetailsService userDetailsService;
 
     private RecipeRequest sampleRecipeRequest() {
         return new RecipeRequest(

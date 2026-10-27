@@ -5,10 +5,10 @@ import de.fuji.xt50recipes.auth.JwtUtil;
 import de.fuji.xt50recipes.config.AppProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
@@ -23,8 +23,8 @@ class AiStatusControllerTest {
     @Autowired MockMvc mockMvc;
     @Autowired AiStatusController aiStatusController;
 
-    @MockBean JwtUtil jwtUtil;
-    @MockBean AppUserDetailsService userDetailsService;
+    @MockitoBean JwtUtil jwtUtil;
+    @MockitoBean AppUserDetailsService userDetailsService;
 
     @Test
     @WithMockUser

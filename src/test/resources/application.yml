@@ -3,9 +3,10 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+  jackson:
+    deserialization:
+      # same as src/main/resources/application.yml
+      fail-on-null-for-primitives: false
   flyway:
     enabled: true
 

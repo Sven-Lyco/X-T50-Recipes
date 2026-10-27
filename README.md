@@ -70,7 +70,7 @@ In `.env` mindestens `JWT_SECRET` (≥ 32 Zeichen) und `APP_ADMIN_PASSWORD` setz
 
 | Schicht    | Technologie                                                    |
 | ---------- | -------------------------------------------------------------- |
-| Backend    | Java 21, Spring Boot 3, Spring Data JPA, Spring Security + JWT |
+| Backend    | Java 21, Spring Boot 4, Spring Data JPA, Spring Security + JWT |
 | Datenbank  | PostgreSQL, Flyway-Migrationen                                 |
 | Frontend   | React, TypeScript, Vite, Mantine UI, React Query               |
 | KI         | Anthropic Claude Vision API (Haiku / Sonnet / Opus)            |

@@ -9,7 +9,7 @@ X-T50 Recipes
 │   ├── API Client     (React Query + Axios)
 │   ├── Components     (PDF-Renderer)
 │   └── Utils          (Similarity, MDS, Labels)
-└── Backend (Spring Boot 3 / Java 21)
+└── Backend (Spring Boot 4 / Java 21)
     ├── auth           (JWT, Security, Rate Limiting)
     ├── recipe         (CRUD, Camera Slots, Export/Import)
     ├── image          (Upload, Storage, Reorder)

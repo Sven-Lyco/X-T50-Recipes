@@ -1,7 +1,5 @@
 package de.fuji.xt50recipes.recipe;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fuji.xt50recipes.config.AppProperties;
 import de.fuji.xt50recipes.image.RecipeImage;
 import de.fuji.xt50recipes.image.RecipeImageRepository;
@@ -14,6 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -148,7 +149,7 @@ public class RecipeExportService {
             if (jsonBytes == null) continue;
             try {
                 backupRecipes.add(new BackupRecipe(objectMapper.readValue(jsonBytes, RecipeResponse.class), folder.getValue()));
-            } catch (IOException e) {
+            } catch (JacksonException e) {
                 throw new IllegalArgumentException("Backup nicht importiert: recipe.json in '" + folder.getKey() + "' ist ungültig.");
             }
         }
@@ -159,7 +160,7 @@ public class RecipeExportService {
         if (protocolJson != null) {
             try {
                 protocol = objectMapper.readValue(protocolJson, new TypeReference<>() {});
-            } catch (IOException e) {
+            } catch (JacksonException e) {
                 throw new IllegalArgumentException("Backup nicht importiert: " + SLOT_PROTOCOL_ENTRY + " ist ungültig.");
             }
         }
