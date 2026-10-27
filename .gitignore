@@ -8,6 +8,8 @@ build/
 *.iml
 .vscode/
 *.class
+# Build-Output der Java-Extension in VS Code (Eclipse JDT)
+bin/
 
 # Spring Boot
 *.jar
