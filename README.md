@@ -20,19 +20,17 @@ Persönliche Web-App zur Verwaltung von Fujifilm X-T50 Film-Simulation-Recipes. 
 
 ## Screenshots
 
-<table>
-  <tr>
-    <td align="center"><img src="docs/screenshots/library.png" alt="Bibliothek" width="380"/><br/><em>Bibliothek</em></td>
-    <td align="center"><img src="docs/screenshots/detail.png" alt="Detailansicht" width="380"/><br/><em>Detailansicht</em></td>
-  </tr>
-  <tr>
-    <td align="center"><img src="docs/screenshots/camera-dashboard.png" alt="Kamera-Dashboard" width="380"/><br/><em>Kamera-Dashboard</em></td>
-    <td align="center"><img src="docs/screenshots/similarity-map.png" alt="Ähnlichkeits-Map" width="380"/><br/><em>Ähnlichkeits-Map</em></td>
-  </tr>
-  <tr>
-    <td colspan="2" align="center"><img src="docs/screenshots/recipe-match.png" alt="Recipe Match" width="380"/><br/><em>Recipe Match</em></td>
-  </tr>
-</table>
+| Bibliothek | Detailansicht |
+| --- | --- |
+| ![Bibliothek](docs/screenshots/library.png) | ![Detailansicht](docs/screenshots/detail.png) |
+
+| Kamera-Dashboard | Ähnlichkeits-Map |
+| --- | --- |
+| ![Kamera-Dashboard](docs/screenshots/camera-dashboard.png) | ![Ähnlichkeits-Map](docs/screenshots/similarity-map.png) |
+
+| Recipe Match |
+| --- |
+| ![Recipe Match](docs/screenshots/recipe-match.png) |
 
 ## Quick Start
 
@@ -104,8 +102,7 @@ X-T50-Recipes/
 
 ## Architekturdokumentation
 
-<details>
-<summary>Vollständige arc42-Dokumentation (12 Dokumente + 7 ADRs) unter <code>docs/architecture/</code></summary>
+Vollständige arc42-Dokumentation (12 Dokumente + 7 ADRs) unter `docs/architecture/`:
 
 | Dokument                                                                        | Inhalt                                                               |
 | ------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
@@ -121,8 +118,6 @@ X-T50-Recipes/
 | [10 — Qualitätsanforderungen](docs/architecture/10-quality-requirements.md)     | Qualitätsszenarien und Zielwerte                                     |
 | [11 — Risiken & Tech-Debt](docs/architecture/11-risks-technical-debt.md)        | Bekannte Risiken und offene Schulden                                 |
 | [12 — Glossar](docs/architecture/12-glossary.md)                                | Domänen- und Technikbegriffe                                         |
-
-</details>
 
 ## Lokale Entwicklung
 
