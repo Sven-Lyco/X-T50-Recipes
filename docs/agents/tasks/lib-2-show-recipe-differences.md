@@ -52,8 +52,8 @@ Research:
 - TDD: write a component test for the list first (differences, order, max 3, `Keine Unterschiede`), then one page-level test per criterion 1–3.
 - `scripts/check.sh` must exit 0 before the task is reported done.
 
-Open questions (nobody could answer in the creating session; recommendation first):
+Owner decisions (2026-11-07), replacing the open questions of the creating session:
 
-1. The glossary has no term for a single difference between two recipes. Recommendation: add "difference" (a setting in which two recipes differ, with both values; name in code `RecipeDifference`) to the library glossary, proposed by the implementer and confirmed by the owner. Until then, use `RecipeDifference` as in lib-1.
-2. "Keine Unterschiede" means no difference in the settings `computeSimilarity` compares. Two recipes can still differ in settings that are not compared (for example white balance mode, name). Recommendation: accept this; the text refers only to the similarity settings.
-3. Recipes saved with `null` grain size or monochrome values: `topDifferences` already handles this (`?? 'SMALL'`, `?? 0`), so no extra work is planned.
+1. Add the term "difference" to `docs/agents/contexts/library/glossary.md`: a setting in which two recipes differ, with both values; name in code `RecipeDifference`. Not to be confused with similarity (a single score).
+2. "Keine Unterschiede" refers only to the settings that similarity compares. Recipes may still differ in other fields (name, white balance mode); that is accepted.
+3. `null` grain size and monochrome values need no extra work (`topDifferences` already handles them).
