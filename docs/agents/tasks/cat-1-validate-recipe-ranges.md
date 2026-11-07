@@ -2,7 +2,7 @@
 id: cat-1
 title: New recipe values are checked against the capabilities of the X-T50 camera model
 type: feature
-status: todo
+status: doing
 bounded_context: camera-catalog
 depends_on: []
 blocks: []
