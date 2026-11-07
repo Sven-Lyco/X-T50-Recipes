@@ -81,12 +81,10 @@ Label-Funktionen und Select-Daten in `frontend/src/utils/labels.ts`.
 
 ### Coverage
 
-Ziel: ≥ 80 % Line-Coverage auf beiden Seiten.
-
-- **Backend:** erzwungen. JaCoCo-Threshold 80 % Lines in `build.gradle`, läuft mit `./gradlew check`
-  (lokal und in CI).
-- **Frontend:** nicht erzwungen. `vite.config.ts` hat keinen Threshold, `npm test` misst keine Coverage
-  (Stand 2026-11-07: 63,9 % Lines laut Owner; messen mit `npm --prefix frontend test -- --coverage`).
+Ziel: ≥ 80 % Coverage auf beiden Seiten (Zeilen, Zweige, Funktionen/Methoden).
+- Backend: erzwungen über `./gradlew check` (JaCoCo in build.gradle), lokal und in CI: Zeilen 80 %, Zweige 63 %, Methoden 80 %.
+- Frontend: erzwungen mit `npm test` (thresholds in vite.config.ts): Zeilen 63 %, Zweige 60 %, Funktionen 56 %.
+Schwellen unter 80 % werden in eigenen Tasks angehoben, nie gesenkt.
 
 ### Backend
 
