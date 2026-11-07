@@ -2,7 +2,7 @@
 id: chore-1
 title: Upgrade to Gradle 9.9 and Java 25
 type: chore
-status: doing
+status: done
 bounded_context: none (technical)
 depends_on: []
 blocks: []
