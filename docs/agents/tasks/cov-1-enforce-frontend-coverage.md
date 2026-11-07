@@ -2,8 +2,8 @@
 id: cov-1
 title: Enforce the current frontend coverage threshold
 type: chore
-status: backlog
-bounded_context: none (technical)
+status: todo
+bounded_context: none
 depends_on: []
 blocks: []
 decisions: []
@@ -20,11 +20,21 @@ Make `npm --prefix frontend test` measure coverage and fail below 63 % lines. Co
 
 ## Acceptance criteria
 
-Confirmed by the owner (session input, 2026-11-07):
+Confirmed by the owner (2026-11-07; extended the same day to branches, functions and the backend):
 
-1. `npm --prefix frontend test` measures coverage and fails when frontend line coverage drops below 63 %. Because `scripts/check.sh`, the commit gate and CI all run `npm test`, they fail too.
-2. `CLAUDE.md` states it honestly: goal 80 %; enforced in the frontend at 63 %, in the backend at 80 %.
-3. CI runs `./gradlew check` instead of `./gradlew test` for the backend, so the JaCoCo threshold also applies in CI.
+1. `npm --prefix frontend test` measures coverage and fails when frontend coverage drops below **lines 63 %, branches 60 %, functions 56 %** (today 63.93 / 60.15 / 56.53 %). Because `scripts/check.sh`, the commit gate and CI all run `npm test`, they fail too. The JUnit output `frontend/test-results/junit.xml` stays where CI reads it.
+2. `./gradlew check` fails when backend coverage drops below **lines 80 %, branches 63 %, methods 80 %** (JaCoCo counters LINE, BRANCH, METHOD; today locally 85.33 / 63.62 / 84.04 %).
+3. CI runs `./gradlew check` instead of `./gradlew test` for the backend, so the JaCoCo thresholds also apply in CI.
+4. The coverage section of `CLAUDE.md` says exactly this (wording approved by the owner):
+
+   ```
+   Ziel: ≥ 80 % Coverage auf beiden Seiten (Zeilen, Zweige, Funktionen/Methoden).
+   - Backend: erzwungen über `./gradlew check` (JaCoCo in build.gradle), lokal und in CI: Zeilen 80 %, Zweige 63 %, Methoden 80 %.
+   - Frontend: erzwungen mit `npm test` (thresholds in vite.config.ts): Zeilen 63 %, Zweige 60 %, Funktionen 56 %.
+   Schwellen unter 80 % werden in eigenen Tasks angehoben, nie gesenkt.
+   ```
+
+Rule for the thresholds (owner): if today's value is at or above the goal of 80 %, the threshold is 80 %; otherwise it is today's value rounded down, so coverage cannot drop.
 
 ## Notes
 
@@ -42,10 +52,9 @@ Suggested test-first approach (chore: confirm the existing tests pass before and
 - Before: `npm --prefix frontend test` expected to pass (exit 0). After the change expected to pass with coverage ≈ 63.9 %.
 - Proof that the gate works: temporarily set the threshold to e.g. 99 %, expect exit code ≠ 0 with a "coverage threshold" error, then set it back to 63.
 
-Open questions (nobody could answer in the creating session; recommendation given):
+Owner decisions (2026-11-07), replacing the open questions of the creating session:
 
-1. **Which metric?** Recommendation: only `lines` at 63, as stated in the criteria; no statements/branches/functions thresholds.
-2. **Margin.** 63.9 % vs. 63 % leaves 0.9 points; a small change in untested code may trip the gate. Recommendation: keep 63 as agreed; raise it step by step in later tasks.
-3. **`RecipeRepositoryTest` in CI.** `./gradlew check` runs the Testcontainers test in CI (`CI` env var set). `ubuntu-latest` has Docker, so it should work, but this has not been verified. Recommendation: check the first CI run on the pull request; if it fails for Docker reasons, report it instead of skipping the test silently.
-4. **JUnit output path.** Coverage mode must not change `frontend/test-results/junit.xml`, which the CI reporter reads. Verify after the change.
-5. **63.9 % is the owner's figure** (`CLAUDE.md`, 2026-11-07). Measure it once with `npm --prefix frontend test -- --coverage` before setting the threshold; if it is below 63, report it and stop.
+1. Enforce lines, branches and functions (backend: methods), not only lines. Values as in the acceptance criteria.
+2. Keep the tight margin (63 vs 63.93 %); raise thresholds in later tasks.
+3. `RecipeRepositoryTest` already runs in CI with `./gradlew test` (the `CI` variable in `build.gradle`), so switching to `check` only adds the JaCoCo verification. Check the first CI run of the pull request.
+4. Verify after the change that `frontend/test-results/junit.xml` is still written.
