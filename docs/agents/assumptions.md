@@ -16,5 +16,8 @@ Log an assumption before you rely on it. A person confirms or rejects it; record
 | 2026-11-07 | `distributionSha256Sum` must be copied from gradle.org by the owner; the agent could not fetch it (network tools not permitted) and did not compute or invent one | chore-1, gradle-wrapper.properties | open | |
 | 2026-11-07 | Display strings in `topDifferences`: numbers are signed with a plus ("+2", "0", "-2", "+1.5"); film simulation uses `filmSimLabel`; labels follow the form page ("Spitzlichter", "Schatten", "Schärfe", "Klarheit", "Warm / Cool", "Grün / Magenta"); enum values use `strengthLabel`, `dynamicRangeLabel`, `grainSizeLabel` | lib-1, `recipeSimilarity.ts` | open | |
 | 2026-11-07 | The settings table is internal (not exported); `RecipeDifference` is the only new exported type | lib-1 | open | |
+| 2026-11-07 | One shared component `RecipeDifferenceList` (props: two recipes) renders the differences in all three places, including the text `Keine Unterschiede`; "no differences" means no difference in the settings `computeSimilarity` compares | lib-2 | open | |
+| 2026-11-07 | Differences are rendered as small dimmed text (Mantine `Text size="xs" c="dimmed"`), one line each, directly under the score badge / similarity row; in the duplicate warning below each match row. Visual styling was not specified | lib-2, `RecipeDifferenceList.tsx` | open | |
+| 2026-11-07 | In the duplicate warning, value A comes from the form payload cast `as unknown as Recipe` (same cast the existing `computeSimilarity` call uses) | lib-2, `RecipeFormPage.tsx` | open | |
 
 Status is one of `open`, `confirmed`, `rejected`.

@@ -4,6 +4,7 @@ import {
   Box, Image, AspectRatio, ActionIcon, Center, Loader,
 } from '@mantine/core'
 import { useRecipesBulk } from '../api/recipes'
+import RecipeDifferenceList from '../components/RecipeDifferenceList'
 import { computeSimilarity, similarityColor } from '../utils/recipeSimilarity'
 import { filmSimLabel, MONOCHROME_SIMS } from '../filmSimLabel'
 import { dynamicRangeLabel, grainSizeLabel, isoModeLabel, scenarioLabel, strengthLabel, wbModeLabel } from '../utils/labels'
@@ -116,6 +117,7 @@ export default function CompareResultPage() {
                       {score}% ähnlich
                     </Badge>
                   )}
+                  {i > 0 && <RecipeDifferenceList a={first} b={recipe} />}
                   {i === 0 && (
                     <Badge color="blue" variant="light" size="sm">Referenz</Badge>
                   )}

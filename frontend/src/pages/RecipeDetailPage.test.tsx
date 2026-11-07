@@ -119,6 +119,15 @@ describe('RecipeDetailPage', () => {
     expect(screen.getAllByRole('button', { name: /Exportieren/i }).length).toBeGreaterThan(0)
   })
 
+  it('shows differences of each similar recipe to the shown recipe, shown recipe value first', () => {
+    const similar = { ...recipe, id: 'r2', name: 'Ähnlich A', color: 2 }
+    const same = { ...recipe, id: 'r3', name: 'Ähnlich B' }
+    vi.mocked(useRecipesBulk).mockReturnValue({ data: [recipe, similar, same] } as any)
+    renderDetailPage()
+    expect(screen.getByText('Farbe: -1 → +2')).toBeTruthy()
+    expect(screen.getAllByText('Keine Unterschiede')).toHaveLength(1)
+  })
+
   it('shows loader while loading', () => {
     vi.mocked(useRecipe).mockReturnValue({ data: undefined, isLoading: true } as any)
     renderDetailPage()
