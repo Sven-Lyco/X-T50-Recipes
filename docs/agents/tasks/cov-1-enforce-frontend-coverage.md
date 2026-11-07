@@ -1,6 +1,6 @@
 ---
 id: cov-1
-title: Enforce the current frontend coverage threshold
+title: Enforce the current coverage thresholds (frontend and backend)
 type: chore
 status: todo
 bounded_context: none
