@@ -16,5 +16,7 @@ Log an assumption before you rely on it. A person confirms or rejects it; record
 | 2026-11-07 | `distributionSha256Sum` must be copied from gradle.org by the owner; the agent could not fetch it (network tools not permitted) and did not compute or invent one | chore-1, gradle-wrapper.properties | open | |
 | 2026-11-07 | Display strings in `topDifferences`: numbers are signed with a plus ("+2", "0", "-2", "+1.5"); film simulation uses `filmSimLabel`; labels follow the form page ("Spitzlichter", "Schatten", "Schärfe", "Klarheit", "Warm / Cool", "Grün / Magenta"); enum values use `strengthLabel`, `dynamicRangeLabel`, `grainSizeLabel` | lib-1, `recipeSimilarity.ts` | open | |
 | 2026-11-07 | The settings table is internal (not exported); `RecipeDifference` is the only new exported type | lib-1 | open | |
+| 2026-11-07 | Frontend coverage is enabled globally via `coverage.enabled: true` in `vite.config.ts` (not a `--coverage` flag), so `npm test` always measures coverage; a single-file `vitest run <file>` printed no coverage output when tried (reason not investigated) | cov-1, `frontend/vite.config.ts` | open | |
+| 2026-11-07 | Switching CI from `./gradlew test` to `check` only adds JaCoCo verification; not yet confirmed by a real CI run (only local) | cov-1, `.github/workflows/ci.yml` | open | |
 
 Status is one of `open`, `confirmed`, `rejected`.
