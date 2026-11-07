@@ -194,6 +194,104 @@ class RecipeControllerTest {
                 .andExpect(status().isConflict());
     }
 
+    @Test
+    @WithMockUser
+    void create_highlightToneAboveRange_returns400NamingFieldAndRange() throws Exception {
+        mockMvc.perform(post("/api/recipes")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(bodyWith("highlightTone", "4.5")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.highlightTone").value(containsString("-2")))
+                .andExpect(jsonPath("$.errors.highlightTone").value(containsString("+4")));
+        verifyNoInteractions(recipeService);
+    }
+
+    @Test
+    @WithMockUser
+    void create_highlightToneNotAHalfStep_returns400() throws Exception {
+        mockMvc.perform(post("/api/recipes")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(bodyWith("highlightTone", "1.3")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.highlightTone").exists());
+    }
+
+    private static final String[][] VALUES_WITHIN_RANGE = {
+            {"highlightTone", "-2"}, {"highlightTone", "4"}, {"highlightTone", "1.5"},
+            {"shadowTone", "-2"}, {"shadowTone", "4"}, {"shadowTone", "0.5"},
+            {"color", "-4"}, {"color", "4"}, {"sharpness", "-4"}, {"sharpness", "4"},
+            {"noiseReduction", "-4"}, {"noiseReduction", "4"},
+            {"clarity", "-5"}, {"clarity", "5"}, {"wbShiftRed", "-9"}, {"wbShiftRed", "9"},
+            {"wbShiftBlue", "-9"}, {"wbShiftBlue", "9"}};
+
+    private static final String[][] VALUES_OUTSIDE_RANGE = {
+            {"highlightTone", "-2.5"}, {"highlightTone", "4.5"}, {"highlightTone", "7"},
+            {"shadowTone", "-2.5"}, {"shadowTone", "4.5"}, {"shadowTone", "1.3"},
+            {"color", "-5"}, {"color", "5"}, {"sharpness", "-5"}, {"sharpness", "5"},
+            {"noiseReduction", "-5"}, {"noiseReduction", "5"},
+            {"clarity", "-6"}, {"clarity", "6"}, {"wbShiftRed", "-10"}, {"wbShiftRed", "10"},
+            {"wbShiftBlue", "-10"}, {"wbShiftBlue", "10"}};
+
+    @Test
+    @WithMockUser
+    void create_valuesAtOrWithinRange_return201() throws Exception {
+        when(recipeService.create(any())).thenReturn(sampleResponse());
+        for (String[] fieldAndValue : VALUES_WITHIN_RANGE) {
+            mockMvc.perform(post("/api/recipes")
+                    .with(csrf())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(bodyWith(fieldAndValue[0], fieldAndValue[1])))
+                    .andExpect(status().isCreated());
+        }
+    }
+
+    @Test
+    @WithMockUser
+    void create_valuesOutsideRange_return400NamingField() throws Exception {
+        for (String[] fieldAndValue : VALUES_OUTSIDE_RANGE) {
+            mockMvc.perform(post("/api/recipes")
+                    .with(csrf())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(bodyWith(fieldAndValue[0], fieldAndValue[1])))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.errors." + fieldAndValue[0]).exists());
+        }
+        verifyNoInteractions(recipeService);
+    }
+
+    @Test
+    @WithMockUser
+    void create_nullOptionalSettings_return201() throws Exception {
+        when(recipeService.create(any())).thenReturn(sampleResponse());
+        for (String field : new String[]{"wbShiftRed", "wbShiftBlue", "clarity"}) {
+            mockMvc.perform(post("/api/recipes")
+                    .with(csrf())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(bodyWith(field, "null")))
+                    .andExpect(status().isCreated());
+        }
+    }
+
+    @Test
+    @WithMockUser
+    void update_valueOutsideRange_returns400() throws Exception {
+        mockMvc.perform(put("/api/recipes/{id}", UUID.randomUUID())
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(bodyWith("shadowTone", "4.5")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.shadowTone").exists());
+    }
+
+    /** Sample request with one field replaced by the given JSON literal. */
+    private String bodyWith(String field, String jsonValue) throws Exception {
+        tools.jackson.databind.node.ObjectNode node = objectMapper.valueToTree(sampleRequest());
+        node.set(field, objectMapper.readTree(jsonValue));
+        return objectMapper.writeValueAsString(node);
+    }
+
     private RecipeRequest sampleRequest() {
         return new RecipeRequest(
                 "Test Recipe", FilmSimulation.PROVIA, DynamicRange.DR100,
