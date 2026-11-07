@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.Arrays;
 import java.util.List;
 
+@WithinCameraRanges
 public record RecipeRequest(
         @NotBlank String name,
         @NotNull FilmSimulation filmSimulation,
