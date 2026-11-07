@@ -21,6 +21,7 @@ import { useRecipe, useRecipes, useRecipesBulk, useCreateRecipe, useUpdateRecipe
 import { FILM_SIMS, MONOCHROME_SIMS, filmSimLabel } from '../filmSimLabel'
 import { CAMERA_SLOTS, type CameraSlot, type GrainSize, type GrainStrength, type Recipe, type RecipeRequest, type ShootingScenario, type WhiteBalanceMode } from '../api/types'
 import { computeSimilarity, similarityColor } from '../utils/recipeSimilarity'
+import RecipeDifferenceList from '../components/RecipeDifferenceList'
 import { DR_DATA, GRAIN_SIZE_DATA, ISO_MODE_DATA, SCENARIO_DATA, STRENGTH_DATA, wbModeLabel } from '../utils/labels'
 
 const WB_MODES: WhiteBalanceMode[] = [
@@ -495,12 +496,15 @@ export default function RecipeFormPage() {
         <Stack gap="md">
           <Text size="sm">Diese Einstellungen sind sehr ähnlich zu vorhandenen Recipes:</Text>
           {duplicateWarning.matches.map(({ recipe, score }) => (
-            <Group key={recipe.id} justify="space-between">
-              <Anchor href={`/recipes/${recipe.id}`} target="_blank" size="sm">
-                {recipe.name}
-              </Anchor>
-              <Badge color={similarityColor(score)}>{score} %</Badge>
-            </Group>
+            <Stack key={recipe.id} gap={4}>
+              <Group justify="space-between">
+                <Anchor href={`/recipes/${recipe.id}`} target="_blank" size="sm">
+                  {recipe.name}
+                </Anchor>
+                <Badge color={similarityColor(score)}>{score} %</Badge>
+              </Group>
+              <RecipeDifferenceList a={duplicateWarning.pendingPayload as unknown as Recipe} b={recipe} />
+            </Stack>
           ))}
           <Group justify="flex-end" mt="xs">
             <Button variant="default" onClick={() => setDuplicateWarning(w => ({ ...w, open: false }))}>

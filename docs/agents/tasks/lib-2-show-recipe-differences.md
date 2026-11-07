@@ -2,7 +2,7 @@
 id: lib-2
 title: Show what makes similar recipes different
 type: feature
-status: todo
+status: doing
 bounded_context: library
 depends_on: [lib-1]
 blocks: []

@@ -12,5 +12,6 @@ Purpose: the owner's curated collection of recipes, and everything that describe
 | compatible camera models | The camera models the owner decided a recipe is for; the app suggests models that support all its settings | a camera (the owner's device, context slots) | – (not yet in code) |
 | recipe image | A photo attached to a recipe; a shot taken over into a collection becomes a recipe image | shot (context shots) | `RecipeImage` |
 | similarity | How close two recipes are, from 0 to 100 (percent) | – | `computeSimilarity` (frontend) |
+| difference | A setting in which two recipes differ, with both values (e.g. "Farbe: 0 → +2") | similarity (a single score) | `RecipeDifference` |
 | duplicate warning | The hint when a saved recipe is at least 85 % similar to another | – | – |
 | collection | A named set of recipes, for example all recipes used on a trip | library, tag | – (not yet in code) |

@@ -85,6 +85,27 @@ describe('CompareResultPage', () => {
     expect(screen.getAllByText('Dynamikbereich').length).toBeGreaterThan(0)
   })
 
+  it('shows differences to the first recipe for every other recipe, first recipe value first', () => {
+    vi.mocked(useRecipesBulk).mockReturnValue({
+      data: [
+        makeRecipe('r1', 'Recipe Alpha'),
+        makeRecipe('r2', 'Recipe Beta', { grainStrength: 'STRONG', grainSize: 'SMALL', color: 2 }),
+        makeRecipe('r3', 'Recipe Gamma'),
+      ],
+      isLoading: false,
+    } as any)
+    renderWithProviders(
+      <Routes>
+        <Route path="/compare/result" element={<CompareResultPage />} />
+      </Routes>,
+      { initialEntries: ['/compare/result?ids=r1,r2,r3'] }
+    )
+    expect(screen.getByText('Körnungseffekt: Aus → Stark')).toBeTruthy()
+    expect(screen.getByText('Farbe: 0 → +2')).toBeTruthy()
+    // Recipe Gamma equals the first recipe; the reference itself shows no list
+    expect(screen.getAllByText('Keine Unterschiede')).toHaveLength(1)
+  })
+
   it('shows the similarity score badge', () => {
     renderComparePage()
     // Score badge is shown (format like "78 % ähnlich")
