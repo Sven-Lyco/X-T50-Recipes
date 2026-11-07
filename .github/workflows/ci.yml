@@ -22,7 +22,7 @@ jobs:
           cache: gradle
 
       - name: Run backend tests
-        run: ./gradlew test
+        run: ./gradlew check
 
       - name: Publish backend test results
         uses: dorny/test-reporter@v3

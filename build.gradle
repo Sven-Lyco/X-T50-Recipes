@@ -74,6 +74,20 @@ jacocoTestCoverageVerification {
                 minimum = 0.80
             }
         }
+        rule {
+            limit {
+                counter = 'BRANCH'
+                value = 'COVEREDRATIO'
+                minimum = 0.63
+            }
+        }
+        rule {
+            limit {
+                counter = 'METHOD'
+                value = 'COVEREDRATIO'
+                minimum = 0.80
+            }
+        }
     }
 }
 
