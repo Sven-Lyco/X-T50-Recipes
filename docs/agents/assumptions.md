@@ -1,6 +1,6 @@
 # Assumptions
 
-Log an assumption before you rely on it. A person confirms it (then record a decision) or rejects it.
+Log an assumption before you rely on it. A person confirms or rejects it; record who and when in the table. A confirmed assumption needs a decision file only if it changes structure or an interface, or is hard to reverse.
 
 | Date | Assumption | Context (task or file) | Status | Resolved by |
 |---|---|---|---|---|

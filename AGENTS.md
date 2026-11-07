@@ -7,19 +7,20 @@ Persönliche Web-App zur Verwaltung von Fujifilm X-T50 Film-Simulation-Recipes. 
 | Purpose | Command |
 |---|---|
 | Install dependencies | `npm --prefix frontend ci` |
-| Run all tests | `GRADLE_USER_HOME=$HOME/.gradle-private ./gradlew check && npm --prefix frontend test` |
-| Run one test file | `GRADLE_USER_HOME=$HOME/.gradle-private ./gradlew test --tests <TestClass>` |
-| Lint | `npm --prefix frontend exec -- tsc --noEmit -p frontend` |
-| Build | `GRADLE_USER_HOME=$HOME/.gradle-private ./gradlew build` |
+| Run all tests and the linter | `scripts/check.sh` (exit code 0 = all passed) |
+| Run one test file | `./gradlew test --tests <TestClass>` |
+| Lint only | `npm --prefix frontend exec -- tsc --noEmit -p frontend` |
+| Build | `./gradlew build` |
 
-Run the tests and the linter before you report a task as done. If a command is marked "not configured", say so instead of inventing one.
+Run `scripts/check.sh` before you report a task as done. If a command is marked "not configured", say so instead of inventing one. `GRADLE_USER_HOME` is set in `.claude/settings.local.json`; do not prefix commands with it.
 
 ## Project structure
 
 - `src/` – Spring-Boot-Backend (`src/main/java`, `src/main/resources`) und Backend-Tests (`src/test`)
 - `frontend/` – React/TypeScript/Vite-Frontend inkl. Tests (vitest)
 - `gradle/` – Gradle Wrapper
-- `docs/` – Dokumentation (`architecture/`, `screenshots/`)
+- `docs/` – Dokumentation (`architecture/`, `screenshots/`, `product-reference.md`)
+- `scripts/check.sh` – alle Tests und Linter mit einem Exit-Code
 
 ## Domain language
 
@@ -65,6 +66,7 @@ Run the tests and the linter before you report a task as done. If a command is m
   - **Decision:** something a person in this project stated. Record the source (who, where).
   - **Assumption:** something you inferred. Mark it as an assumption.
 - Log every assumption that affects behavior, structure, or an interface in `docs/agents/assumptions.md` before you rely on it.
+- When a person confirms or rejects an assumption, set its status in `assumptions.md` and record who and when. Write a decision file only if the choice changes structure or an interface, or is hard to reverse.
 - Never present an assumption as a decision.
 - Treat statements made while prototyping as experiments, not as architecture decisions, unless the person says otherwise.
 - Record decisions in `docs/agents/decisions/`, one file per decision. A decision you write yourself has status `proposed` until a person confirms it.
