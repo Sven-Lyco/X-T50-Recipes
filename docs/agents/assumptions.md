@@ -19,5 +19,7 @@ Log an assumption before you rely on it. A person confirms or rejects it; record
 | 2026-11-07 | One shared component `RecipeDifferenceList` (props: two recipes) renders the differences in all three places, including the text `Keine Unterschiede`; "no differences" means no difference in the settings `computeSimilarity` compares | lib-2 | open | |
 | 2026-11-07 | Differences are rendered as small dimmed text (Mantine `Text size="xs" c="dimmed"`), one line each, directly under the score badge / similarity row; in the duplicate warning below each match row. Visual styling was not specified | lib-2, `RecipeDifferenceList.tsx` | open | |
 | 2026-11-07 | In the duplicate warning, value A comes from the form payload cast `as unknown as Recipe` (same cast the existing `computeSimilarity` call uses) | lib-2, `RecipeFormPage.tsx` | open | |
+| 2026-11-07 | Frontend coverage is enabled globally via `coverage.enabled: true` in `vite.config.ts` (not a `--coverage` flag), so `npm test` always measures coverage; a single-file `vitest run <file>` printed no coverage output when tried (reason not investigated) | cov-1, `frontend/vite.config.ts` | open | |
+| 2026-11-07 | Switching CI from `./gradlew test` to `check` only adds JaCoCo verification; not yet confirmed by a real CI run (only local) | cov-1, `.github/workflows/ci.yml` | open | |
 
 Status is one of `open`, `confirmed`, `rejected`.
