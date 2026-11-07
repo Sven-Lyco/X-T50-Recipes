@@ -13,7 +13,7 @@ FROM gradle:9-jdk25 AS backend-build
 WORKDIR /app
 COPY --chown=gradle:gradle . .
 COPY --from=frontend-build /app/frontend/dist src/main/resources/static
-RUN gradle bootJar --no-daemon
+RUN ./gradlew bootJar --no-daemon
 
 # Stage 3: Runtime
 FROM eclipse-temurin:25-jre-alpine
