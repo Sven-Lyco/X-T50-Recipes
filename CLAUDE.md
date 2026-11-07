@@ -1,3 +1,5 @@
+@AGENTS.md
+
 # Fuji Recipe Manager – CLAUDE.md
 
 > X-T50-Recipes
