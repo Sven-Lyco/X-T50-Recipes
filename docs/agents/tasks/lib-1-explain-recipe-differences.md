@@ -2,7 +2,7 @@
 id: lib-1
 title: Explain how two recipes differ
 type: feature
-status: todo
+status: done
 bounded_context: library
 depends_on: []
 blocks: []

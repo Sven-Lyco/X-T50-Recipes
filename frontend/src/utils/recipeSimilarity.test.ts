@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { Recipe } from '../api/types'
-import { computeSimilarity, similarityColor } from './recipeSimilarity'
+import { computeSimilarity, similarityColor, topDifferences } from './recipeSimilarity'
 
 function recipe(overrides: Partial<Recipe> = {}): Recipe {
   return {
@@ -158,6 +158,59 @@ describe('computeSimilarity', () => {
     expect(typeof score).toBe('number')
     expect(score).toBeGreaterThanOrEqual(0)
     expect(score).toBeLessThanOrEqual(100)
+  })
+})
+
+describe('topDifferences', () => {
+  it('ranks grain strength before color, each with label and both values', () => {
+    const a = recipe({ grainStrength: 'OFF', color: 0 })
+    const b = recipe({ grainStrength: 'STRONG', color: 2 })
+    expect(topDifferences(a, b, 2)).toEqual([
+      { label: 'Körnungseffekt', valueA: 'Aus', valueB: 'Stark' },
+      { label: 'Farbe', valueA: '0', valueB: '+2' },
+    ])
+  })
+
+  it('returns an empty list for identical recipes', () => {
+    expect(topDifferences(recipe(), recipe())).toEqual([])
+  })
+
+  it('returns only the differing settings when fewer than n differ', () => {
+    const result = topDifferences(recipe(), recipe({ color: 2 }), 5)
+    expect(result).toEqual([{ label: 'Farbe', valueA: '0', valueB: '+2' }])
+  })
+
+  it('returns at most 3 entries by default', () => {
+    const b = recipe({ color: 2, clarity: 3, sharpness: 1, grainStrength: 'STRONG' })
+    expect(topDifferences(recipe(), b)).toHaveLength(3)
+  })
+
+  it('ignores grain size unless both recipes have grain', () => {
+    const a = recipe({ grainStrength: 'OFF', grainSize: 'SMALL' })
+    const b = recipe({ grainStrength: 'STRONG', grainSize: 'LARGE' })
+    expect(topDifferences(a, b, 5).map(d => d.label)).toEqual(['Körnungseffekt'])
+    const c = recipe({ grainStrength: 'WEAK', grainSize: 'SMALL' })
+    const d = recipe({ grainStrength: 'WEAK', grainSize: 'LARGE' })
+    expect(topDifferences(c, d)).toEqual([{ label: 'Körnung Größe', valueA: 'Klein', valueB: 'Groß' }])
+  })
+
+  it('ignores monochrome tint unless both film simulations are monochrome', () => {
+    const color = topDifferences(
+      recipe({ filmSimulation: 'PROVIA', monochromeWarmCool: -9 }),
+      recipe({ filmSimulation: 'PROVIA', monochromeWarmCool: 9 }),
+    )
+    expect(color).toEqual([])
+    const mono = topDifferences(
+      recipe({ filmSimulation: 'ACROS', monochromeWarmCool: -9 }),
+      recipe({ filmSimulation: 'ACROS', monochromeWarmCool: 9 }),
+    )
+    expect(mono).toEqual([{ label: 'Warm / Cool', valueA: '-9', valueB: '+9' }])
+  })
+
+  it('keeps the computeSimilarity order for equal weighted differences', () => {
+    // Spitzlichter und Schatten: gleiches Gewicht, gleicher Unterschied
+    const result = topDifferences(recipe(), recipe({ highlightTone: 1.5, shadowTone: 1.5 }))
+    expect(result.map(d => d.label)).toEqual(['Spitzlichter', 'Schatten'])
   })
 })
 
