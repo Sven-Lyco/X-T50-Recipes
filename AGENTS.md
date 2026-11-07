@@ -8,11 +8,14 @@ Persönliche Web-App zur Verwaltung von Fujifilm X-T50 Film-Simulation-Recipes. 
 |---|---|
 | Install dependencies | `npm --prefix frontend ci` |
 | Run all tests and the linter | `scripts/check.sh` (exit code 0 = all passed) |
-| Run one test file | `./gradlew test --tests <TestClass>` |
+| Run one backend test class | `./gradlew test --tests <TestClass>` |
+| Run one frontend test file | `npm --prefix frontend test -- --coverage.enabled=false <file or name>` |
 | Lint only | `npm --prefix frontend exec -- tsc --noEmit -p frontend` |
 | Build | `./gradlew build` |
 
 Run `scripts/check.sh` before you report a task as done. If a command is marked "not configured", say so instead of inventing one. `GRADLE_USER_HOME` is set in `.claude/settings.local.json`; do not prefix commands with it.
+
+Run every command from the repository root as a single command, without `cd`, pipes or redirects. The Bash tool reports the exit code; do not use `$?`.
 
 ## Project structure
 

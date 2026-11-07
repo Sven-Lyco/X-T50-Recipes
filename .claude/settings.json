@@ -27,7 +27,14 @@
   "permissions": {
     "allow": [
       "Bash(scripts/check.sh)",
-      "Bash(./scripts/check.sh)"
+      "Bash(./scripts/check.sh)",
+      "Bash(npm --prefix frontend test:*)",
+      "Bash(npm --prefix frontend exec -- tsc --noEmit -p frontend)",
+      "Bash(./gradlew test:*)",
+      "Bash(./gradlew check:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)"
     ]
   }
 }
