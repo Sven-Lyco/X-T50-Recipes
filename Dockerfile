@@ -9,14 +9,14 @@ COPY frontend/ ./
 RUN npm run build
 
 # Stage 2: Spring Boot Build
-FROM gradle:8-jdk21 AS backend-build
+FROM gradle:9-jdk25 AS backend-build
 WORKDIR /app
 COPY --chown=gradle:gradle . .
 COPY --from=frontend-build /app/frontend/dist src/main/resources/static
-RUN gradle bootJar --no-daemon
+RUN ./gradlew bootJar --no-daemon
 
 # Stage 3: Runtime
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 WORKDIR /app
 
 # Security fixes for Alpine packages that are newer than the base image

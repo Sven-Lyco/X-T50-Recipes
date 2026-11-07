@@ -23,7 +23,7 @@ aktuell auf welcher Custom-Bank (C1–C7) der Kamera geladen ist.
 
 ### Backend
 
-- Java 21, Spring Boot 4 (Gradle ≥ 8.14)
+- Java 25, Spring Boot 4 (Gradle ≥ 9.9)
 - JSON: Jackson 3 (`tools.jackson.*`; Annotationen bleiben `com.fasterxml.jackson.annotation`).
   `spring.jackson.deserialization.fail-on-null-for-primitives: false` hält fehlende primitive Felder
   (z.B. `force`, `favorite` in alten Backups) beim Default statt 400 – steht in `src/main/resources/application.yml`
