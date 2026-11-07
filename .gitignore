@@ -39,3 +39,7 @@ images/
 frontend/test-report/
 frontend/test-results/
 frontend/coverage/
+
+# ewa: local agent files
+docs/agents/annoyances.md
+docs/agents/handover.md
