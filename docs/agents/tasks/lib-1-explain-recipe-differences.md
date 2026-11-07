@@ -42,5 +42,5 @@ Research:
 - Conditional settings follow `computeSimilarity`: grain size only if both recipes have grain; monochrome warm/cool and green/magenta only if both film simulations are monochrome.
 - Example check: grain strength OFF vs STRONG gives 1.0 × 2.0 = 2.0; color 0 vs +2 gives 2/8 × 1.5 = 0.375, so grain strength ranks first.
 - Tie order is not specified; keep it stable (order of settings in `computeSimilarity`).
-- Labels in the camera menu wording are German (see CLAUDE.md "Frontend-Labels"). The exact label text and the shape of a result entry are not specified (see `docs/agents/assumptions.md`).
+- Labels in the camera menu wording are German (see CLAUDE.md "Frontend-Labels"). The owner confirmed (2026-11-07): a result entry is `{ label, valueA, valueB }` with display strings; the differing settings are those `computeSimilarity` compares, ranked by weighted difference with ties in `computeSimilarity` order; the weights are extracted into one shared structure, not copied (see `docs/agents/assumptions.md`).
 - The glossary says similarity is 0 to 1, `computeSimilarity` returns 0 to 100. Not part of this task.
