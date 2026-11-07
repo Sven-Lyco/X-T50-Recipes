@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { screen } from '@testing-library/react'
+import { screen, fireEvent } from '@testing-library/react'
 import { Route, Routes } from 'react-router-dom'
 import { renderWithProviders } from '../test-utils'
 import RecipeFormPage from './RecipeFormPage'
@@ -80,5 +80,29 @@ describe('RecipeFormPage – new recipe', () => {
   it('shows the save button', () => {
     renderNewRecipeForm()
     expect(screen.getAllByRole('button', { name: /Speichern/i }).length).toBeGreaterThan(0)
+  })
+})
+
+describe('RecipeFormPage – duplicate warning', () => {
+  const saved = {
+    id: 'r2', name: 'Gespeichertes Recipe', filmSimulation: 'PROVIA', dynamicRange: 'DR100',
+    highlightTone: 0, shadowTone: 0, color: 2, sharpness: 0, noiseReduction: 0, clarity: 0,
+    grainStrength: 'STRONG', grainSize: 'SMALL', colorChromeEffect: 'OFF', colorChromeFxBlue: 'OFF',
+    whiteBalanceMode: 'AUTO', wbShiftRed: 0, wbShiftBlue: 0, colorTempKelvin: null,
+    monochromeWarmCool: null, monochromeGreenMagenta: null, isoMode: null, isoNote: null,
+    expCompNote: null, description: null, inspirationSource: null, tags: [], cameraSlot: null,
+    favorite: false, aiGenerated: false, shootingScenario: null, images: [],
+  }
+
+  it('lists the differences below each similar recipe, edited recipe value first', async () => {
+    vi.mocked(useRecipes).mockReturnValue({ data: [{ id: 'r2', tags: [] }] } as any)
+    vi.mocked(useRecipesBulk).mockReturnValue({ data: [saved] } as any)
+    renderNewRecipeForm()
+    fireEvent.change(screen.getByLabelText(/^Name/), { target: { value: 'Neues Recipe X' } })
+    const submit =screen.getAllByRole('button', { name: /Speichern/i }).find(b => b.getAttribute('type') === 'submit')!
+    fireEvent.click(submit)
+    expect(await screen.findByText('Gespeichertes Recipe')).toBeTruthy()
+    expect(await screen.findByText('Körnungseffekt: Aus → Stark')).toBeTruthy()
+    expect(screen.getByText('Farbe: 0 → +2')).toBeTruthy()
   })
 })

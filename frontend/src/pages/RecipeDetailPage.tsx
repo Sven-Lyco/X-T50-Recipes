@@ -18,6 +18,7 @@ import { useRecipe, useDeleteRecipe, useToggleFavorite, useRecipes, useDuplicate
 import { MONOCHROME_SIMS, filmSimLabel } from '../filmSimLabel'
 import { dynamicRangeLabel, grainSizeLabel, isoModeLabel, scenarioLabel, strengthLabel, wbModeLabel } from '../utils/labels'
 import { computeSimilarity, similarityColor } from '../utils/recipeSimilarity'
+import RecipeDifferenceList from '../components/RecipeDifferenceList'
 import { exportRecipeAsPng } from '../utils/recipeImageExport'
 
 function ParamRow({ label, value }: { label: string; value: string | number | null | undefined }) {
@@ -337,6 +338,9 @@ export default function RecipeDetailPage() {
                   {r.cameraSlot && <Badge size="xs" color="dark" variant="filled">{r.cameraSlot}</Badge>}
                   <Badge size="xs" color={similarityColor(r.score)} variant="light">{r.score} %</Badge>
                 </Group>
+                <Box mb={4}>
+                  <RecipeDifferenceList a={recipe} b={r} />
+                </Box>
                 <Group gap={4}>
                   <Button
                     component={Link}
