@@ -1,0 +1,18 @@
+# Accepted architecture violations (ewa-boundaries.py). Only new ones fail the check.
+# Remove a line when the violation is fixed.
+context frontend/src/pages/RecipeDetailPage.tsx -> frontend/src/components/RecipeCardPdf.tsx
+context frontend/src/pages/RecipeDetailPage.tsx -> frontend/src/components/RecipePdf.tsx
+context frontend/src/pages/RecipeDetailPage.tsx -> frontend/src/utils/recipeImageExport.ts
+context src/main/java/de/fuji/xt50recipes/ai/AiSuggestionController.java -> src/main/java/de/fuji/xt50recipes/recipe/RecipeRequest.java
+context src/main/java/de/fuji/xt50recipes/ai/AiSuggestionService.java -> src/main/java/de/fuji/xt50recipes/recipe/DynamicRange.java
+context src/main/java/de/fuji/xt50recipes/ai/AiSuggestionService.java -> src/main/java/de/fuji/xt50recipes/recipe/EffectStrength.java
+context src/main/java/de/fuji/xt50recipes/ai/AiSuggestionService.java -> src/main/java/de/fuji/xt50recipes/recipe/FilmSimulation.java
+context src/main/java/de/fuji/xt50recipes/ai/AiSuggestionService.java -> src/main/java/de/fuji/xt50recipes/recipe/GrainSize.java
+context src/main/java/de/fuji/xt50recipes/ai/AiSuggestionService.java -> src/main/java/de/fuji/xt50recipes/recipe/GrainStrength.java
+context src/main/java/de/fuji/xt50recipes/ai/AiSuggestionService.java -> src/main/java/de/fuji/xt50recipes/recipe/Recipe.java
+context src/main/java/de/fuji/xt50recipes/ai/AiSuggestionService.java -> src/main/java/de/fuji/xt50recipes/recipe/RecipeRequest.java
+context src/main/java/de/fuji/xt50recipes/ai/AiSuggestionService.java -> src/main/java/de/fuji/xt50recipes/recipe/WhiteBalanceMode.java
+context src/main/java/de/fuji/xt50recipes/ai/LocationMatchService.java -> src/main/java/de/fuji/xt50recipes/recipe/Recipe.java
+context src/main/java/de/fuji/xt50recipes/ai/LocationMatchService.java -> src/main/java/de/fuji/xt50recipes/recipe/RecipeRepository.java
+context src/main/java/de/fuji/xt50recipes/ai/RecipeMatchService.java -> src/main/java/de/fuji/xt50recipes/recipe/Recipe.java
+context src/main/java/de/fuji/xt50recipes/ai/RecipeMatchService.java -> src/main/java/de/fuji/xt50recipes/recipe/RecipeRepository.java

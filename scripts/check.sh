@@ -8,6 +8,7 @@ failed=()
 ./gradlew check || failed+=("backend: ./gradlew check")
 npm --prefix frontend test || failed+=("frontend: npm test")
 npm --prefix frontend exec -- tsc --noEmit -p frontend || failed+=("lint: tsc")
+python3 scripts/ewa-boundaries.py check || failed+=("architecture: ewa-boundaries")
 
 if [ ${#failed[@]} -eq 0 ]; then
   echo "check.sh: all checks passed"
