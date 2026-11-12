@@ -20,8 +20,9 @@ Rules checked for every dependency between two files of the repository:
   sibling   code uses another ring on the same level
 
 Dependencies come from imports (Python, JavaScript/TypeScript with relative paths,
-Java, Kotlin, Swift modules) and, for Swift, from type names declared in other files,
-because Swift files of one module do not import each other. Not seen: reflection,
+Java, Kotlin, Swift modules) and from type names that need no import: for Swift,
+types declared in other files of the project; for Java and Kotlin, classes of the
+same package. Not seen: reflection,
 dependency injection by name, path aliases.
 
 Known violations can be accepted in docs/agents/architecture-baseline.txt; only new
@@ -262,6 +263,11 @@ def deps_js(path, text, index):
 
 def deps_jvm(path, text, index):
     out = set()
+    # Classes of the same package need no import: count the ones whose name the file uses.
+    folder = str(Path(path).parent)
+    used = set(re.findall(r"\b[A-Z]\w*\b", re.sub(r'"(?:\\.|[^"\\])*"', '""', text)))
+    out.update(p for p in index.paths if p != path and Path(p).suffix in (".java", ".kt", ".kts")
+               and str(Path(p).parent) == folder and Path(p).stem in used)
     for m in re.finditer(r"^\s*import\s+(?:static\s+)?([\w.]+)(\.\*)?\s*(?:as\s+\w+)?;?\s*$", text, re.M):
         name, star = m.group(1), m.group(2)
         exts = {".java", ".kt", ".kts"}
