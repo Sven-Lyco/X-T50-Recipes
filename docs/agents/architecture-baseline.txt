@@ -16,3 +16,14 @@ context src/main/java/de/fuji/xt50recipes/ai/LocationMatchService.java -> src/ma
 context src/main/java/de/fuji/xt50recipes/ai/LocationMatchService.java -> src/main/java/de/fuji/xt50recipes/recipe/RecipeRepository.java
 context src/main/java/de/fuji/xt50recipes/ai/RecipeMatchService.java -> src/main/java/de/fuji/xt50recipes/recipe/Recipe.java
 context src/main/java/de/fuji/xt50recipes/ai/RecipeMatchService.java -> src/main/java/de/fuji/xt50recipes/recipe/RecipeRepository.java
+context src/main/java/de/fuji/xt50recipes/recipe/Recipe.java -> src/main/java/de/fuji/xt50recipes/recipe/CameraSlot.java
+context src/main/java/de/fuji/xt50recipes/recipe/RecipeController.java -> src/main/java/de/fuji/xt50recipes/recipe/CameraSlot.java
+context src/main/java/de/fuji/xt50recipes/recipe/RecipeController.java -> src/main/java/de/fuji/xt50recipes/recipe/RecipeExportService.java
+context src/main/java/de/fuji/xt50recipes/recipe/RecipeListItem.java -> src/main/java/de/fuji/xt50recipes/recipe/CameraSlot.java
+context src/main/java/de/fuji/xt50recipes/recipe/RecipeRepository.java -> src/main/java/de/fuji/xt50recipes/recipe/CameraSlot.java
+context src/main/java/de/fuji/xt50recipes/recipe/RecipeRequest.java -> src/main/java/de/fuji/xt50recipes/recipe/CameraSlot.java
+context src/main/java/de/fuji/xt50recipes/recipe/RecipeResponse.java -> src/main/java/de/fuji/xt50recipes/recipe/CameraSlot.java
+context src/main/java/de/fuji/xt50recipes/recipe/RecipeService.java -> src/main/java/de/fuji/xt50recipes/recipe/CameraSlot.java
+context src/main/java/de/fuji/xt50recipes/recipe/RecipeService.java -> src/main/java/de/fuji/xt50recipes/recipe/SlotChangeLog.java
+context src/main/java/de/fuji/xt50recipes/recipe/RecipeService.java -> src/main/java/de/fuji/xt50recipes/recipe/SlotChangeLogRepository.java
+context src/main/java/de/fuji/xt50recipes/recipe/RecipeService.java -> src/main/java/de/fuji/xt50recipes/recipe/SlotConflictException.java
