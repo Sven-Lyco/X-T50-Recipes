@@ -16,13 +16,13 @@ COPY --from=frontend-build /app/frontend/dist src/main/resources/static
 RUN ./gradlew bootJar --no-daemon
 
 # Stage 3: Runtime
-FROM eclipse-temurin:25-jre-alpine
+# Exact Temurin build: 25.0.5.1+2 is the first 25.x build that fixes CVE-2026-114938 ("Java4Shell").
+# Dependabot (.github/dependabot.yml) opens a pull request for newer 25.x builds.
+FROM eclipse-temurin:25.0.5.1_2-jre-alpine
 WORKDIR /app
 
 # Security fixes for Alpine packages that are newer than the base image
 RUN apk upgrade --no-cache
 COPY --from=backend-build /app/build/libs/*.jar app.jar
 EXPOSE 8080
-# Workaround for CVE-2026-114938 ("Java4Shell"): disables the vulnerable Base64 intrinsic.
-# Remove once the base image ships a fixed Temurin build (25.0.5.1 or newer).
-ENTRYPOINT ["java", "-XX:-UseBASE64Intrinsics", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
