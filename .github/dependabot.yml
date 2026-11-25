@@ -26,3 +26,19 @@ updates:
     groups:
       actions:
         patterns: ["*"]
+
+  # Keeps Spring Boot and the other Gradle dependencies current: one grouped pull request a
+  # week for patch and minor releases, so security fixes such as Spring Boot 4.0.10 arrive by
+  # themselves. Spring Framework and Spring Security follow through the Spring Boot BOM.
+  - package-ecosystem: gradle
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      gradle:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+    ignore:
+      # Moving to a new major is a deliberate decision, not a routine bump
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
